@@ -1,13 +1,17 @@
 package ExactMethods;
 
-import java.util.ArrayList;
-
 import ilog.concert.IloException;
 import ilog.concert.IloNumExpr;
 import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 
+/**
+ * Knapsack MIP used to solve smaller knapsack problems 
+ * 	for constructive heuristics and genetic mutations
+ * @author midkiffj
+ *
+ */
 public class Knapsack {
 	private IloCplex cplex;
 	private boolean exportLPs = true;
@@ -22,6 +26,10 @@ public class Knapsack {
 	private boolean[] xVals;
 	private boolean ran;
 	
+	// Initialize Knapsack
+	//  c - objective coefficients
+	//	a - weights
+	// 	b - knapsack capacity
 	public Knapsack(int[] a,  int b, int[] c) {
 		this.a = a;
 		this.b = b;
@@ -53,6 +61,9 @@ public class Knapsack {
 		return xVals;
 	}
 	
+	/*
+	 * Set up and run the knapsack MIP
+	 */
 	private void run() throws IloException {
 			int i;
 			int n = a.length;
@@ -63,7 +74,6 @@ public class Knapsack {
 			for (i = 0; i < n; i++) {
 				xname[i] = "x_"+i;
 			}
-
 			x = cplex.numVarArray(n, 0, 1, IloNumVarType.Bool,xname);
 
 			// Add Objective
@@ -97,7 +107,7 @@ public class Knapsack {
 				if (xvals[i] == 1) {
 					xVals[i] = true;
 				}
-//				System.out.println("x_"+i+": " + xvals[i]);
+				System.out.println("x_"+i+": " + xvals[i]);
 			}
 
 			// Print Integral solution
@@ -107,6 +117,9 @@ public class Knapsack {
 			ran = true;
 	}
 	
+	/*
+	 * Example knapsack problem
+	 */
 	public static void main(String[] args) {
 		int[] a = {10, 20, 15};
 		int b = 35;

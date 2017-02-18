@@ -5,6 +5,11 @@ import ilog.concert.*;
 import ilog.cplex.*;
 import ilog.cplex.IloCplex.UnknownObjectException;
 
+/**
+ * Run the Max Probability MIP formulation of Billionnet
+ * @author midkiffj
+ *
+ */
 public class MaxProb_Bill {
 
 	static IloCplex cplex;
@@ -24,25 +29,33 @@ public class MaxProb_Bill {
 	
 	static double bestObj;
 
+	/*
+	 * Setup Max Prob problem and MIP
+	 */
 	public static void main(String[] args) {
+		// Can take file as argument
 		String file = "P5_K65_0";
 		if (args.length == 1) {
 			file = args[0];
 		}
 		mp = new MaxProbability("problems/mp/"+file);
-//				mp = new MaxProbability(3,false,1);
 		try {
 			calcPUpper();
 			cplex = new IloCplex();
 			addModel();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		}
 	}
 
+	/*
+	 * Calculate needed constants and upper bound on rho(p)
+	 */
 	private static void calcPUpper() throws IloException {
 		int n = mp.getN();
+		
+		// Solve for X_umax
 		int[] a = new int[n];
 		int b = mp.getB();
 		int[] c = new int[n];
@@ -54,6 +67,7 @@ public class MaxProb_Bill {
 		long umax = ks.getBestObj();
 		boolean[] xVals = ks.getXVals();
 
+		// Setup and run X_vmin
 		IloCplex minVar = new IloCplex();
 		String[] xname = new String[n];
 		for (int k = 0; k < n; k++) {
@@ -61,29 +75,32 @@ public class MaxProb_Bill {
 		}
 		x = minVar.numVarArray(n, 0, 1, IloNumVarType.Bool, xname);
 
+		// Use variances as objective
 		IloNumExpr vars = minVar.numExpr();
 		for (int i = 0; i < n; i++) {
 			vars = minVar.sum(vars,minVar.prod(mp.getS(i),x[i]));
 		}
 		minVar.addMinimize(vars);
 
+		// Add sum(ux) >= t constraint
 		IloNumExpr uGTt = minVar.numExpr();
 		for(int i = 0; i < n; i++) {
 			uGTt = minVar.sum(uGTt,minVar.prod(mp.getU(i),x[i]));
 		}
 		minVar.addGe(uGTt, mp.getT());
 
+		// Solve
 		minVar.exportModel("maxProbMinVar.lp");
 		minVar.solve();
 		System.err.println("MinVar Obj: " + minVar.getObjValue());
 
+		// Calculate constants and bounds
 		int den1 = 0;
 		for (int i = 0; i < n; i++) {
 			if (xVals[i]) {
 				den1 += mp.getS(i);
 			}
 		}
-
 		delta = Math.abs(mp.getT() - umax);
 		p1 = (delta*delta) / den1;
 		B1 = delta * Math.sqrt(minVar.getObjValue()/den1);
@@ -94,6 +111,7 @@ public class MaxProb_Bill {
 	private static void addModel() throws IloException {
 		int n = mp.getN();
 
+		// Initialize and name variables
 		String[] xname = new String[n];
 		String[] yname = new String[n];
 		String[] zname = new String[n];
@@ -155,17 +173,20 @@ public class MaxProb_Bill {
 			cplex.addLe(cplex.sum(p,cplex.prod(-1,z[i]),cplex.prod(B2,x[i])),B2);
 		}
 
-		// knapsack constraint
+		// Knapsack constraint
 		IloNumExpr aLTb = cplex.numExpr();
 		for (int i = 0; i < n; i++) {
 			aLTb = cplex.sum(aLTb, cplex.prod(mp.getA(i),x[i]));
 		}
 		cplex.addLe(aLTb, mp.getB());
 
+		// Objective
 		cplex.addMaximize(cplex.sum(p,p1));
 
+		// Export LP
 		cplex.exportModel("maxProbBill.lp");
 
+		// Solve and print solution
 		cplex.solve();
 		
 		bestObj = cplex.getObjValue();
@@ -174,6 +195,9 @@ public class MaxProb_Bill {
 		printVars();
 	}
 
+	/*
+	 * Pretty Print solution variables
+	 */
 	static void printVars() throws UnknownObjectException, IloException {
 		int n = mp.getN();
 

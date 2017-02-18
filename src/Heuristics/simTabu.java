@@ -1,34 +1,23 @@
 package Heuristics;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
-import Problems.ProblemFactory;
 import Runner.TestLogger;
-import Solutions.KnapsackSol;
 import Solutions.ProblemSol;
 
-
+/*
+ * Simulated Annealing with a Tabu Search diversification
+ */
 public class simTabu extends Metaheuristic {
 
-	private int[][] tabuList;
-	private int shiftTabu;
-	private int tabuDuration;
 	private int maxIter;
 	private long time;
 
+	/*
+	 * Initialize parameters and init solution
+	 */
 	public simTabu(ProblemSol ps, int maxIter, long time) {
 		super(ps);
-		
-		tabuList = new int[n][n];
-		tabuDuration = (int)Math.round(7.5*Math.log(n));
-		shiftTabu = 0;
-		
+
+		// Time/Iteration default values
 		this.maxIter = 1000000;
 		this.time = 60000000000L*5;
 		if (maxIter != -1) {
@@ -39,21 +28,28 @@ public class simTabu extends Metaheuristic {
 		}
 	}
 
+	/*
+	 * Run simulated annealing with tabu search when heuristic gets stuck
+	 */
 	public void run() {
-		HashSet<Long> solutions = new HashSet<Long>();
 		int stuck = 0;
 
+		// Temperature/Alpha values
 		double T = 0.3*current.getObj();
 		double a = 0.99;
 		TestLogger.logger.info(""+current.getValid());
 
 		long start = System.nanoTime();
 		long end = start;
+		// Track time/iterations
 		for (int iteration = 0; iteration < maxIter && (end-start) < time; iteration++) {
+			// If stuck, try tabu search on best solution
 			if (stuck > n*2) {
 				TestLogger.logger.info("Starting Tabu Search");
-				tabuSearch ts = new tabuSearch(current, 2*n,time);
+				tabuSearch ts = new tabuSearch(best, n, time - (end-start));
 				ts.run();
+
+				// Update current and best from tabu search
 				current = ts.getCurrent();
 				ProblemSol tsBest = ts.getBest();
 				if (tsBest.compareTo(best) > 0) {
@@ -63,7 +59,7 @@ public class simTabu extends Metaheuristic {
 				T = 0.3*current.getObj();
 				stuck = 0;
 			}
-			// Get swaps 1657185
+			// Get swaps
 			double[] swap;
 			swap = current.mutate();
 			if (swap != null) {
@@ -80,7 +76,6 @@ public class simTabu extends Metaheuristic {
 				else {
 					// Calculate probabilities and compare
 					double expProb = Math.exp((swap[0] - current.getObj())/T);
-					//						System.out.println("Exp Prob: " + expProb);
 					double rdmDub = rnd.nextDouble();
 					if (rdmDub <= expProb) {
 						newObj = swap[0];
@@ -91,24 +86,18 @@ public class simTabu extends Metaheuristic {
 
 				// Perform swap
 				if (j != -1 && k != -1) {
-					//					System.out.println("Swapping ("+j+","+k+")");
 					current.swap(newObj,j,k);
 				} else {
-					//					if (rnd.nextDouble() < 0.2) {
-					//						int change = shift();
-					//						System.out.println("Attempted Shift");
-					//					}
+					if (rnd.nextDouble() < 0.2) {
+						current.shift();
+					}
 				}
 			}
 
+			// Check for invalid solution
 			if (!current.getValid()) {
 				current.healSol();
 			}
-			//			if (solutions.add(current.getObj())) {
-			//				stuck = 0;
-			//			} else {
-			//				stuck += 1;
-			//			}
 
 			// Update Best
 			if (current.compareTo(best) > 0) {
@@ -119,6 +108,7 @@ public class simTabu extends Metaheuristic {
 				stuck++;
 			}
 
+			// Update Temperature
 			T = T * a;
 
 			// Print iteration info
@@ -130,21 +120,4 @@ public class simTabu extends Metaheuristic {
 
 		}
 	}
-
-	
-
-	private void tabuShift(int i, int iteration) {
-		for (int j = 0; j < i; j++) {
-			makeTabu(i,j,iteration);
-		}
-		for (int j = i+1; j < n; j++) {
-			makeTabu(i,j,iteration);
-		}
-	}
-
-	private void makeTabu(int i, int j, int iteration) {
-		tabuList[i][j] = iteration + tabuDuration;
-		tabuList[j][i] = iteration + tabuDuration;
-	}
-	
 }

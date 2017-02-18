@@ -8,20 +8,28 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * JUL Logger for Heuristics
+ * @author midkiffj
+ *
+ */
 public class TestLogger {
 
 	public static Logger logger = Logger.getLogger("test"); 
 	private static String filename = "test";
 	private static boolean useLog = true;
 
+	// Toggle logging (for larger tests)
 	public static void setUseLog(boolean useLg) {
 		useLog = useLg;
 	}
 	
+	// Update the file for logging
 	public static void setFile(String file) {
 		filename = file;
 	}
 
+	// Get a unique logger for each test and update logging file
 	public static void setLogger(String test) {
 		logger = Logger.getLogger(filename+test);
 		if (!useLog) {
@@ -56,6 +64,7 @@ public class TestLogger {
 		}
 	}
 
+	// Dummy formatter used for logging. Appends new-line character to each log.
 	public static class sf extends SimpleFormatter {
 		public sf() {
 			super();

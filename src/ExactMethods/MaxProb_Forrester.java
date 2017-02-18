@@ -4,6 +4,11 @@ import Problems.MaxProbability;
 import ilog.concert.*;
 import ilog.cplex.*;
 
+/**
+ * Run the Max Probability MIP of Forrester
+ * @author midkiffj
+ *
+ */
 public class MaxProb_Forrester {
 
 	static IloCplex cplex;
@@ -17,29 +22,37 @@ public class MaxProb_Forrester {
 	static double[] U;
 	static double[] L;
 
+	/*
+	 * Setup Max Prob problem and run MIP
+	 */
 	public static void main(String[] args) {
 		mp = new MaxProbability("problems/mp/P5_K65_0");
-		//		mp = new MaxProbability(3,false,1);
 		try {
 			cplex = new IloCplex();
-			//			addModelZj();
+			// Choose one model to use
+			//  addModelZj();
 			addModelSj();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		}
 	}
 
+	/*
+	 * Setup second formulation of Forrester using s_j
+	 */
 	private static void addModelSj() throws IloException {
+		// Calculate bounds
 		int n = mp.getN();
 		calcPUpper();
 		calcLU();
+		
 		// Add Objective Function
 		p = cplex.numVar(0, pUpper, IloNumVarType.Float, "p");
 		cplex.addMaximize(p);
 
 
-		// Initialize other vars
+		// Initialize and name variables
 		String[] xname = new String[n];
 		String[] sname = new String[n];
 		for (int i = 0; i < n; i++) {
@@ -50,7 +63,7 @@ public class MaxProb_Forrester {
 		s = cplex.numVarArray(n, 0, Double.POSITIVE_INFINITY, IloNumVarType.Float, sname);
 
 
-		// knapsack constraint
+		// Knapsack constraint
 		IloNumExpr aLTb = cplex.numExpr();
 		for (int i = 0; i < n; i++) {
 			aLTb = cplex.sum(aLTb, cplex.prod(mp.getA(i),x[i]));
@@ -89,9 +102,11 @@ public class MaxProb_Forrester {
 			cplex.addGe(sj, RHS);
 		}
 
-
+		// Export LP and Solve
 		cplex.exportModel("maxProbForrester.lp");
 		cplex.solve();
+		
+		// Pretty Print solution
 		System.out.println("Optimal: " + cplex.getObjValue());
 		double[] xvals = new double[n];
 		xvals = cplex.getValues(x);
@@ -100,14 +115,18 @@ public class MaxProb_Forrester {
 		}
 	}
 
+	/*
+	 * Setup first formulation using z_j
+	 */
 	private static void addModelZj() throws IloException {
+		// Calculate bounds
 		int n = mp.getN();
 		calcPUpper();
 		calcLU();
+		
 		// Add Objective Function
 		p = cplex.numVar(0, pUpper, IloNumVarType.Float, "p");
 		cplex.addMaximize(p);
-
 
 		// Initialize other vars
 		String[] xname = new String[n];
@@ -119,7 +138,7 @@ public class MaxProb_Forrester {
 		x = cplex.numVarArray(n, 0, 1, IloNumVarType.Bool, xname);
 		z = cplex.numVarArray(n, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, IloNumVarType.Float, zname);
 
-		// knapsack constraint
+		// Knapsack constraint
 		IloNumExpr aLTb = cplex.numExpr();
 		for (int i = 0; i < n; i++) {
 			aLTb = cplex.sum(aLTb, cplex.prod(mp.getA(i),x[i]));
@@ -162,9 +181,11 @@ public class MaxProb_Forrester {
 			cplex.addLe(zLTh, RHS);
 		}
 
-
+		// Export LP and solve
 		cplex.exportModel("maxProbForrester.lp");
 		cplex.solve();
+		
+		// Pretty print solution
 		System.out.println("Optimal: " + cplex.getObjValue());
 		double[] xvals = new double[n];
 		xvals = cplex.getValues(x);
@@ -173,8 +194,13 @@ public class MaxProb_Forrester {
 		}
 	}
 
+	/*
+	 * Calculate constants and bounds for formulation
+	 */
 	private static void calcPUpper() throws IloException {
 		int n = mp.getN();
+		
+		// Solve for X_umax
 		int[] a = new int[n];
 		int b = mp.getB();
 		int[] c = new int[n];
@@ -186,6 +212,7 @@ public class MaxProb_Forrester {
 		long umax = ks.getBestObj();
 		boolean[] xVals = ks.getXVals();
 
+		// Solve for X_vmin
 		IloCplex minVar = new IloCplex();
 		String[] xname = new String[n];
 		for (int k = 0; k < n; k++) {
@@ -193,36 +220,41 @@ public class MaxProb_Forrester {
 		}
 		x = minVar.numVarArray(n, 0, 1, IloNumVarType.Bool, xname);
 
+		// Use variance as objective
 		IloNumExpr vars = minVar.numExpr();
 		for (int i = 0; i < n; i++) {
 			vars = minVar.sum(vars,minVar.prod(mp.getS(i),x[i]));
 		}
 		minVar.addMinimize(vars);
 
+		// t constraint
 		IloNumExpr uGTt = minVar.numExpr();
 		for(int i = 0; i < n; i++) {
 			uGTt = minVar.sum(uGTt,cplex.prod(mp.getU(i),x[i]));
 		}
 		minVar.addGe(uGTt, mp.getT());
 
+		// Export Model and Solve
 		minVar.exportModel("maxProbMinVar.lp");
 		minVar.solve();
-		System.err.println("MinVar Obj: " + minVar.getObjValue());
+		System.out.println("MinVar Obj: " + minVar.getObjValue());
 
+		// Calculate constants
 		int den1 = 0;
 		for (int i = 0; i < n; i++) {
 			if (xVals[i]) {
 				den1 += mp.getS(i);
 			}
 		}
-
 		double deltaConst = Math.abs(mp.getT() - umax);
 		double rho1Const = (deltaConst*deltaConst) / den1;
 		double B2Const = ((deltaConst*deltaConst)/minVar.getObjValue()) - rho1Const;
-		//		double B2Const = (deltaConst*deltaConst)/minVar.getObjValue();
 		pUpper = B2Const;
 	}
 
+	/*
+	 * Find lower and upper bounds on z_j
+	 */
 	private static void calcLU() throws IloException {
 		int n = mp.getN();
 		double t = mp.getT();
@@ -236,7 +268,7 @@ public class MaxProb_Forrester {
 			p = bounds.numVar(0, pUpper, IloNumVarType.Float, "p");
 
 
-			// Initialize other vars
+			// Initialize variables
 			String[] xname = new String[n];
 			for (int k = 0; k < n; k++) {
 				xname[k] = "x_"+k;
@@ -246,6 +278,7 @@ public class MaxProb_Forrester {
 			int u = mp.getU(i);
 			int s = mp.getS(i);
 
+			// Calculate hj from Forrester linearization
 			double h = (u*u) - (2*t*u);
 			hj = bounds.sum(hj, h);
 			for(int j = 0; j < i; j++) {
@@ -256,17 +289,19 @@ public class MaxProb_Forrester {
 			}
 			hj = bounds.sum(hj, bounds.prod(-1*s,p));
 
+			// U_i = max{hj}
 			bounds.addMaximize(hj);
 			bounds.solve();
 			U[i] = bounds.getObjValue();
 
 			bounds.clearModel();
 
+			// L_i = min{hj}
 			bounds.addMinimize(hj);
 			bounds.solve();
 			L[i] = bounds.getObjValue();
 
-			System.err.println("U: " + U[i] + " L: " + L[i]);
+			System.out.println("U: " + U[i] + " L: " + L[i]);
 		}
 	}
 

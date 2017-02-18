@@ -1,7 +1,6 @@
 package Constructive;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import Problems.Cubic;
 import Solutions.CubicSol;
@@ -16,7 +15,6 @@ public class CubicIncumbent extends ConstHeuristic {
 	}
 
 	protected ProblemSol construct() {
-		// TODO Auto-generated method stub
 		return genInit();
 	}
 	
@@ -72,8 +70,6 @@ public class CubicIncumbent extends ConstHeuristic {
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
-		int swaps = 0;
-		//		while (swapping && swaps < Math.log(n)) {
 		while (swapping) {
 			int maxI = -1;
 			int maxJ = -1;
@@ -124,7 +120,6 @@ public class CubicIncumbent extends ConstHeuristic {
 					totalAx = c.removeA(maxI, c.addA(maxJ,totalAx));
 				}
 			}
-			swaps++;
 		}
 		return new CubicSol(x,r,curObj,totalAx);
 	}

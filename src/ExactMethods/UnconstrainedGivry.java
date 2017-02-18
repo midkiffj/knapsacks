@@ -11,11 +11,14 @@ import java.util.Scanner;
 
 import Problems.Unconstrained;
 
-
+/**
+ * Givry MIP formulation for 3-SAT
+ * 
+ * @author midkiffj
+ */
 public class UnconstrainedGivry {
 
-//	private static String file = "C:/Users/midkiffj/Downloads/aim/aim-50-1_6-no-4.cnf";
-	private static String file = "C:/Users/midkiffj/Downloads/f/f1000.cnf";
+	private static String file = "f/f1000.cnf";
 
 	static int n;
 	static Unconstrained u;
@@ -27,8 +30,8 @@ public class UnconstrainedGivry {
 
 	static boolean exportLPs = true;
 
-	/**
-	 * Setup and run a tabu search algorithm on a cubic knapsack problem
+	/*
+	 * Setup MIP and run
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -37,17 +40,21 @@ public class UnconstrainedGivry {
 			cplex = new IloCplex();
 			buildSAT();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		}
 	}
 
+	/*
+	 * Add the givry formulation to cplex and solve
+	 */
 	public static void buildSAT() throws FileNotFoundException, IloException {
 		Scanner scr = new Scanner(new FileInputStream(file));
 
+		// Ignore DIMAC cnf header
 		String line = scr.nextLine();
 		while (!(line.substring(0, 1).equals("p"))) {
 			line = scr.nextLine();
@@ -67,7 +74,6 @@ public class UnconstrainedGivry {
 		for (i = 0; i < constraints; i++) {
 			yname[i] = "y_"+i;
 		}
-
 		x = cplex.numVarArray(n, 0, 1, IloNumVarType.Bool, xname);
 		y = cplex.numVarArray(constraints,0,1, IloNumVarType.Bool, yname);
 
@@ -97,7 +103,7 @@ public class UnconstrainedGivry {
 		}
 		scr.close();
 
-
+		// Add objective
 		IloNumExpr obj = cplex.numExpr();
 		for (i = 0; i < constraints; i++) {
 			obj = cplex.sum(obj, y[i]);
@@ -121,6 +127,9 @@ public class UnconstrainedGivry {
 		System.exit(0);
 	}
 
+	/*
+	 * Seed the MIP with the given solution
+	 */
 	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
 		// New solution to be passed in to MIP.
 		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
@@ -134,12 +143,12 @@ public class UnconstrainedGivry {
 		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
-	/**
-	 * Print the given xvals, wvals, and yvals
+	/*
+	 * Print the solution x values
 	 */
 	private static void prettyPrintInOrder() {
 		// Pretty Print solution once complete.
-		int i, j, k;
+		int i;
 		// Get x_ij values
 		double[] xvals = new double[n];
 		try {
@@ -150,41 +159,5 @@ public class UnconstrainedGivry {
 		for (i = 0; i < n; i++) {
 			System.out.println("x_"+i+": " + xvals[i]);
 		}
-		//		// Get w_ij values
-		//		double[][] wvals = new double[n][n];
-		//		for (i = 0; i < n; i++) {
-		//			for (j = i+1; j < n; j++) {
-		//				try {
-		//					wvals[i][j] = cplex.getValue(w[i][j]);
-		//				} catch (IloException e) {
-		//					System.err.println("Error retrieving w values " + i + "," + j);
-		//				}
-		//			}
-		//		}
-		//		for (i = 0; i < n; i++) {
-		//			for (j = i+1; j < n; j++) {
-		//				System.out.println("w_"+i+","+j+": " + wvals[i][j]);
-		//			}
-		//		}
-		//		// Get y_ijk values
-		//		double[][][] yvals = new double[n][n][n];
-		//		for (i = 0; i < n; i++) {
-		//			for (j = i+1; j < n; j++) {
-		//				for (k = j+1; k < n; k++) {
-		//					try {
-		//						yvals[i][j][k] = cplex.getValue(y[i][j][k]);
-		//					} catch (IloException e) {
-		//						System.err.println("Error retrieving w values " + i + "," + j);
-		//					}
-		//				}
-		//			}
-		//		}
-		//		for (i = 0; i < n; i++) {
-		//			for (j = i+1; j < n; j++) {
-		//				for (k = j+1; k < n; k++) {
-		//					System.out.println("y_"+i+","+j+","+k+": " + yvals[i][j][k]);
-		//				}
-		//			}
-		//		}
 	}
 }

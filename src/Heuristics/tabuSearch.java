@@ -1,20 +1,13 @@
 package Heuristics;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
-import Problems.Cubic;
-import Problems.ProblemFactory;
 import Runner.TestLogger;
-import Solutions.CubicSol;
-import Solutions.KnapsackSol;
 import Solutions.ProblemSol;
 
-
+/**
+ * Tabu Search implementation
+ * 
+ * @author midkiffj
+ */
 public class tabuSearch extends Metaheuristic {
 
 	private int[][] tabuList;
@@ -23,13 +16,18 @@ public class tabuSearch extends Metaheuristic {
 	private int maxIter;
 	private long time;
 
+	/*
+	 * Setup initial solution and parameters
+	 */
 	public tabuSearch(ProblemSol ps, int maxIter, long time) {
 		super(ps);
 
+		// Tabu tracking variables
 		tabuList = new int[n][n];
 		tabuDuration = (int)Math.round(7.5*Math.log(n));
 		shiftTabu = 0;
 
+		// Default parameters
 		this.maxIter = 1000000;
 		this.time = 60000000000L*5;
 		if (maxIter != -1) {
@@ -40,30 +38,39 @@ public class tabuSearch extends Metaheuristic {
 		}
 	}
 
+	/*
+	 * Run tabu search with a best-swap diversification technique
+	 */
 	public void run() {
 		int stuck = 0;
 		int bestNotUpdated = 0;
 		int diversified = 1;
 		long start = System.nanoTime();
 		long end = start;
+		
+		// Track time/iterations
 		for (int i = 1; i < maxIter && (end-start) < time; i++) {
-
+			// If best hasn't been updated, try to diversify
 			if (bestNotUpdated >= 10*n*diversified) {
 				bestNotUpdated = 0;
 				diversified++;
 				TestLogger.logger.info("Diversifying...");
+				// Attempt 20 best swaps
 				for (int d = 0; d < 20; d++) {
+					// Get swap
 					double[] swap = current.bestMutate();
 					if (swap != null) {
 						double newObj = swap[0];
 						int j = (int) swap[1];
 						int k = (int) swap[2];
+						// Update current
 						current.swap(newObj,j,k);
 						if (!current.getValid()) {
 							TestLogger.logger.info("Healing...Current: " + current.getObj());
 							current.healSol();
 							TestLogger.logger.info("New Current: " + current.getObj());
 						}
+						// Update best
 						if (current.compareTo(best) > 0) {
 							best = ProblemSol.copy(current);
 							TestLogger.logger.info("Best updated from diversification to " + current.getObj());
@@ -73,11 +80,12 @@ public class tabuSearch extends Metaheuristic {
 				TestLogger.logger.info("Div: " + current.getObj());
 			}
 
-			// Check for shifts
+			// Occasionally, check for a shift
 			boolean shifted = false;;
 			if (shiftTabu < i) {
 				if (rnd.nextDouble() < 0.6) {
 					int change = current.shift();
+					// If shifted, a shift becomes tabu
 					if (change != -1) {
 						shiftTabu = i + (n/4);
 						shifted = true;
@@ -85,6 +93,7 @@ public class tabuSearch extends Metaheuristic {
 				}
 			}
 
+			// Otherwise, do a swap
 			if (!shifted) {
 				double[][] swap = current.tabuMutate(i,tabuList);
 				if (swap != null) {
@@ -97,9 +106,7 @@ public class tabuSearch extends Metaheuristic {
 					if (best.betterThan(tabu[0])) {
 						newObj = tabu[0];
 						j = (int)tabu[1];
-						//			if (swapping) {
 						k = (int)tabu[2];
-						//			}
 
 					}
 					// Otherwise, use nonTabu
@@ -107,27 +114,28 @@ public class tabuSearch extends Metaheuristic {
 						if (nonTabu[1] != -1 && nonTabu[2] != -1) {
 							newObj = nonTabu[0];
 							j = (int)nonTabu[1];
-							//			if (swapping) {
 							k = (int)nonTabu[2];
-							//			}
 						}
 					}
 
-					// Perform and tabu swap
+					// Perform swap and make tabu
 					if (j != -1 && k != -1) {
 						current.swap(newObj,j,k);
 						makeTabu(j,k,i);
 						stuck = 0;
-					} else {
+					} 
+					// Otherwise, stuck. Attempt shift after tabu duration passed
+					else {
 						TestLogger.logger.info("ERROR: Unable to Swap");
 						stuck++;
-						if (stuck > 3) {
+						if (stuck > tabuDuration) {
 							current.shift();
 						}
 					}
 				}
 			}
 
+			// Check for invalid solution
 			if (!current.getValid()) {
 				TestLogger.logger.info("Healing...Current: " + current.getObj());
 				current.healSol();
@@ -142,34 +150,22 @@ public class tabuSearch extends Metaheuristic {
 			} else {
 				bestNotUpdated++;
 			}
+			
+			// Print iteration details
 			TestLogger.logger.info(i + "- Cur: " + current.getObj() + " Best: " + best.getObj());
 			TestLogger.logger.info(current.getX().toString());
 			TestLogger.logger.info("Xsize: " + current.getXSize());
 
+			// Update time
 			end = System.nanoTime();
 		}
 	}
 
-
-
-	private void tabuShift(int i, int iteration) {
-		for (int j = 0; j < i; j++) {
-			makeTabu(i,j,iteration);
-		}
-		for (int j = i+1; j < n; j++) {
-			makeTabu(i,j,iteration);
-		}
-	}
-
+	/*
+	 * Set swapping indexes i and j tabu
+	 */
 	private void makeTabu(int i, int j, int iteration) {
 		tabuList[i][j] = iteration + tabuDuration;
 		tabuList[j][i] = iteration + tabuDuration;
 	}
-
-	//	public static void main(String[] args) {
-	//		Cubic c = new Cubic("problems/20_0.25_true_0");
-	//		CubicSol cs = new CubicSol("incumbents/20_0.25_true_0inc.txt");
-	//		tabuSearch ts = new tabuSearch(cs,-1,-1);
-	//		ts.run();
-	//	}
 }

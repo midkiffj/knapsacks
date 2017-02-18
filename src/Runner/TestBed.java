@@ -54,7 +54,7 @@ public class TestBed {
 	}
 
 	private static void mainMaxProb() {
-		//		genMaxProb();k
+		//		genMaxProb();
 		try {
 			//			runMaxProbMIP();
 			runMaxProb();

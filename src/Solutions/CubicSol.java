@@ -1,16 +1,9 @@
 package Solutions;
 
-
-
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
-import Heuristics.Metaheuristic;
 import Problems.Cubic;
-import Runner.RndGen;
 
 public class CubicSol extends KnapsackSol {
 

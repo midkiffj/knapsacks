@@ -9,7 +9,11 @@ import java.util.Random;
 import Problems.Cubic;
 import Problems.Unconstrained;
 
-
+/**
+ * Standard cubic MIP linearization modified for Unconstrained
+ * 
+ * @author midkiffj
+ */
 public class UnconstrainedStd {
 	static int n;
 	static Unconstrained u;
@@ -23,7 +27,7 @@ public class UnconstrainedStd {
 	static boolean exportLPs = true;
 
 	/**
-	 * Setup and run a tabu search algorithm on a cubic knapsack problem
+	 * Setup and run MIP
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -43,11 +47,14 @@ public class UnconstrainedStd {
 			cplex = new IloCplex();
 			addModel();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		}
 	}
 	
+	/*
+	 * Seed MIP with given solution
+	 */
 	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
 		// New solution to be passed in to MIP.
 		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
@@ -61,6 +68,9 @@ public class UnconstrainedStd {
 		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
+	/*
+	 * Add standard linearization model to cplex
+	 */
 	private static void addModel() throws IloException {
 		int i,j,k;
 		int n = u.getN();
@@ -71,7 +81,6 @@ public class UnconstrainedStd {
 		String[][][] yname = new String[n][n][n];
 		for (i = 0; i < n; i++) {
 			xname[i] = "x_"+i;
-			//			wname[i] = new String[n];
 			for (j = 0; j < n; j++) {
 				wname[i][j] = "w_"+i+","+j;
 				for (k = 0; k < n; k++) {
@@ -79,7 +88,6 @@ public class UnconstrainedStd {
 				}
 			}
 		}
-
 		x = cplex.numVarArray(n, 0, 1, IloNumVarType.Bool, xname);
 		w = new IloNumVar[n][];
 		y = new IloNumVar[n][n][];
@@ -108,19 +116,16 @@ public class UnconstrainedStd {
 
 		// W_ij constraints
 		for (i = 0; i < n; i++) {
-//			cplex.addEq(w[i][i], 0);
 			for (j = i+1; j < n; j++) {
 				cplex.addLe(w[i][j], x[i]);
 				cplex.addLe(w[i][j], x[j]);
 				cplex.addGe(cplex.sum(w[i][j], cplex.prod(-1,x[i]),cplex.prod(-1,x[j])),-1);
 				cplex.addGe(w[i][j], 0);
-//				cplex.addEq(w[i][j],w[j][i]);
 			}
 		}
 
 		// Y_ijk constraints
 		for (i = 0; i < n; i++) {
-			//			cplex.addEq(w[i][i], 0);
 			for (j = i+1; j < n; j++) {
 				for (k = j+1; k < n; k++) {
 					cplex.addLe(y[i][j][k], x[i]);
@@ -128,11 +133,6 @@ public class UnconstrainedStd {
 					cplex.addLe(y[i][j][k], x[k]);
 					cplex.addGe(cplex.sum(y[i][j][k], cplex.prod(-1,x[i]),cplex.prod(-1,x[j]),cplex.prod(-1, x[k])),-2);
 					cplex.addGe(y[i][j][k], 0);
-//										cplex.addEq(y[i][k][j], y[i][j][k]);
-//										cplex.addEq(y[j][k][i], y[i][j][k]);
-//										cplex.addEq(y[j][i][k], y[i][j][k]);
-//										cplex.addEq(y[k][i][j], y[i][j][k]);
-//										cplex.addEq(y[k][j][i], y[i][j][k]);
 				}	
 			}
 		}
@@ -142,6 +142,8 @@ public class UnconstrainedStd {
 			cplex.exportModel("uncStd.lp");
 		}
 
+		// Seed MIP
+		// TODO - Unconstrained has no constructive heuristic
 //		ArrayList<Integer> x = new ArrayList<Integer>();
 //		u.genInit(x, new ArrayList<Integer>());
 //		seedMIP(x);
@@ -158,12 +160,12 @@ public class UnconstrainedStd {
 		System.exit(0);
 	}
 
-	/**
-	 * Print the given xvals, wvals, and yvals
+	/*
+	 * Print the solution x values
 	 */
 	private static void prettyPrintInOrder() {
 		// Pretty Print solution once complete.
-		int i, j, k;
+		int i;
 		// Get x_ij values
 		double[] xvals = new double[n];
 		try {
@@ -174,41 +176,5 @@ public class UnconstrainedStd {
 		for (i = 0; i < n; i++) {
 			System.out.println("x_"+i+": " + xvals[i]);
 		}
-//		// Get w_ij values
-//		double[][] wvals = new double[n][n];
-//		for (i = 0; i < n; i++) {
-//			for (j = i+1; j < n; j++) {
-//				try {
-//					wvals[i][j] = cplex.getValue(w[i][j]);
-//				} catch (IloException e) {
-//					System.err.println("Error retrieving w values " + i + "," + j);
-//				}
-//			}
-//		}
-//		for (i = 0; i < n; i++) {
-//			for (j = i+1; j < n; j++) {
-//				System.out.println("w_"+i+","+j+": " + wvals[i][j]);
-//			}
-//		}
-//		// Get y_ijk values
-//		double[][][] yvals = new double[n][n][n];
-//		for (i = 0; i < n; i++) {
-//			for (j = i+1; j < n; j++) {
-//				for (k = j+1; k < n; k++) {
-//					try {
-//						yvals[i][j][k] = cplex.getValue(y[i][j][k]);
-//					} catch (IloException e) {
-//						System.err.println("Error retrieving w values " + i + "," + j);
-//					}
-//				}
-//			}
-//		}
-//		for (i = 0; i < n; i++) {
-//			for (j = i+1; j < n; j++) {
-//				for (k = j+1; k < n; k++) {
-//					System.out.println("y_"+i+","+j+","+k+": " + yvals[i][j][k]);
-//				}
-//			}
-//		}
 	}
 }

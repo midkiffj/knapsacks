@@ -8,6 +8,14 @@ import Solutions.ProblemSol;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Genetic Algorithm Implementation
+ * - Runs a specified problem in a population
+ * - Uses a 2-Tournament selection and 1-elitist strategy
+ * 
+ * @author midkiffj
+ *
+ */
 public class genAlgo extends Metaheuristic{
 
 	private ArrayList<ProblemSol> population;
@@ -16,25 +24,31 @@ public class genAlgo extends Metaheuristic{
 	private int numGens;
 	private long time;
 	
+	/*
+	 * Setup the parameters and initial population
+	 */
 	public genAlgo(ProblemSol ps, int numGens, long time) {
 		super(ps);
 		numZero = 0;
 		removeAttempts = n/5;
-
+		// Default small population size ensures enough solutions can be generated
 		int popSize = 10;
+		
+		// Set number of generations to run
 		if (numGens == -1) {
 			this.numGens = 50*popSize;
 		} else {
 			this.numGens = numGens;
 		}
 		
-		
+		// Set time to run
 		if (time == -1) {
 			this.time = 60000000000L*5;
 		} else {
 			this.time = time;
 		}
 
+		// Fill population with specified solution and random solutions
 		population = new ArrayList<ProblemSol>();
 		population.add(ps);
 		
@@ -49,6 +63,10 @@ public class genAlgo extends Metaheuristic{
 		Collections.sort(population);
 	}
 	
+	/*
+	 * Tracks time and generations ran
+	 * - Stores the best solution generated
+	 */
 	public void run() {
 		long start = System.nanoTime();
 		long end = start;
@@ -66,9 +84,14 @@ public class genAlgo extends Metaheuristic{
 		}
 	}
 
+	/*
+	 *  Update the population by 
+	 *  - generating new individuals 
+	 *  - adding non-duplicate solutions
+	 */
 	private void updatePopulation() {
 		ArrayList<ProblemSol> newPop = new ArrayList<ProblemSol>();
-		newPop.add(population.get(1));
+		// 1-elitist strategy
 		int elitist = 0;
 		for (int i = population.size()-1; i >= 0 && elitist < 1; i--) {
 			if (population.get(i).getValid()) {
@@ -76,19 +99,23 @@ public class genAlgo extends Metaheuristic{
 				elitist++;
 			}
 		}
+		// Check for invalid solutions
 		for (ProblemSol ps: newPop) {
 			if (!ps.getValid()) {
 				numZero++;
 			}
 		}
-		for (int i = 0; i < population.size()-2; i++) {
+		// Generate and add rest of population
+		for (int i = 0; i < population.size()-1; i++) {
 			boolean added = false;
 			int j = 0;
+			// Attempt to generate/add an individual
 			while (!added && j < 30) {
 				ProblemSol ps = generateIndividual();
 				added = tryAdd(newPop, ps);
 				j++;
 			}
+			// Otherwise, add a random solution
 			while (!added) {
 				ProblemSol ps = ProblemFactory.genRndSol();
 				added = tryAdd(newPop, ps);
@@ -100,18 +127,29 @@ public class genAlgo extends Metaheuristic{
 		removeAttempts = 0;
 	}
 
+	/*
+	 * Attempt to add the new solution to the population
+	 * - Avoid duplicates
+	 * - Avoid too many invalid solutions (if allowed)
+	*/ 
 	private boolean tryAdd(ArrayList<ProblemSol> newPop, ProblemSol ps) {
-//		if (!ps.getValid()) {
-//			ps.healSol();
-//		}
+		// Check for duplicate
 		if (newPop.contains(ps))  {
 			return false;
 		} else {
-			if (ps.getHealing() && !ps.getValid() && ps.getObj() != 0 && ps.getX().size() > 0 && numZero < 5) {
+			// Add only 4 invalid answers
+			if (ps.getHealing() && !ps.getValid() && ps.getX().size() > 0 && numZero < 4) {
 				newPop.add(ps);
 				numZero++;
 				return true;
-			} else if (ps.getValid() && ps.getX().size() > 0) {
+			} 
+			// If too many invalid answers, try healing and adding
+			else if (ps.getHealing() && !ps.getValid() && ps.getX().size() > 0 && numZero >= 4) {
+				ps.healSol();
+				return tryAdd(newPop,ps);
+			}
+			// If valid, add
+			else if (ps.getValid() && ps.getX().size() > 0) {
 				newPop.add(ps);
 				return true;
 			} else {
@@ -120,6 +158,9 @@ public class genAlgo extends Metaheuristic{
 		}
 	}
 
+	/*
+	 * Pretty Print generation
+	 */
 	private void printPopulation(int generation) {
 		TestLogger.logger.info("Generation " + generation + ":");
 		TestLogger.logger.info("  #   |    Population  Objective    | X array");
@@ -139,7 +180,7 @@ public class genAlgo extends Metaheuristic{
 		TestLogger.logger.info("\n");
 	}
 
-	/**
+	/*
 	 * Generate an individual using a crossover or mutation
 	 * @return the generated individual
 	 */
@@ -155,7 +196,7 @@ public class genAlgo extends Metaheuristic{
 		}
 	}
 
-	/**
+	/*
 	 * Two-individual tournament selection
 	 * @return the 'better' knapsack solution
 	 */
