@@ -2,6 +2,13 @@ package Constructive;
 
 import Solutions.ProblemSol;
 
+/**
+ * Super class for constructive heuristics.
+ * - Sub classes implement 'construct()'
+ * - Tracks and stores time + result
+ * 
+ * @author midkiffj
+ */
 public abstract class ConstHeuristic {
 
 	// Solution made by construction
@@ -10,7 +17,9 @@ public abstract class ConstHeuristic {
 	// Time to complete the construction
 	private long timeTaken;
 	
-	public ConstHeuristic() {}
+	public ConstHeuristic() {
+		timeTaken = -1;
+	}
 	
 	public ProblemSol getResult() {
 		return result;
@@ -20,7 +29,7 @@ public abstract class ConstHeuristic {
 		return timeTaken;
 	}
 	
-	// Time and store the result of the construction
+	// Time and store the result of the construction heuristic
 	public void run() {
 		long start = System.nanoTime();
 		result = construct();

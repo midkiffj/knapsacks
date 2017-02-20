@@ -9,11 +9,19 @@ import Runner.RndGen;
 import Solutions.CubicSol;
 import Solutions.ProblemSol;
 
+/**
+ * Greedy Heuristic + Fill Up N Exchange
+ * 
+ * @author midkiffj
+ */
 public class CubicGreedyFill extends ConstHeuristic {
 
 	private Cubic c;
 	private Random rnd = RndGen.getRnd();
 
+	/*
+	 * Specify problem to solve
+	 */
 	public CubicGreedyFill(Cubic c) {
 		this.c = c;
 	}
@@ -22,8 +30,11 @@ public class CubicGreedyFill extends ConstHeuristic {
 		return hybrid();
 	}	
 
-	// Compute a greedy algorithm until the knapsack constraint is feasible
-	// 	Then try to use the fill algorithm to improve it
+	/*
+	 * Compute a greedy algorithm until the knapsack constraint is feasible
+	 * Then try to use the fill algorithm to improve it
+	 * 
+	 */
 	private CubicSol hybrid() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		ArrayList<Integer> r = new ArrayList<Integer>();
@@ -50,8 +61,10 @@ public class CubicGreedyFill extends ConstHeuristic {
 		return fillUpNExchange(x,r,totalA);
 	}
 
-	// Complete bestImprovingSwaps or additions until no more items can be 
-	//	either swapped or shifted
+	/*
+	 *  Complete bestImprovingSwaps or additions until no more items can be 
+	 *  either swapped or shifted
+	 */	
 	private CubicSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r, int totalA) {
 		CubicSol current = new CubicSol(x,r);
 
@@ -87,7 +100,9 @@ public class CubicGreedyFill extends ConstHeuristic {
 		return current;
 	}
 
-	// Perform the best improving swap that keeps the knapsack feasible
+	/*
+	 *  Perform the best improving swap that keeps the knapsack feasible
+	 */
 	private void bestImprovingSwap(CubicSol current) {
 		// Store b
 		int b = c.getB();
@@ -109,11 +124,18 @@ public class CubicGreedyFill extends ConstHeuristic {
 				}
 			}
 		}
+		// Perform the best improving swap (if found)
 		if (bi != -1) {
 			current.swap(bObj,bi,bj);
 		}
 	}
 
+	/*
+	 * Compute an items ratio:
+	 * - Sum each item's current contribution to the objective
+	 * - Divide the contribution by the item's weight
+	 * Store the ratios in a list of ratioNodes
+	 */
 	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
 		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
 		// For each item
@@ -141,25 +163,35 @@ public class CubicGreedyFill extends ConstHeuristic {
 		Collections.sort(ratio);
 		return ratio;
 	}
-	
-	// Update the ratios by removing the item from the loss calculation
+
+	/*
+	 *  Update the ratios by removing the specified item from the ratio calculation
+	 *  for every other item
+	 */
 	private void updateRatio(ArrayList<Integer> x, ArrayList<ratioNode> ratio, int j) {
+		// For each item left
 		for (ratioNode rni: ratio) {
 			int i = rni.x;
+			// Get objective change
 			long objChange = rni.objChange;
+			// Subtract the contribution with the specified item
 			objChange -= c.getCij(i,j);
 			for (int k = 0; k < x.size(); k++) {
 				int xk = x.get(k);
 				objChange -= c.getDijk(i,j,xk);
 			}
+			// Recompute ratio and update node
 			double lossToWeight = (double)objChange / c.getA(i);
 			rni.ratio = lossToWeight;
 			rni.objChange = objChange;
 		}
+		// Sort ratios
 		Collections.sort(ratio);
 	}
 
-	// Class used to link items to ratios
+	/*
+	 *  Class used to store an items current objective contribution and ratio
+	 */
 	private class ratioNode implements Comparable<ratioNode>{
 		int x;
 		long objChange;

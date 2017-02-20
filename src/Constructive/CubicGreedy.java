@@ -7,10 +7,20 @@ import Problems.Cubic;
 import Solutions.CubicSol;
 import Solutions.ProblemSol;
 
+/**
+ * Greedy Heuristic to the Cubic Knapsack
+ * - Fills the knapsack with all items
+ * - Removes the item that best improves the objective
+ * 
+ * @author midkiffj
+ */
 public class CubicGreedy extends ConstHeuristic {
 
 	private Cubic c;
 	
+	/*
+	 *  Specify problem to solve
+	 */
 	public CubicGreedy(Cubic c) {
 		super();
 		this.c = c;
@@ -20,29 +30,11 @@ public class CubicGreedy extends ConstHeuristic {
 		return greedyHeuristic2();
 	}
 	
-	// Computes the min ratio each iteration (slow)
-	private CubicSol greedyHeuristic() {
-		ArrayList<Integer> x = new ArrayList<Integer>();
-		ArrayList<Integer> r = new ArrayList<Integer>();
-
-		int totalA = 0;
-		for (int i = 0; i < c.getN(); i++) {
-			x.add(i);
-			totalA += c.getA(i);
-		}
-
-		int b = c.getB();
-		while (totalA > b) {
-			int i = computeMinRatioI(x);
-			x.remove(Integer.valueOf(i));
-			r.add(i);
-			totalA -= c.getA(i);
-		}
-
-		return new CubicSol(x,r);
-	}
-	
-	// Updates the ratios at each iteration (faster)
+	/*
+	 * Creates a solution by:
+	 * - Adding all items to the knapsack
+	 * - Removes an item with the minimum 'ratio' until Ax <= b
+	 */
 	private CubicSol greedyHeuristic2() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		ArrayList<Integer> r = new ArrayList<Integer>();
@@ -68,27 +60,14 @@ public class CubicGreedy extends ConstHeuristic {
 		return new CubicSol(x,r);
 	}
 	
-	private int computeMinRatioI(ArrayList<Integer> x) {
-		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
-		for (Integer i: x) {
-			long objChange = c.getCi(i);
-			for (int j = 0; j < x.size(); j++) {
-				int xj = x.get(j);
-				objChange += c.getCij(i,xj);
-				for (int k = j+1; k < x.size(); k++) {
-					int xk = x.get(k);
-					objChange += c.getDijk(i,xj,xk);
-				}
-			}
-			double lossToWeight = (double)objChange / c.getA(i);
-			ratioNode rni = new ratioNode(i, lossToWeight);
-			ratio.add(rni);
-		}
-		Collections.sort(ratio);
-		return ratio.get(0).x;
-	}
-	
+	/*
+	 * Compute an items ratio:
+	 * - Sum each item's current contribution to the objective
+	 * - Divide the contribution by the item's weight
+	 * Store the ratios in a list of ratioNodes
+	 */
 	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
+		// List of ratios to return
 		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
 		// For each item
 		for (Integer i: x) {
@@ -116,24 +95,34 @@ public class CubicGreedy extends ConstHeuristic {
 		return ratio;
 	}
 	
-	// Update the ratios by removing the item from the loss calculation
+	/*
+	 *  Update the ratios by removing the specified item from the ratio calculation
+	 *  for every other item
+	 */
 	private void updateRatio(ArrayList<Integer> x, ArrayList<ratioNode> ratio, int j) {
+		// For each item left
 		for (ratioNode rni: ratio) {
 			int i = rni.x;
+			// Get objective change
 			long objChange = rni.objChange;
+			// Subtract the contribution with the specified item
 			objChange -= c.getCij(i,j);
 			for (int k = 0; k < x.size(); k++) {
 				int xk = x.get(k);
 				objChange -= c.getDijk(i,j,xk);
 			}
+			// Recompute ratio and update node
 			double lossToWeight = (double)objChange / c.getA(i);
 			rni.ratio = lossToWeight;
 			rni.objChange = objChange;
 		}
+		// Sort ratios
 		Collections.sort(ratio);
 	}
 	
-	// Class used to link items to ratios
+	/*
+	 *  Class used to store an items current objective contribution and ratio
+	 */
 	private class ratioNode implements Comparable<ratioNode>{
 		int x;
 		long objChange;

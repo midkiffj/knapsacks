@@ -6,6 +6,11 @@ import Problems.Cubic;
 import Solutions.CubicSol;
 import Solutions.ProblemSol;
 
+/**
+ * Implement the incumbent heuristic of Dantzig on the Cubic knapsack problem
+ * 
+ * @author midkiffj
+ */
 public class CubicIncumbent extends ConstHeuristic {
 
 	private Cubic c;
@@ -18,7 +23,7 @@ public class CubicIncumbent extends ConstHeuristic {
 		return genInit();
 	}
 	
-	/**
+	/*
 	 * Generate an initial incumbent solution by adding x's until knapsack full
 	 * and update the current objective value
 	 */
@@ -26,16 +31,17 @@ public class CubicIncumbent extends ConstHeuristic {
 		return genInit(new ArrayList<Integer>(),new ArrayList<Integer>(), new ArrayList<Integer>());
 	}
 
-	/**
+	/*
 	 * Generate a solution by adding x's until knapsack full
 	 * and update the current objective value. 
-	 * Don't use any indexes in the provided list.
+	 * Don't use any indexes in the provided list (d).
 	 */
 	public ProblemSol genInit(ArrayList<Integer> d, ArrayList<Integer> x, ArrayList<Integer> r) {
 		r.clear();
 		x.clear();
 		int totalAx = 0;
 		int i = 0;
+		// Create list of items that can be used
 		ArrayList<Integer> toUse = new ArrayList<Integer>();
 		for (int j = 0; j < c.getN(); j++) {
 			r.add(j);
@@ -44,7 +50,7 @@ public class CubicIncumbent extends ConstHeuristic {
 		toUse.removeAll(d);
 		boolean[] inX = new boolean[c.getN()];
 		boolean done = false;
-		// Fill the knapsack with the max ratio item
+		// Fill the knapsack with the max ratio item until the max-ratio item won't fit
 		while (totalAx <= c.getB() && !done) {
 			double maxRatio = -1*Double.MAX_VALUE;
 			i = -1;
@@ -74,6 +80,7 @@ public class CubicIncumbent extends ConstHeuristic {
 			int maxI = -1;
 			int maxJ = -1;
 			double maxChange = 0;
+			// Determine best swap
 			for(Integer xi: x) {
 				for(Integer xj: toUse) {
 					// Check for knapsack feasibility
@@ -88,10 +95,13 @@ public class CubicIncumbent extends ConstHeuristic {
 					}
 				}
 			}
+			// Determine shifts
 			double[] add = tryAdd(x,toUse, curObj, totalAx);
 			double[] sub = trySub(x,toUse, curObj, totalAx);
 			double addChange = add[0];
 			double subChange = sub[0];
+			
+			// If add is best, add an item
 			if (addChange > maxChange) {
 				int addI = (int)add[1];
 				x.add(addI);
@@ -99,17 +109,23 @@ public class CubicIncumbent extends ConstHeuristic {
 				toUse.remove(Integer.valueOf(addI));
 				curObj = curObj + add[0];
 				totalAx = c.addA(addI, totalAx);
-			} else if (subChange > maxChange) {
+			} 
+			// If sub is best, remove an item
+			else if (subChange > maxChange) {
 				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
 				toUse.add(subI);
 				curObj = curObj + sub[0];
 				totalAx = c.removeA(subI, totalAx);
-			} else {
+			} 
+			// Else, perform the best improving swap
+			else {
+				// If no improving swap, stop searching
 				if (maxI == -1 && maxJ == -1) {
 					swapping = false;
 				} else {
+					// Otherwise, apply swap
 					x.add(maxJ);
 					r.remove(Integer.valueOf(maxJ));
 					toUse.remove(Integer.valueOf(maxJ));
@@ -124,6 +140,10 @@ public class CubicIncumbent extends ConstHeuristic {
 		return new CubicSol(x,r,curObj,totalAx);
 	}
 	
+	/*
+	 * Calculate the change in objective 
+	 *  if item i is removed and item j is added to the solution curX
+	 */
 	private double swapObj(ArrayList<Integer> curX, double oldObj, int i, int j) {
 		oldObj = oldObj - c.getCi(i);
 		oldObj = oldObj + c.getCi(j);
@@ -144,11 +164,15 @@ public class CubicIncumbent extends ConstHeuristic {
 		return oldObj;
 	}
 
-	// Try to add a variable to the solution
+	/*
+	 * Try to add a variable to the solution, maintaining knapsack feasibility
+	 */
 	private double[] tryAdd(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
 		double maxChange = 0;
 		int maxI = -1;
+		// Check all possible shifts
 		for(Integer i: r) {
+			// Knapsack feasibility
 			if (totalA + c.getA(i) <= c.getB()) {
 				double obj = curObj + c.getCi(i);
 				for (int j = 0; j < curX.size(); j++) {
@@ -159,6 +183,7 @@ public class CubicIncumbent extends ConstHeuristic {
 						obj += c.getDijk(i,xj,xk);
 					}
 				}
+				// Track best improving addition
 				double change = obj - curObj;
 				if (change > maxChange) {
 					maxChange = change;
@@ -170,9 +195,13 @@ public class CubicIncumbent extends ConstHeuristic {
 		return result;
 	}
 
+	/*
+	 * Try to remove a variable to the solution, maintaining knapsack feasibility
+	 */
 	private double[] trySub(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
 		double maxChange = 0;
 		int maxI = -1;
+		// Check all possible removals
 		for(Integer i: curX) {
 			double obj = curObj - c.getCi(i);
 			for (int j = 0; j < curX.size(); j++) {
@@ -183,6 +212,7 @@ public class CubicIncumbent extends ConstHeuristic {
 					obj -= c.getDijk(i,xj,xk);
 				}
 			}
+			// Track best improving removal
 			double change = obj - curObj;
 			if (change > maxChange) {
 				maxChange = change;

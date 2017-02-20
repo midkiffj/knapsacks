@@ -8,11 +8,20 @@ import Runner.RndGen;
 import Solutions.CubicSol;
 import Solutions.ProblemSol;
 
+/**
+ * Fill Up and Exchange Heuristic for the Cubic Knapsack
+ * (does what the name implies)
+ * 
+ * @author midkiffj
+ */
 public class CubicFillUp extends ConstHeuristic {
 
 	private Cubic c;
 	private Random rnd = RndGen.getRnd();
 
+	/*
+	 *  Specify problem to create solution
+	 */
 	public CubicFillUp(Cubic c) {
 		super();
 		this.c = c;
@@ -22,6 +31,9 @@ public class CubicFillUp extends ConstHeuristic {
 		return fillUpNExchange();
 	}
 
+	/*
+	 *  Create lists to store solution and call sub-method
+	 */
 	private CubicSol fillUpNExchange() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		ArrayList<Integer> r = new ArrayList<Integer>();
@@ -33,8 +45,10 @@ public class CubicFillUp extends ConstHeuristic {
 		return fillUpNExchange(x,r,totalA);
 	}
 
-	// Complete bestImprovingSwaps or additions until no more items can be 
-	//	either swapped or shifted
+	/* 
+	 * Complete bestImprovingSwaps or additions until no more items can be 
+	 *	either swapped or added
+	 */
 	private CubicSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r, int totalA) {
 		CubicSol current = new CubicSol(x,r);
 
@@ -42,7 +56,7 @@ public class CubicFillUp extends ConstHeuristic {
 		double curObj = current.getObj();
 		while (!done) {
 			boolean swap = false;
-			// Perform an operation
+			// Perform an operation (50/50 swap or shift)
 			if (rnd.nextDouble() < 0.5) {
 				bestImprovingSwap(current);
 				swap = true;
@@ -70,11 +84,14 @@ public class CubicFillUp extends ConstHeuristic {
 		return current;
 	}
 
-	// Perform the best improving swap that keeps the knapsack feasible
+	/*
+	 *  Perform the best improving swap that keeps the knapsack feasible
+	 */
 	private void bestImprovingSwap(CubicSol current) {
-		// Store b
+		// Get b
 		int b = c.getB();
 		int curTotalA = current.getTotalA();
+		
 		// Store best swaps
 		int bi = -1;
 		int bj = -1;
@@ -92,6 +109,8 @@ public class CubicFillUp extends ConstHeuristic {
 				}
 			}
 		}
+		
+		// Swap the best improving swap (if found)
 		if (bi != -1) {
 			current.swap(bObj,bi,bj);
 		}

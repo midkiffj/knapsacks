@@ -54,3 +54,5 @@ bin
 # Extra files
 *.lp
 *.csv
+*.log
+*.lck
