@@ -18,8 +18,8 @@ public class FractionalSol extends ProblemSol {
 	private boolean[] xVals;
 	private boolean valid;
 	private double obj;
-	private double num;
-	private double den;
+	private long[] num;
+	private long[] den;
 	private int totalA;
 
 	private int b;
@@ -75,7 +75,7 @@ public class FractionalSol extends ProblemSol {
 		updateB();
 	}
 
-	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, double num, double den) {
+	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, long[] num, long[] den) {
 		super();
 		f = (Fractional)p;
 		xVals = new boolean[p.getN()];
@@ -160,11 +160,11 @@ public class FractionalSol extends ProblemSol {
 		return obj;
 	}
 
-	public double getNum() {
+	public long[] getNum() {
 		return num;
 	}
 
-	public double getDen() {
+	public long[] getDen() {
 		return den;
 	}
 
@@ -261,9 +261,16 @@ public class FractionalSol extends ProblemSol {
 	}
 
 	private double swapObj(int i, int j) {
-		double num = f.swapNum(i, j, this.num);
-		double den = f.swapDen(i, j, this.den);
-		return num/den;
+		long[] num = f.swapNum(i, j, this.num);
+		long[] den = f.swapDen(i, j, this.den);
+		double newObj = 0;
+		for (int k = 0; k < f.getM(); k++) {
+			if (den[k] == 0) {
+				return Double.NEGATIVE_INFINITY;
+			}
+			newObj += (double)(num[k])/den[k];
+		}
+		return newObj;
 	}
 
 	public double[][] tabuMutate(int iteration, int[][] tabuList) {
@@ -774,8 +781,8 @@ public class FractionalSol extends ProblemSol {
 	public void healSolImproving() {
 		int totalA = this.getTotalA();
 		double obj = this.getObj();
-		double num = this.num;
-		double den = this.den;
+		long[] num = this.num;
+		long[] den = this.den;
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
 			int maxI = -1;
@@ -807,8 +814,8 @@ public class FractionalSol extends ProblemSol {
 	public void healSolRatio() {
 		int totalA = this.getTotalA();
 		double obj = this.getObj();
-		double num = this.num;
-		double den = this.den;
+		long[] num = this.num;
+		long[] den = this.den;
 		while(!this.getValid()) {
 			int j = minRatio(0);
 			int k = 1;
@@ -865,9 +872,16 @@ public class FractionalSol extends ProblemSol {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
 			pw.write(obj + "\n");
-			pw.write(num + "\n");
-			pw.write(den + "\n");
 			pw.write(totalA + "\n");
+			for (int i = 0; i < f.getM(); i++) {
+				pw.write(num[i] + " ");
+			}
+			pw.write("\n");
+			for (int i = 0; i < f.getM(); i++) {
+				pw.write(den[i] + " ");
+			}
+			pw.write("\n");
+			
 			for (Integer i: x) {
 				pw.write(i + " ");
 			}
@@ -883,9 +897,15 @@ public class FractionalSol extends ProblemSol {
 			scr = new Scanner(new FileInputStream(filename));
 
 			double readObj = scr.nextDouble();
-			double readNum = scr.nextDouble();
-			double readDen = scr.nextDouble();
 			int readTotalA = scr.nextInt();
+			long[] readNum = new long[f.getM()];
+			long[] readDen = new long[f.getM()];
+			for (int i = 0; i < f.getM(); i++) {
+				readNum[i] = scr.nextLong();
+			}
+			for (int i = 0; i < f.getM(); i++) {
+				readDen[i] = scr.nextLong();
+			}
 			if (readObj != -1) {
 				x = new ArrayList<Integer>();
 				while (scr.hasNextInt()) {

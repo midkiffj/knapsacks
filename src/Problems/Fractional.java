@@ -20,16 +20,17 @@ public class Fractional extends Problem {
 	private boolean negCoef;
 
 	// Coefficient vars
+	private int m;
 	private int b;
 	private int[] a;
-	private int[] c;
-	private int[] d;
-	private int numConst;
-	private int denConst;
+	private int[][] c;
+	private int[][] d;
+	private int[] numConst;
+	private int[] denConst;
 
 	// Obj values
-	private double num;
-	private double den;
+	private long[] num;
+	private long[] den;
 	// Manipulation
 	private double[] tau;
 	private double[] ratio;
@@ -41,12 +42,13 @@ public class Fractional extends Problem {
 	}
 
 	public Fractional(int n, boolean negCoef) {
-		this(n,negCoef,1234);
+		this(n,1,negCoef,1234);
 	}
 
-	public Fractional(int n, boolean negCoef, int seed) {
+	public Fractional(int n, int m, boolean negCoef, int seed) {
 		super();
 		this.n = n;
+		this.m = m;
 		this.negCoef = negCoef;
 		this.rnd = new Random(seed);
 		this.seed = seed;
@@ -55,37 +57,46 @@ public class Fractional extends Problem {
 
 	private void setup() {
 		a = new int[n];
-		c = new int[n];
-		d = new int[n];
+		c = new int[m][n];
+		d = new int[m][n];
+		numConst = new int[m];
+		denConst = new int[m];
 		tau = new double[n];
 		ratio = new double[n];
-		int totalC = 0;
-		int totalD = 0;
-		boolean sat = false;
-		while (!sat) {
-			for (int i = 0; i < n; i++) {
-				a[i] = rnd.nextInt(9) + 1;
-				if (negCoef) {
-					c[i] = rnd.nextInt(21) - 10;
-					d[i] = rnd.nextInt(21) - 10;
-				} else {
-					c[i] = rnd.nextInt(11);
-					d[i] = rnd.nextInt(11);
+		for (int i = 0; i < m; i++) {
+			numConst[i] = rnd.nextInt(10) + 1;
+			denConst[i] = rnd.nextInt(10) + 1;
+			int totalC = numConst[i];
+			int totalD = denConst[i];
+			boolean sat = false;
+			while (!sat) {
+				for (int j = 0; j < n; j++) {
+					if (negCoef) {
+						c[i][j] = rnd.nextInt(21) - 10;
+						d[i][j] = rnd.nextInt(21) - 10;
+					} else {
+						c[i][j] = rnd.nextInt(11);
+						d[i][j] = rnd.nextInt(11);
+					}
+					totalC += c[i][j];
+					totalD += d[i][j];
 				}
-				totalC += c[i];
-				totalD += d[i];
-				tau[i] = (double)(c[i]) / d[i];
-				ratio[i] = tau[i] / a[i];
+				if (totalC != 0 && totalD != 0) {
+					sat = true;
+				} else {
+					totalC = numConst[i];
+					totalD = denConst[i];
+				}
 			}
-			if (totalC != 0 && totalD != 0) {
-				sat = true;
-			} else {
-				totalC = 0;
-				totalD = 0;
-			}
+			
 		}
-		numConst = rnd.nextInt(10) + 1;
-		denConst = rnd.nextInt(10) + 1;
+		for (int i = 0; i < n; i++) {
+			a[i] = rnd.nextInt(9) + 1;
+			for (int j = 0; j < m; j++) {
+				tau[i] += (double)(c[j][i])/d[j][i];
+			}
+			ratio[i] = tau[i] / a[i];
+		}
 		b = 100;
 	}
 
@@ -198,7 +209,11 @@ public class Fractional extends Problem {
 			return fail;
 		}
 		double change = subObj(minI, x, num, den);
-		if (change > num/den) {
+		double curObj = 0;
+		for (int j = 0; j < m; j++) {
+			curObj += (double)(num[j])/den[j];
+		}
+		if (change > curObj) {
 			double[] success = {minI, change};
 			return success;
 		} else {
@@ -230,7 +245,11 @@ public class Fractional extends Problem {
 			return fail;
 		}
 		double change = addObj(maxI, x, num, den);
-		if (change > 0) {
+		double curObj = 0;
+		for (int j = 0; j < m; j++) {
+			curObj += (double)(num[j])/den[j];
+		}
+		if (change > curObj) {
 			double[] add = {maxI, change};
 			return add;
 		} else {
@@ -337,18 +356,23 @@ public class Fractional extends Problem {
 		}
 	}
 
-	public double subObj(int i, ArrayList<Integer> x, double num,
-			double den) {
-		num -= c[i];
-		den -= d[i];
-		if (den == 0) {
-			return -1*Double.MAX_VALUE;
+	public double subObj(int i, ArrayList<Integer> x, long[] num,
+			long[] den) {
+		double obj = 0;
+		for (int j = 0; j < m; j++) {
+			num[j] -= c[j][i];
+			den[j] -= d[j][i];
+			if (den[j] == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			obj += num[j]/den[j];
 		}
-		return num/den;
+		
+		return obj;
 	}
 
 	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
-			boolean improveOnly, double num, double den) {
+			boolean improveOnly, long[] num, long[] den) {
 		if (r.size() < 1) {
 			return -1;
 		}
@@ -381,7 +405,7 @@ public class Fractional extends Problem {
 		}
 	}
 
-	public int trySub(ArrayList<Integer> x, boolean improveOnly, double num, double den) {
+	public int trySub(ArrayList<Integer> x, boolean improveOnly, long[] num, long[] den) {
 		if (x.size() <= 1) {
 			return -1;
 		}
@@ -410,14 +434,19 @@ public class Fractional extends Problem {
 		}
 	}
 
-	public double addObj(int i, ArrayList<Integer> x, double num,
-			double den) {
-		num += c[i];
-		den += d[i];
-		if (den == 0) {
-			return -1*Double.MAX_VALUE;
+	public double addObj(int i, ArrayList<Integer> x, long[] num,
+			long[] den) {
+		double obj = 0;
+		for (int j = 0; j < m; j++) {
+			num[j] += c[j][i];
+			den[j] += d[j][i];
+			if (den[j] == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			obj += num[j]/den[j];
 		}
-		return num/den;
+		
+		return obj;
 	}
 
 	@Override
@@ -461,67 +490,101 @@ public class Fractional extends Problem {
 			return 0;
 		}
 		if (setNumDen) {
-			num = numConst;
-			den = denConst;
+			double newObj = 0;
+			num = new long[m];
+			den = new long[m];
+			for (int i = 0; i < m; i++) {
+				num[i] += numConst[i];
+				den[i] += denConst[i];
 
-			for (int i: x) {
-				num += c[i];
-				den += d[i];
+				for (int j: x) {
+					num[i] += c[i][j];
+					den[i] += d[i][j];
+				}
+				if (den[i] == 0) {
+					return -1*Double.MAX_VALUE;
+				}
+				newObj += (double)(num[i])/den[i];
 			}
-			if (den == 0) {
-				return -1*Double.MAX_VALUE;
-			}
-			return num/den;
+			return newObj;
 		} else {
-			double num = numConst;
-			double den = denConst;
+			long[] num = new long[m];
+			long[] den = new long[m];
+			double newObj = 0;
+			for (int i = 0; i < m; i++) {
+				num[i] += numConst[i];
+				den[i] += denConst[i];
 
-			for (int i: x) {
-				num += c[i];
-				den += d[i];
+				for (int j: x) {
+					num[i] += c[i][j];
+					den[i] += d[i][j];
+				}
+				if (den[i] == 0) {
+					return -1*Double.MAX_VALUE;
+				}
+				newObj += (double)(num[i])/den[i];
 			}
-			if (den == 0) {
-				return -1*Double.MAX_VALUE;
-			}
-			return num/den;
+			return newObj;
 		}
 	}
 
-	public double getNum() {
+	public long[] getNum() {
 		return num;
 	}
 
-	public double swapNum(int i, int j, double num) {
-		return num + c[j] - c[i];
+	public long[] swapNum(int i, int j, long[] num) {
+		for (int k = 0; k < m; k++) {
+			num[k] = num[k] + c[k][j] - c[k][i];
+		}
+		return num;
 	}
 
-	public double subNum(int i, double num) {
-		return num - c[i];
+	public long[] subNum(int i, long[] num) {
+		for (int k = 0; k < m; k++) {
+			num[k] = num[k] - c[k][i];
+		}
+		return num;
 	}
 
-	public double addNum(int i, double num) {
-		return num + c[i];
+	public long[] addNum(int i, long[] num) {
+		for (int k = 0; k < m; k++) {
+			num[k] = num[k] + c[k][i];
+		}
+		return num;
 	}
 
-	public double getDen() {
+	public long[] getDen() {
 		return den;
 	}
 
-	public double swapDen(int i, int j, double den) {
-		return den + d[j] - d[i];
+	public long[] swapDen(int i, int j, long[] den) {
+		for (int k = 0; k < m; k++) {
+			den[k] = den[k] + d[k][j] - d[k][i];
+		}
+		return den;
 	}
 
-	public double subDen(int i, double den) {
-		return den - d[i];
+	public long[] subDen(int i, long[] den) {
+		for (int k = 0; k < m; k++) {
+			den[k] = den[k] - d[k][i];
+		}
+		return den;
 	}
 
-	public double addDen(int i, double den) {
-		return den + d[i];
+	public long[] addDen(int i, long[] den) {
+		for (int k = 0; k < m; k++) {
+			den[k] = den[k] + d[k][i];
+		}
+		return den;
 	}
 
 	@Override
 	public int getN() {
 		return n;
+	}
+	
+	public int getM() {
+		return m;
 	}
 
 	public int getB() {
@@ -532,12 +595,20 @@ public class Fractional extends Problem {
 		return a[i];
 	}
 
-	public int getC(int i) {
-		return c[i];
+	public int getC(int m,int i) {
+		return c[m][i];
 	}
 
-	public int getD(int i) {
-		return d[i];
+	public int getD(int m, int i) {
+		return d[m][i];
+	}
+	
+	public int getNumConst(int i) {
+		return numConst[i];
+	}
+	
+	public int getDenConst(int i) {
+		return denConst[i];
 	}
 
 	public double getRatio(int i) {
@@ -562,14 +633,20 @@ public class Fractional extends Problem {
 			seed = scr.nextInt();
 			rnd = new Random(seed);
 			negCoef = scr.nextBoolean();
+			m = scr.nextInt();
 			b = scr.nextInt();
-			numConst = scr.nextInt();
-			denConst = scr.nextInt();
 			scr.nextLine();
-
 			a = readArr(scr);
-			c = readArr(scr);
-			d = readArr(scr);
+			numConst = readArr(scr);
+			denConst = readArr(scr);
+			c = new int[m][n];
+			d = new int[m][n];
+			for (int i = 0; i < m; i++) {
+				c[i] = readArr(scr);
+			}
+			for (int i = 0; i < m; i++) {
+				d[i] = readArr(scr);
+			}
 
 		} catch (FileNotFoundException e) {
 			System.err.println("Error finding file: " + filename);
@@ -581,7 +658,9 @@ public class Fractional extends Problem {
 		tau = new double[n];
 		ratio = new double[n];
 		for (int i = 0; i < n; i++) {
-			tau[i] = (double)(c[i]) / d[i];
+			for (int j = 0; j < m; j++) {
+				tau[i] += (double)(c[j][i])/d[j][i];
+			}
 			ratio[i] = tau[i] / a[i];
 		}
 	}
@@ -602,12 +681,18 @@ public class Fractional extends Problem {
 			pw.write(n + "\n");
 			pw.write(seed + "\n");
 			pw.write(negCoef + "\n");
+			pw.write(m + "\n");
 			pw.write(b + "\n");
-			pw.write(numConst + "\n");
-			pw.write(denConst + "\n");
 			writeArr(pw, a);
-			writeArr(pw, c);
-			writeArr(pw, d);
+			writeArr(pw,numConst);
+			writeArr(pw,denConst);
+			for (int i = 0; i < m; i++) {
+				writeArr(pw, c[i]);
+			}
+			for (int i = 0; i < m; i++) {
+				writeArr(pw, d[i]);
+			}
+			
 
 			pw.close();
 		} catch (FileNotFoundException e) {
@@ -621,22 +706,5 @@ public class Fractional extends Problem {
 			pw.write(arr[i] + " ");
 		}
 		pw.write(arr[arr.length-1] + "\n");
-	}
-
-	public static void main(String[] args) {
-		int[] probSizes = {10, 20, 30, 50, 100, 200};
-		for (int p = 0; p < probSizes.length; p++) {
-			int n = probSizes[p];
-			for (int i = 0; i < 10; i++) {
-				Fractional f = new Fractional(n,false,p+n+i);
-				FractionalSol fs = new FractionalSol();
-				System.err.println(fs.getX().toString());
-				System.err.println(fs.getObj());
-				System.err.println(fs.getValid());
-				if (!fs.getValid()) {
-					System.err.println("@@@@@@@@@@@@@@@");
-				}
-			}
-		}
 	}
 }
