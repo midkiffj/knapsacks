@@ -25,7 +25,7 @@ public class CubicStd {
 	
 	static boolean exportLPs = true;
 
-	/**
+	/*
 	 * Setup and run MIP on a Cubic
 	 * @param args
 	 */
@@ -45,6 +45,9 @@ public class CubicStd {
 		}
 	}
 	
+	/*
+	 * Create an MIP start from the given solution
+	 */
 	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
 		// New solution to be passed in to MIP.
 		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
@@ -58,6 +61,9 @@ public class CubicStd {
 		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
+	/*
+	 * Add the model to cplex and solve
+	 */
 	private static void addModel() throws IloException {
 		int i,j,k;
 		int n = c.getN();
@@ -151,7 +157,7 @@ public class CubicStd {
 		System.exit(0);
 	}
 
-	/**
+	/*
 	 * Print the given xvals, wvals, and yvals
 	 */
 	private static void prettyPrintInOrder() {

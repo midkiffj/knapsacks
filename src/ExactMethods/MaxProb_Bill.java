@@ -187,6 +187,7 @@ public class MaxProb_Bill {
 		cplex.exportModel("maxProbBill.lp");
 
 		// Solve and print solution
+		cplex.setParam(IloCplex.DoubleParam.TiLim, 300);
 		cplex.solve();
 		
 		bestObj = cplex.getObjValue();

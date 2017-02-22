@@ -96,7 +96,7 @@ public class Fractional extends Problem {
 		for (int i = 0; i < n; i++) {
 			a[i] = rnd.nextInt(9) + 1;
 			for (int j = 0; j < m; j++) {
-				tau[i] += (double)(c[j][i])/d[j][i];
+				tau[i] += (double)(c[j][i]*1000)/d[j][i];
 			}
 			ratio[i] = tau[i] / a[i];
 		}
@@ -617,7 +617,7 @@ public class Fractional extends Problem {
 		ratio = new double[n];
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < m; j++) {
-				tau[i] += (double)(c[j][i])/d[j][i];
+				tau[i] += (double)(c[j][i]*1000)/d[j][i];
 			}
 			ratio[i] = tau[i] / a[i];
 		}
