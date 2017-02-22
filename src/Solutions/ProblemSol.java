@@ -76,6 +76,8 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 			return new UnconstrainedSol((UnconstrainedSol)ps);
 		} else if (ps instanceof MaxProbabilitySol) {
 			return new MaxProbabilitySol((MaxProbabilitySol)ps);
+		} else if (ps instanceof FractionalSol) {
+			return new FractionalSol((FractionalSol)ps);
 		}
 		return null;
 	}

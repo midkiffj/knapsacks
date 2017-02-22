@@ -71,13 +71,16 @@ public class Fractional extends Problem {
 			boolean sat = false;
 			while (!sat) {
 				for (int j = 0; j < n; j++) {
-					if (negCoef) {
-						c[i][j] = rnd.nextInt(21) - 10;
-						d[i][j] = rnd.nextInt(21) - 10;
-					} else {
-						c[i][j] = rnd.nextInt(11);
-						d[i][j] = rnd.nextInt(11);
-					}
+						c[i][j] = rnd.nextInt(10)+1;
+						d[i][j] = rnd.nextInt(10)+1;
+						if (negCoef) {
+							if (rnd.nextBoolean()) {
+								c[i][j] = c[i][j]*-1;
+							}
+							if (rnd.nextBoolean()) {
+								d[i][j] = d[i][j]*-1;
+							}
+						}
 					totalC += c[i][j];
 					totalD += d[i][j];
 				}
@@ -295,77 +298,21 @@ public class Fractional extends Problem {
 	@Override
 	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
 		System.err.println("Used unimplemented f.trySub(x,boolean)");
-		if (x.size() <= 1) {
-			return -1;
-		}
-		double minRatio = Double.MAX_VALUE;
-		int minI = -1;
-		for (Integer i: x) {
-			double ratio = this.getRatio(i);
-			if (ratio < minRatio) {
-				minRatio = ratio;
-				minI = i;
-			}
-		}
-
-		if (minI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = subObj(minI, x, 0);
-			if (change > 0) {
-				return minI;
-			} else {
-				return -1;
-			}
-		} else {
-			return minI;
-		}
+		return -1;
 	}
 
 	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
 		System.err.println("Used unimplemented f.tryAdd(totalA,x,r,boolean)");
-		if (x.size() == this.getN()) {
-			return -1;
-		}
-		int b = this.getB();
-		double maxRatio = Double.MIN_VALUE;
-		int maxI = -1;
-		for (Integer i: r) {
-			if (totalA + this.getA(i) <= b) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
-					maxI = i;
-				}
-			}
-		}
-
-		if (maxI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = addObj(maxI, x, 0);
-			if (change > 0) {
-				return maxI;
-			} else {
-				return -1;
-			}
-		} else {
-			return maxI;
-		}
+		return -1;
 	}
 
-	public double subObj(int i, ArrayList<Integer> x, long[] num,
-			long[] den) {
+	public double subObj(int i, ArrayList<Integer> x, long[] num, long[] den) {
 		double obj = 0;
 		for (int j = 0; j < m; j++) {
-			num[j] -= c[j][i];
-			den[j] -= d[j][i];
-			if (den[j] == 0) {
+			if (den[j]-d[j][i] == 0) {
 				return -1*Double.MAX_VALUE;
 			}
-			obj += num[j]/den[j];
+			obj += (double)(num[j]-c[j][i])/(den[j]-d[j][i]);
 		}
 		
 		return obj;
@@ -395,7 +342,11 @@ public class Fractional extends Problem {
 		}
 		if (improveOnly) {
 			double change = addObj(maxI, x, num, den);
-			if (change > 0) {
+			double curObj = 0;
+			for (int j = 0; j < m; j++) {
+				curObj += (double)(num[j])/den[j];
+			}
+			if (change > curObj) {
 				return maxI;
 			} else {
 				return -1;
@@ -424,7 +375,11 @@ public class Fractional extends Problem {
 		}
 		if (improveOnly) {
 			double change = subObj(minI, x, num, den);
-			if (change > 0) {
+			double curObj = 0;
+			for (int j = 0; j < m; j++) {
+				curObj += (double)(num[j])/den[j];
+			}
+			if (change > curObj) {
 				return minI;
 			} else {
 				return -1;
@@ -434,16 +389,13 @@ public class Fractional extends Problem {
 		}
 	}
 
-	public double addObj(int i, ArrayList<Integer> x, long[] num,
-			long[] den) {
+	public double addObj(int i, ArrayList<Integer> x, long[] num, long[] den) {
 		double obj = 0;
 		for (int j = 0; j < m; j++) {
-			num[j] += c[j][i];
-			den[j] += d[j][i];
-			if (den[j] == 0) {
+			if (den[j]+d[j][i] == 0) {
 				return -1*Double.MAX_VALUE;
 			}
-			obj += num[j]/den[j];
+			obj += (double)(num[j]+c[j][i])/(den[j]+d[j][i]);
 		}
 		
 		return obj;
@@ -533,24 +485,27 @@ public class Fractional extends Problem {
 	}
 
 	public long[] swapNum(int i, int j, long[] num) {
+		long[] newNum = new long[num.length];
 		for (int k = 0; k < m; k++) {
-			num[k] = num[k] + c[k][j] - c[k][i];
+			newNum[k] = num[k] + c[k][j] - c[k][i];
 		}
-		return num;
+		return newNum;
 	}
 
 	public long[] subNum(int i, long[] num) {
+		long[] newNum = new long[num.length];
 		for (int k = 0; k < m; k++) {
-			num[k] = num[k] - c[k][i];
+			newNum[k] = num[k] - c[k][i];
 		}
-		return num;
+		return newNum;
 	}
 
 	public long[] addNum(int i, long[] num) {
+		long[] newNum = new long[num.length];
 		for (int k = 0; k < m; k++) {
-			num[k] = num[k] + c[k][i];
+			newNum[k] = num[k] + c[k][i];
 		}
-		return num;
+		return newNum;
 	}
 
 	public long[] getDen() {
@@ -558,24 +513,27 @@ public class Fractional extends Problem {
 	}
 
 	public long[] swapDen(int i, int j, long[] den) {
+		long[] newDen = new long[den.length];
 		for (int k = 0; k < m; k++) {
-			den[k] = den[k] + d[k][j] - d[k][i];
+			newDen[k] = den[k] + d[k][j] - d[k][i];
 		}
-		return den;
+		return newDen;
 	}
 
 	public long[] subDen(int i, long[] den) {
+		long[] newDen = new long[den.length];
 		for (int k = 0; k < m; k++) {
-			den[k] = den[k] - d[k][i];
+			newDen[k] = den[k] - d[k][i];
 		}
-		return den;
+		return newDen;
 	}
 
 	public long[] addDen(int i, long[] den) {
+		long[] newDen = new long[den.length];
 		for (int k = 0; k < m; k++) {
-			den[k] = den[k] + d[k][i];
+			newDen[k] = den[k] + d[k][i];
 		}
-		return den;
+		return newDen;
 	}
 
 	@Override

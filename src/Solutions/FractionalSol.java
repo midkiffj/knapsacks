@@ -35,8 +35,14 @@ public class FractionalSol extends ProblemSol {
 			xVals[i] = true;
 		}
 		obj = f.getObj(x);
-		num = f.getNum();
-		den = f.getDen();
+		long[] fNum = f.getNum();
+		long[] fDen = f.getDen();
+		num = new long[f.getM()];
+		den = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
+			num[i] = fNum[i];
+			den[i] = fDen[i];
+		}
 		calcTotalA();
 		updateValid();
 		updateB();
@@ -69,8 +75,14 @@ public class FractionalSol extends ProblemSol {
 		}
 		obj = fs.getObj();
 		totalA = fs.getTotalA();
-		num = fs.getNum();
-		den = fs.getDen();
+		long[] fNum = fs.getNum();
+		long[] fDen = fs.getDen();
+		num = new long[f.getM()];
+		den = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
+			num[i] = fNum[i];
+			den[i] = fDen[i];
+		}
 		updateValid();
 		updateB();
 	}
@@ -86,8 +98,12 @@ public class FractionalSol extends ProblemSol {
 		}
 		this.obj = obj;
 		calcTotalA();
-		this.num = num;
-		this.den = den;
+		this.num = new long[f.getM()];
+		this.den = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
+			this.num[i] = num[i];
+			this.den[i] = den[i];
+		}
 		updateValid();
 		updateB();
 	}
@@ -107,8 +123,14 @@ public class FractionalSol extends ProblemSol {
 		}
 		obj = f.getObj(x);
 		calcTotalA();
-		this.num = f.getNum();
-		this.den = f.getDen();
+		long[] fNum = f.getNum();
+		long[] fDen = f.getDen();
+		num = new long[f.getM()];
+		den = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
+			num[i] = fNum[i];
+			den[i] = fDen[i];
+		}
 		updateValid();
 		updateB();
 	}
@@ -124,8 +146,14 @@ public class FractionalSol extends ProblemSol {
 		}
 		this.obj = f.getObj(x);
 		calcTotalA();
-		this.num = f.getNum();
-		this.den = f.getDen();
+		long[] fNum = f.getNum();
+		long[] fDen = f.getDen();
+		num = new long[f.getM()];
+		den = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
+			num[i] = fNum[i];
+			den[i] = fDen[i];
+		}
 		updateValid();
 		updateB();
 	}
@@ -341,7 +369,6 @@ public class FractionalSol extends ProblemSol {
 		ArrayList<Integer> r = new ArrayList<Integer>();
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		int newTotalA = 0;
-		int newTotalU = 0;
 		for (int i = 0; i < n; i++) {
 			if (this.getXVals(i) == mps2.getXVals(i)) {
 				newXVals[i] = this.getXVals(i);
@@ -773,16 +800,15 @@ public class FractionalSol extends ProblemSol {
 
 	@Override
 	public void healSol() {
-		//		healSolImproving();
-		healSolRatio();
+		System.err.println("Healing Unimplemented");
+		//	healSolImproving();
+		//	healSolRatio();
 	}
 
 	// most improving
-	public void healSolImproving() {
+	private void healSolImproving() {
 		int totalA = this.getTotalA();
 		double obj = this.getObj();
-		long[] num = this.num;
-		long[] den = this.den;
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
 			int maxI = -1;
@@ -801,8 +827,8 @@ public class FractionalSol extends ProblemSol {
 				totalA = p.removeA(maxI, totalA);
 				this.totalA = totalA;
 				this.obj = obj;
-				this.num = f.subNum(maxI,num);
-				this.den = f.subDen(maxI, den);
+				this.num = f.subNum(maxI, this.num);
+				this.den = f.subDen(maxI, this.den);
 			} else {
 				System.err.println("Couldn't find an improving objective!!!");
 				System.exit(-1);
@@ -811,11 +837,9 @@ public class FractionalSol extends ProblemSol {
 	}
 
 	//min ratio healing
-	public void healSolRatio() {
+	private void healSolRatio() {
 		int totalA = this.getTotalA();
 		double obj = this.getObj();
-		long[] num = this.num;
-		long[] den = this.den;
 		while(!this.getValid()) {
 			int j = minRatio(0);
 			int k = 1;
@@ -828,8 +852,6 @@ public class FractionalSol extends ProblemSol {
 			totalA = p.removeA(j, totalA);
 			this.totalA = totalA;
 			this.obj = obj;
-			this.num = num;
-			this.den = den;
 		}
 	}
 
@@ -867,7 +889,9 @@ public class FractionalSol extends ProblemSol {
 	}
 
 
-	//TODO Finish writing/reading solution methods
+	/*
+	 *  Write solution to the given file
+	 */
 	public void writeSolution(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
@@ -881,7 +905,7 @@ public class FractionalSol extends ProblemSol {
 				pw.write(den[i] + " ");
 			}
 			pw.write("\n");
-			
+
 			for (Integer i: x) {
 				pw.write(i + " ");
 			}
