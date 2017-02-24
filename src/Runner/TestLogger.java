@@ -33,7 +33,9 @@ public class TestLogger {
 	public static void setLogger(String test) {
 		logger = Logger.getLogger(filename+test);
 		if (!useLog) {
-			TestLogger.logger.setLevel(Level.OFF);
+			logger.setLevel(Level.OFF);
+		} else {
+			logger.setLevel(Level.INFO);
 		}
 		for (Handler h: logger.getHandlers()) {
 			logger.removeHandler(h);

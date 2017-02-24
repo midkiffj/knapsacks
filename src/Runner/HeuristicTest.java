@@ -31,9 +31,9 @@ public class HeuristicTest {
 
 
 		// Update problem to test here
-		String file = "incumbents/cubic/30_0.5_false_1inc.txt";
-		Problem p = new Cubic(file);
-		ProblemSol ps = new CubicSol(file);
+		String file = "1000_P5_K95_0";
+		Problem p = new MaxProbability("problems/mp/"+file);
+		ProblemSol ps = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
 
 		testAll(ps);
 	}
