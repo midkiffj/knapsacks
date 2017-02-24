@@ -189,7 +189,7 @@ public class Cubic_Forrester {
 		}
 
 		// Seed MIP with incumbent solution
-		CubicSol cs = new CubicSol("incumbents/"+file+"inc.txt");
+		CubicSol cs = new CubicSol("incumbents/cubic/"+file+"inc.txt");
 		ArrayList<Integer> x = cs.getX();
 		seedMIP(x);
 

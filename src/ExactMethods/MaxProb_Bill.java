@@ -26,7 +26,7 @@ public class MaxProb_Bill {
 	static double B2;
 	static double B1;
 	static double p1;
-	
+
 	static double bestObj;
 
 	/*
@@ -34,7 +34,7 @@ public class MaxProb_Bill {
 	 */
 	public static void main(String[] args) {
 		// Can take file as argument
-		String file = "P5_K65_0";
+		String file = "1000_P5_K95_0";
 		if (args.length == 1) {
 			file = args[0];
 		}
@@ -54,7 +54,7 @@ public class MaxProb_Bill {
 	 */
 	private static void calcPUpper() throws IloException {
 		int n = mp.getN();
-		
+
 		// Solve for X_umax
 		int[] a = new int[n];
 		int b = mp.getB();
@@ -63,7 +63,7 @@ public class MaxProb_Bill {
 			a[i] = mp.getA(i);
 			c[i] = mp.getU(i);
 		}
-		Knapsack ks = new Knapsack(a,b,c);
+		Knapsack ks = new Knapsack(a,b,c,true);
 		long umax = ks.getBestObj();
 		boolean[] xVals = ks.getXVals();
 
@@ -189,11 +189,17 @@ public class MaxProb_Bill {
 		// Solve and print solution
 		cplex.setParam(IloCplex.DoubleParam.TiLim, 300);
 		cplex.solve();
-		
-		bestObj = cplex.getObjValue();
-		System.out.println(bestObj);
-		
-		printVars();
+
+		try {
+			bestObj = cplex.getObjValue();
+			System.out.println(bestObj);
+
+			printVars();
+		}
+		catch (Exception e) {
+			System.err.println(e.getMessage());
+			bestObj = -1;
+		}
 	}
 
 	/*
@@ -233,7 +239,7 @@ public class MaxProb_Bill {
 		double P = cplex.getValue(p);
 		System.out.println(P);
 	}
-	
+
 	public static double getBestObj() {
 		return bestObj;
 	}

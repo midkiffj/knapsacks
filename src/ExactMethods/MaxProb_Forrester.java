@@ -208,7 +208,7 @@ public class MaxProb_Forrester {
 			a[i] = mp.getA(i);
 			c[i] = mp.getU(i);
 		}
-		Knapsack ks = new Knapsack(a,b,c);
+		Knapsack ks = new Knapsack(a,b,c,true);
 		long umax = ks.getBestObj();
 		boolean[] xVals = ks.getXVals();
 

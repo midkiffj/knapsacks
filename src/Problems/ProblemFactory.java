@@ -26,6 +26,8 @@ public class ProblemFactory {
 		problem.genRndInit(x, r);
 		if (problem instanceof Cubic) {
 			return new CubicSol(x,r);
+		} else if (problem instanceof CubicMult) {
+			return new CubicMultSol(x,r);
 		} else if (problem instanceof MaxProbability) {
 			return new MaxProbabilitySol(x,r);
 		} else if (problem instanceof Fractional) {
@@ -40,6 +42,8 @@ public class ProblemFactory {
 		problem.genInit(x, r);
 		if (problem instanceof Cubic) {
 			return new CubicSol(x,r);
+		} else if (problem instanceof CubicMult) {
+			return new CubicMultSol(x,r);
 		} else if (problem instanceof MaxProbability) {
 			return new MaxProbabilitySol(x,r);
 		}else if (problem instanceof Fractional) {

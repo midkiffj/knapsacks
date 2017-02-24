@@ -87,7 +87,7 @@ public class MaxProbability extends Problem {
 			ratio[i] = tau[i] / a[i];
 		}
 		b = (int) Math.floor(0.01*P*totalA);
-		Knapsack k = new Knapsack(a,b,u);
+		Knapsack k = new Knapsack(a,b,u,true);
 		long umax = k.getBestObj();
 		t = 0.01*K*umax;
 
@@ -103,6 +103,8 @@ public class MaxProbability extends Problem {
 		x.clear();
 		int totalAx = 0;
 		int totalUx = 0;
+		Knapsack k = new Knapsack(a,b,u,false);
+		uMaxXVals = k.getXVals();
 		for (int i = 0; i < n; i++) {
 			if (uMaxXVals[i]) {
 				x.add(i);
