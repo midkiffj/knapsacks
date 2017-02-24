@@ -10,6 +10,7 @@ public class simTabu extends Metaheuristic {
 
 	private int maxIter;
 	private long time;
+	private int shiftTabu;
 
 	/*
 	 * Initialize parameters and init solution
@@ -20,6 +21,7 @@ public class simTabu extends Metaheuristic {
 		// Time/Iteration default values
 		this.maxIter = 1000000;
 		this.time = 60000000000L*5;
+		this.shiftTabu = 0;
 		if (maxIter != -1) {
 			this.maxIter = maxIter;
 		} 
@@ -59,37 +61,53 @@ public class simTabu extends Metaheuristic {
 				T = 0.3*current.getObj();
 				stuck = 0;
 			}
-			// Get swaps
-			double[] swap;
-			swap = current.mutate();
-			if (swap != null) {
-				double newObj = -1;
-				int j = -1;
-				int k = -1;
-				// Check if swap better than current
-				if (current.betterThan(swap[0])) {
-					newObj = swap[0];
-					j = (int)swap[1];
-					k = (int)swap[2];
+
+			// Occasionally, check for a shift
+			boolean shifted = false;;
+			if (shiftTabu < iteration) {
+				if (rnd.nextDouble() < 0.6) {
+					int change = current.shift();
+					// If shifted, a shift becomes tabu
+					if (change != -1) {
+						shiftTabu = iteration + (n/4);
+						shifted = true;
+					}
 				}
-				// Otherwise, calculate probability
-				else {
-					// Calculate probabilities and compare
-					double expProb = Math.exp((swap[0] - current.getObj())/T);
-					double rdmDub = rnd.nextDouble();
-					if (rdmDub <= expProb) {
+			}
+
+			if (!shifted) {
+				// Get swaps
+				double[] swap;
+				swap = current.mutate();
+				if (swap != null) {
+					double newObj = -1;
+					int j = -1;
+					int k = -1;
+					// Check if swap better than current
+					if (current.betterThan(swap[0])) {
 						newObj = swap[0];
 						j = (int)swap[1];
 						k = (int)swap[2];
 					}
-				}
+					// Otherwise, calculate probability
+					else {
+						// Calculate probabilities and compare
+						double expProb = Math.exp((swap[0] - current.getObj())/T);
+						double rdmDub = rnd.nextDouble();
+						if (rdmDub <= expProb) {
+							newObj = swap[0];
+							j = (int)swap[1];
+							k = (int)swap[2];
+						}
+					}
 
-				// Perform swap
-				if (j != -1 && k != -1) {
-					current.swap(newObj,j,k);
-				} else {
-					if (rnd.nextDouble() < 0.2) {
-						current.shift();
+					// Perform swap
+					if (j != -1 && k != -1) {
+						current.swap(newObj,j,k);
+					} else {
+						if (rnd.nextDouble() < 0.2) {
+							current.shift();
+						}
 					}
 				}
 			}

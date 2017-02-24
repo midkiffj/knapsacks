@@ -12,16 +12,18 @@ public class simAnneal extends Metaheuristic {
 
 	private int maxIter;
 	private long time;
-	
+	private int shiftTabu;
+
 	/*
 	 * Setup with initial solution and iteration/time parameters
 	 */
 	public simAnneal(ProblemSol ps, int maxIter, long time) {
 		super(ps);
-		
+
 		// Default parameters
 		this.maxIter = 1000000;
 		this.time = 60000000000L*5;
+		this.shiftTabu = 0;
 		if (maxIter != -1) {
 			this.maxIter = maxIter;
 		} 
@@ -29,7 +31,7 @@ public class simAnneal extends Metaheuristic {
 			this.time = time;
 		}
 	}
-	
+
 	/*
 	 * Run simulated annealing on the solution
 	 */
@@ -37,48 +39,66 @@ public class simAnneal extends Metaheuristic {
 		// Temp and alpha value
 		double T = 0.3*current.getObj();
 		double a = 0.99;
-		
+
 		int expZero = 0;
 		long start = System.nanoTime();
 		long end = start;
 		// Track time and iterations
 		for (int iteration = 0; iteration < maxIter && (end-start) < time; iteration++) {			
-			// Get swap mutation
-			double[] swap;
-			swap = current.mutate();
-			if (swap != null) {
-				double newObj = -1;
-				int j = -1;
-				int k = -1;
-				// Check if swap better than current
-				if (current.betterThan(swap[0])) {
-					newObj = swap[0];
-					j = (int)swap[1];
-					k = (int)swap[2];
-				}
-				// Otherwise, calculate probability
-				else {
-					// Calculate probabilities and compare
-					double expProb = Math.exp((swap[0] - current.getObj())/T);
-					// Check for when T gets too small
-					if (expProb == 0.0) {
-						expZero++;
+
+			// Occasionally, check for a shift
+			boolean shifted = false;
+			if (shiftTabu < iteration) {
+				if (rnd.nextDouble() < 0.6) {
+					int change = current.shift();
+					// If shifted, a shift becomes tabu
+					if (change != -1) {
+						shiftTabu = iteration + (n/4);
+						shifted = true;
 					}
-					TestLogger.logger.info("expProb: " + expProb + " expZero: " + expZero);
-					double rdmDub = rnd.nextDouble();
-					if (rdmDub <= expProb) {
+				}
+			}
+
+			if (!shifted) {
+				// Get swap mutation
+				double[] swap;
+				swap = current.mutate();
+				if (swap != null) {
+					double newObj = -1;
+					int j = -1;
+					int k = -1;
+					// Check if swap better than current
+					if (current.betterThan(swap[0])) {
 						newObj = swap[0];
 						j = (int)swap[1];
 						k = (int)swap[2];
 					}
-				}
+					// Otherwise, calculate probability
+					else {
+						// Calculate probabilities and compare
+						double expProb = Math.exp((swap[0] - current.getObj())/T);
+						// Check for when T gets too small
+						if (expProb == 0.0) {
+							expZero++;
+						}
+						TestLogger.logger.info("expProb: " + expProb + " expZero: " + expZero);
+						double rdmDub = rnd.nextDouble();
+						if (rdmDub <= expProb) {
+							newObj = swap[0];
+							j = (int)swap[1];
+							k = (int)swap[2];
+						}
+					}
 
-				// Perform swap
-				if (j != -1 && k != -1) {
-					current.swap(newObj,j,k);
-				} 
+					// Perform swap
+					if (j != -1 && k != -1) {
+						current.swap(newObj,j,k);
+					} else {
+
+					}
+				}
 			}
-			
+
 			// Heal solution if invalid
 			if (!current.getValid()) {
 				current.healSol();
@@ -93,7 +113,7 @@ public class simAnneal extends Metaheuristic {
 			// Update temp
 			T = T * a;
 			TestLogger.logger.info("Iteration: " + iteration + " T:" + T);
-			
+
 			// Reset T after becomes too small
 			if (expZero > 20) {
 				T = 0.3*best.getObj();

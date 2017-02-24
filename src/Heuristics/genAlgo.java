@@ -1,5 +1,6 @@
 package Heuristics;
 
+import Problems.Fractional;
 import Problems.MaxProbability;
 import Problems.ProblemFactory;
 import Runner.TestLogger;
@@ -99,6 +100,7 @@ public class genAlgo extends Metaheuristic{
 				elitist++;
 			}
 		}
+		newPop.add(population.get(1));
 		// Check for invalid solutions
 		for (ProblemSol ps: newPop) {
 			if (!ps.getValid()) {
@@ -106,7 +108,7 @@ public class genAlgo extends Metaheuristic{
 			}
 		}
 		// Generate and add rest of population
-		for (int i = 0; i < population.size()-1; i++) {
+		for (int i = 0; i < population.size()-2; i++) {
 			boolean added = false;
 			int j = 0;
 			// Attempt to generate/add an individual
@@ -168,11 +170,12 @@ public class genAlgo extends Metaheuristic{
 		for (int i = 0; i < population.size(); i++) {
 			ProblemSol ps = population.get(i);
 			String s;
-			if (ProblemFactory.getProblem() instanceof MaxProbability) {
+			if (ProblemFactory.getProblem() instanceof MaxProbability || ProblemFactory.getProblem() instanceof Fractional) {
 				s = String.format(" %4d |   %10.4f (%b)   |",i,ps.getObj(), ps.getValid());
 			} else {
 				s = String.format(" %4d |   %10.0f (%b)   |",i,ps.getObj(), ps.getValid());
 			}
+			Collections.sort(ps.getX());
 			s = s + ps.getX().toString();
 			TestLogger.logger.info(s);
 			TestLogger.logger.info("------|-----------------------------|--------");
