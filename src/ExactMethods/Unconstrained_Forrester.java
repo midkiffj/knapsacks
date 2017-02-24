@@ -1,5 +1,4 @@
 package ExactMethods;
-import java.util.ArrayList;
 
 import Problems.Unconstrained;
 import ilog.cplex.*;
@@ -44,8 +43,8 @@ public class Unconstrained_Forrester {
 			cplex = new IloCplex();
 			addModel();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Error with Cplex");
+			System.err.println(e.getMessage());
 		}
 	}
 
@@ -63,8 +62,8 @@ public class Unconstrained_Forrester {
 			cplex = new IloCplex();
 			addModel();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Error with Cplex");
+			System.err.println(e.getMessage());
 		}
 	}
 
@@ -201,12 +200,6 @@ public class Unconstrained_Forrester {
 			cplex.exportModel("uncForrester.lp");
 		}
 
-		// Seed MIP
-		// TODO - Unconstrained has no construction heuristic
-//		ArrayList<Integer> x = new ArrayList<Integer>();
-//		u.genInit(x, new ArrayList<Integer>());
-//		seedMIP(x);
-
 		// Solve Model
 		cplex.solve();
 		double IPOptimal = cplex.getObjValue();
@@ -216,24 +209,6 @@ public class Unconstrained_Forrester {
 		System.out.println("Model Status: " + cplex.getCplexStatus());
 		System.out.println("IPOptimal: " + IPOptimal);
 		prettyPrintInOrder();
-	}
-
-	/*
-	 * Seed cplex with the given MIP solution
-	 * @param initX
-	 * @throws IloException
-	 */
-	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
-		// New solution to be passed in to MIP.
-		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
-		double[] values = new double[initX.size()];
-		for (int i = 0; i < initX.size(); i++) {
-			int xi = initX.get(i);
-			System.out.println("x_"+xi);
-			iniX[i] = x[xi];
-			values[i] = 1;
-		}
-		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
 	/*

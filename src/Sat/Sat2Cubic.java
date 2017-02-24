@@ -108,6 +108,7 @@ public class Sat2Cubic {
 	}
 
 	// Pretty print used to debug known, smaller example
+	@SuppressWarnings("unused")
 	private static void prettyPrint() {
 		int n = ci.length;
 		

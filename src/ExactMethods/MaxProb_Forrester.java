@@ -22,6 +22,9 @@ public class MaxProb_Forrester {
 	static double[] U;
 	static double[] L;
 
+	
+	static boolean useSj = true;
+	
 	/*
 	 * Setup Max Prob problem and run MIP
 	 */
@@ -30,8 +33,11 @@ public class MaxProb_Forrester {
 		try {
 			cplex = new IloCplex();
 			// Choose one model to use
-			//  addModelZj();
-			addModelSj();
+			if (useSj) {
+				addModelSj();
+			} else {
+				addModelZj();
+			}
 		} catch (IloException e) {
 			System.err.println(e.getMessage());
 			System.exit(-1);

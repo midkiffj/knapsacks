@@ -5,7 +5,6 @@ import ilog.cplex.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -125,22 +124,6 @@ public class UnconstrainedGivry {
 		prettyPrintInOrder();
 
 		System.exit(0);
-	}
-
-	/*
-	 * Seed the MIP with the given solution
-	 */
-	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
-		// New solution to be passed in to MIP.
-		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
-		double[] values = new double[initX.size()];
-		for (int i = 0; i < initX.size(); i++) {
-			int xi = initX.get(i);
-			System.out.println("x_"+xi);
-			iniX[i] = x[xi];
-			values[i] = 1;
-		}
-		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
 	/*

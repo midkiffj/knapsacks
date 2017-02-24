@@ -1,14 +1,11 @@
 package Constructive;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Random;
 
 import Problems.Cubic;
 import Runner.RndGen;
 import Solutions.CubicSol;
-import Solutions.KnapsackSol;
 import Solutions.ProblemSol;
 
 /**
@@ -42,6 +39,7 @@ public class CubicDP extends ConstHeuristic {
 		// Initialize Arrays/Lists
 		int b = c.getB();
 		long[] f = new long[b+1];
+		@SuppressWarnings("unchecked")
 		ArrayList<Integer>[] B = new ArrayList[b+1];
 		for (int i = 0; i < B.length; i++) {
 			B[i] = new ArrayList<Integer>();

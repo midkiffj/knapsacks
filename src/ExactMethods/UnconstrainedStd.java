@@ -3,10 +3,8 @@ package ExactMethods;
 import ilog.concert.*;
 import ilog.cplex.*;
 
-import java.util.ArrayList;
 import java.util.Random;
 
-import Problems.Cubic;
 import Problems.Unconstrained;
 
 /**
@@ -36,8 +34,8 @@ public class UnconstrainedStd {
 			cplex = new IloCplex();
 			addModel();
 		} catch (IloException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Error with Cplex");
+			System.err.println(e.getMessage());
 		}
 	}
 	
@@ -50,22 +48,6 @@ public class UnconstrainedStd {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-	}
-	
-	/*
-	 * Seed MIP with given solution
-	 */
-	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
-		// New solution to be passed in to MIP.
-		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
-		double[] values = new double[initX.size()];
-		for (int i = 0; i < initX.size(); i++) {
-			int xi = initX.get(i);
-			System.out.println("x_"+xi);
-			iniX[i] = x[xi];
-			values[i] = 1;
-		}
-		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
 	/*
@@ -141,12 +123,6 @@ public class UnconstrainedStd {
 		if (exportLPs) {
 			cplex.exportModel("uncStd.lp");
 		}
-
-		// Seed MIP
-		// TODO - Unconstrained has no constructive heuristic
-//		ArrayList<Integer> x = new ArrayList<Integer>();
-//		u.genInit(x, new ArrayList<Integer>());
-//		seedMIP(x);
 		
 		// Solve Model
 		cplex.solve();
