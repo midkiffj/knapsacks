@@ -32,6 +32,7 @@ public class HeuristicTest {
 
 		// Update problem to test here
 		String file = "1000_P5_K95_0";
+		@SuppressWarnings("unused")
 		Problem p = new MaxProbability("problems/mp/"+file);
 		ProblemSol ps = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
 
