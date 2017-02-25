@@ -151,8 +151,8 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	 * @param i
 	 * @param j
 	 */
-	public void swap(double newObj, int i, int j) {
-		this.obj = newObj;
+	public void swap(int i, int j) {
+		this.obj = swapObj(i,j);
 		this.totalA = cm.removeA(i,cm.addA(j,totalA));
 		updateValid();
 		xVals[i] = false;

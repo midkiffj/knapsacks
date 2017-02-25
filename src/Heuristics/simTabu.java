@@ -77,36 +77,20 @@ public class simTabu extends Metaheuristic {
 
 			if (!shifted) {
 				// Get swaps
-				double[] swap;
+				ProblemSol swap;
 				swap = current.mutate();
 				if (swap != null) {
-					double newObj = -1;
-					int j = -1;
-					int k = -1;
 					// Check if swap better than current
-					if (current.betterThan(swap[0])) {
-						newObj = swap[0];
-						j = (int)swap[1];
-						k = (int)swap[2];
+					if (swap.compareTo(current) > 0) {
+						current = swap;
 					}
 					// Otherwise, calculate probability
 					else {
 						// Calculate probabilities and compare
-						double expProb = Math.exp((swap[0] - current.getObj())/T);
+						double expProb = Math.exp((swap.getObj() - current.getObj())/T);
 						double rdmDub = rnd.nextDouble();
 						if (rdmDub <= expProb) {
-							newObj = swap[0];
-							j = (int)swap[1];
-							k = (int)swap[2];
-						}
-					}
-
-					// Perform swap
-					if (j != -1 && k != -1) {
-						current.swap(newObj,j,k);
-					} else {
-						if (rnd.nextDouble() < 0.2) {
-							current.shift();
+							current = swap;
 						}
 					}
 				}

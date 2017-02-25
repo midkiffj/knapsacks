@@ -11,7 +11,7 @@ import java.util.Scanner;
 import Solutions.FractionalSol;
 
 
-public class Fractional extends Problem {
+public class Fractional extends Knapsack {
 
 	// Setup vars
 	private int n;

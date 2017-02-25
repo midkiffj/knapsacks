@@ -8,10 +8,10 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
-import ExactMethods.Knapsack;
+import ExactMethods.Knapsack_Frac;
 import Solutions.MaxProbabilitySol;
 
-public class MaxProbability extends Problem {
+public class MaxProbability extends Knapsack {
 
 	// Setup vars
 	private int n;
@@ -87,7 +87,7 @@ public class MaxProbability extends Problem {
 			ratio[i] = tau[i] / a[i];
 		}
 		b = (int) Math.floor(0.01*P*totalA);
-		Knapsack k = new Knapsack(a,b,u,true);
+		Knapsack_Frac k = new Knapsack_Frac(a,b,u,true);
 		long umax = k.getBestObj();
 		t = 0.01*K*umax;
 
@@ -103,7 +103,7 @@ public class MaxProbability extends Problem {
 		x.clear();
 		int totalAx = 0;
 		int totalUx = 0;
-		Knapsack k = new Knapsack(a,b,u,false);
+		Knapsack_Frac k = new Knapsack_Frac(a,b,u,false);
 		uMaxXVals = k.getXVals();
 		for (int i = 0; i < n; i++) {
 			if (uMaxXVals[i]) {

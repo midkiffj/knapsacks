@@ -156,7 +156,7 @@ public class CubicDP extends ConstHeuristic {
 		}
 		// Complete the best improving swap (if found)
 		if (bi != -1) {
-			current.swap(bObj,bi,bj);
+			current.swap(bi,bj);
 		}
 	}
 

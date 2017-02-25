@@ -94,8 +94,8 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	@Override
-	public void swap(double newObj, int i, int j) {
-		this.obj = newObj;
+	public void swap(int i, int j) {
+		this.obj = u.swapObj(i, j, x, obj);
 		xVals[i] = false;
 		xVals[j] = true;
 		remove(x,i);
@@ -135,9 +135,9 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	@Override
-	public double[] bestMutate() {
+	public ProblemSol bestMutate() {
 		if (r.size() > 0) {
-			double[][] best = bestSwap(Integer.MAX_VALUE, new int[n][n]);
+			ProblemSol[] best = bestSwap(Integer.MAX_VALUE, new int[n][n]);
 			return best[0];
 		} else {
 			return null;
@@ -145,7 +145,7 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	// Find the best swap possible that keeps the knapsack feasible
-	private double[][] bestSwap(int iteration, int[][] tabuList) {
+	private ProblemSol[] bestSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
 		int nj = -1;
@@ -170,26 +170,25 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		UnconstrainedSol[] results = new UnconstrainedSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new UnconstrainedSol(this);
+			results[0].swap(bi, bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new UnconstrainedSol(this);
+			results[1].swap(ni, nj);
+		}
 		return results;
 	}
 
-	public double[][] tabuMutate(int iteration, int[][] tabuList) {
+	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
 		if (r.size() > 0) {
 			if (rnd.nextDouble() < 0.4) {
 				return maxMinSwap(iteration, tabuList);
 			} else {
-				double[] tauSwap = tauMutate(iteration, tabuList);
-				if (tauSwap == null) {
-					return null;
-				}
-				double[][] result = {tauSwap, tauSwap};
+				ProblemSol tauSwap = tauMutate(iteration, tabuList);
+				ProblemSol[] result = {tauSwap, tauSwap};
 				return result;
 			}
 		} else {
@@ -197,20 +196,17 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 	}
 
-	public double[] mutate() {
+	public ProblemSol mutate() {
 		if (r.size() > 0) {
 			if (rnd.nextDouble() < 0.6) {
-				double[][] ret = maxMinSwap(1, new int[n][n]);
+				ProblemSol[] ret = maxMinSwap(1, new int[n][n]);
 				if (ret == null) {
 					return null;
 				} else {
 					return ret[0];
 				}
 			} else {
-				double[] tauSwap = tauMutate();
-				if (tauSwap == null) {
-					return null;
-				}
+				ProblemSol tauSwap = tauMutate();
 				return tauSwap;
 			}
 		} else {
@@ -218,7 +214,7 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 	}
 
-	public double[][] tabuBestMutate(int iteration, int[][] tabuList) {
+	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
 		if (r.size() > 0) {
 			return bestSwap(iteration, tabuList);
 		} else {
@@ -226,8 +222,7 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 	}
 
-	private double[] tauMutate() {
-		double[] result = null;
+	private UnconstrainedSol tauMutate() {
 		// Get index of max tau
 		int i = maxTau(0);
 
@@ -235,17 +230,14 @@ public class UnconstrainedSol extends ProblemSol {
 		int j = rnd.nextInt(getRSize());
 		j = getRItem(j);
 
-		double newObj = u.swapObj(i, j, x, obj);
-		result = new double[3];
-		result[0] = newObj;
-		result[1] = i;
-		result[2] = j;
+		UnconstrainedSol result = new UnconstrainedSol(this);
+		result.swap(i, j);
 
 		return result;
 	}
 
-	private double[] bestTauMutate() {
-		double[] result = null;
+	private UnconstrainedSol bestTauMutate() {
+		UnconstrainedSol result = null;
 		// Get index of max tau
 		int i = maxTau(0);
 
@@ -260,17 +252,14 @@ public class UnconstrainedSol extends ProblemSol {
 			}
 		}
 		if (maxJ != -1) {
-			double newObj = bestObj;
-			result = new double[3];
-			result[0] = newObj;
-			result[1] = i;
-			result[2] = maxJ;
+			result = new UnconstrainedSol(this);
+			result.swap(i,maxJ);
 		}
 
 		return result;
 	}
 
-	private double[][] maxMinSwap(int iteration, int[][] tabuList) {
+	private UnconstrainedSol[] maxMinSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
 		int nj = -1;
@@ -320,17 +309,19 @@ public class UnconstrainedSol extends ProblemSol {
 			}
 		}
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		UnconstrainedSol[] results = new UnconstrainedSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new UnconstrainedSol(this);
+			results[0].swap(bi, bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new UnconstrainedSol(this);
+			results[1].swap(ni, nj);
+		}
 		return results;
 	}
 
-	private double[] tauMutate(int iteration, int[][] tabuList) {
+	private UnconstrainedSol tauMutate(int iteration, int[][] tabuList) {
 		// Get index of min tau
 		int i = maxTau(0);
 
@@ -359,8 +350,8 @@ public class UnconstrainedSol extends ProblemSol {
 		if (tabuList[i][j] >= iteration) {
 			return null;
 		}
-		double newObj = u.swapObj(i, j, x, obj);
-		double[] result = {newObj, i, j};
+		UnconstrainedSol result = new UnconstrainedSol(this);
+		result.swap(i,j);
 
 		return result;
 	}
@@ -468,9 +459,9 @@ public class UnconstrainedSol extends ProblemSol {
 		if (o.getValid() && this.getValid() || !(o.getValid() && this.getValid())) {
 			double diff = this.getObj() - o.getObj();
 			if (diff >= 0) {
-				return -1;
-			} else {
 				return 1;
+			} else {
+				return -1;
 			}
 		} else {
 			if (o.getValid()) {
@@ -479,14 +470,6 @@ public class UnconstrainedSol extends ProblemSol {
 				return -1;
 			}
 		}
-	}
-
-	@Override
-	public boolean betterThan(double newObj) {
-		if (newObj < obj) {
-			return true;
-		}
-		return false;
 	}
 
 	@Override

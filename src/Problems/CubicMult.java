@@ -11,7 +11,7 @@ import java.util.Scanner;
 import Runner.TestLogger;
 
 
-public class CubicMult extends Problem {
+public class CubicMult extends MultipleKnapsack {
 	// Cubic setup vars
 	private int n;
 	private int m;
@@ -407,11 +407,6 @@ public class CubicMult extends Problem {
 		return totalAValid(totalA);
 	}
 	
-	public int calcTotalA(ArrayList<Integer> x) {
-		System.err.println("Unimplemented calcTotalA");
-		return -1;
-	}
-	
 	public int[] calcAllTotalA(ArrayList<Integer> x) {
 		int[] totalA = new int[m];
 		for (Integer i: x) {
@@ -683,25 +678,6 @@ public class CubicMult extends Problem {
 	}
 
 	public static void main(String[] args) {
-	}
-
-	@Override
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r,
-			boolean improveOnly) {
-		System.err.println("Unused tryAdd");
-		return -1;
-	}
-
-	@Override
-	public int removeA(int i, int totalA) {
-		System.err.println("Unused removeA");
-		return -1;
-	}
-
-	@Override
-	public int addA(int i, int totalA) {
-		System.err.println("Unused addA");
-		return -1;
 	}
 
 }

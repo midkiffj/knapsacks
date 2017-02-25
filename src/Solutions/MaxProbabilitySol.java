@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
-import ExactMethods.Knapsack;
+import ExactMethods.Knapsack_Frac;
 import Problems.MaxProbability;
 
 public class MaxProbabilitySol extends ProblemSol {
@@ -177,10 +177,10 @@ public class MaxProbabilitySol extends ProblemSol {
 	}
 
 	@Override
-	public void swap(double newObj, int i, int j) {
+	public void swap(int i, int j) {
 		this.totalA = mp.removeA(i,mp.addA(j,totalA));
 		this.totalU = mp.removeU(i,mp.addU(j,totalU));
-		this.obj = newObj;
+		this.obj = swapObj(i,j);
 		this.num = mp.swapNum(i,j,num);
 		this.den = mp.swapDen(i,j,den);
 		updateValid();
@@ -277,54 +277,51 @@ public class MaxProbabilitySol extends ProblemSol {
 		return (num*num)/den;
 	}
 
-	public double[][] tabuMutate(int iteration, int[][] tabuList) {
+	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
 		}
 		if (rnd.nextDouble() < 0.4) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
-			double[] ratioSwap = ratioMutate(iteration, tabuList);
+			ProblemSol ratioSwap = ratioMutate(iteration, tabuList);
 			if (ratioSwap == null) {
 				return null;
 			}
-			double[][] result = {ratioSwap, ratioSwap};
+			ProblemSol[] result = {ratioSwap, ratioSwap};
 			return result;
 		}
 	}
 
-	public double[] mutate() {
+	public ProblemSol mutate() {
 		if (getRSize() == 0) {
 			return null;
 		}
 		if (rnd.nextDouble() < 0.6) {
-			double[][] ret = maxMinSwap(1, new int[n][n]);
+			ProblemSol[] ret = maxMinSwap(1, new int[n][n]);
 			if (ret == null) {
 				return null;
 			} else {
 				return ret[0];
 			}
 		} else {
-			double[] ratioSwap = ratioMutate();
-			if (ratioSwap == null) {
-				return null;
-			}
+			ProblemSol ratioSwap = ratioMutate();
 			return ratioSwap;
 		}
 	}
 
-	public double[] bestMutate() {
+	public ProblemSol bestMutate() {
 		if (getRSize() == 0) {
 			return null;
 		}
 		if (p.getN() >= 500) {
-			double[][] fs = firstSwap(1, new int[n][n]);
+			ProblemSol[] fs = firstSwap(1, new int[n][n]);
 			if (fs != null) {
 				return fs[0];
 			}
 			return null;
 		}
-		double[][] bs = bestSwap(1, new int[n][n]);
+		ProblemSol[] bs = bestSwap(1, new int[n][n]);
 		if (bs != null) {
 			return bs[0];
 		} else {
@@ -332,7 +329,7 @@ public class MaxProbabilitySol extends ProblemSol {
 		}
 	}
 
-	public double[][] tabuBestMutate(int iteration, int[][] tabuList) {
+	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
 		}
@@ -433,10 +430,7 @@ public class MaxProbabilitySol extends ProblemSol {
 			if (newMP.getRSize() == 0) {
 				newMP.shift();
 			} else {
-				double[] swap = newMP.mutate();
-				if (swap != null) {
-					newMP.swap(swap[0], (int)swap[1], (int)swap[2]);
-				}
+				return newMP.mutate();
 			}
 		} else {
 			newMP = genMutate2(newMP, removeAttempts);
@@ -532,7 +526,7 @@ public class MaxProbabilitySol extends ProblemSol {
 			a[i] = mp.getA(x);
 			c[i] = mp.getU(x);
 		}
-		Knapsack k = new Knapsack(a,b,c,false);
+		Knapsack_Frac k = new Knapsack_Frac(a,b,c,false);
 		if (k.getBestObj() < target) {
 			return null;
 		}
@@ -577,8 +571,8 @@ public class MaxProbabilitySol extends ProblemSol {
 		}
 	}
 
-	private double[] ratioMutate() {
-		double[] result = null;
+	private MaxProbabilitySol ratioMutate() {
+		MaxProbabilitySol result = null;
 		boolean found = false;
 		int min = 0;
 		while (!found && min < getXSize()) {
@@ -596,11 +590,8 @@ public class MaxProbabilitySol extends ProblemSol {
 			}
 
 			if (mp.getA(j) - mp.getA(i) <= mp.getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-				double newObj = swapObj(i, j);
-				result = new double[3];
-				result[0] = newObj;
-				result[1] = i;
-				result[2] = j;
+				result = new MaxProbabilitySol(this);
+				result.swap(i,j);
 				found = true;
 			}
 
@@ -610,8 +601,8 @@ public class MaxProbabilitySol extends ProblemSol {
 		return result;
 	}
 
-	private double[] bestRatioMutate() {
-		double[] result = null;
+	private MaxProbabilitySol bestRatioMutate() {
+		MaxProbabilitySol result = null;
 		boolean found = false;
 		int min = 0;
 		while (!found && min < getXSize()) {
@@ -629,11 +620,8 @@ public class MaxProbabilitySol extends ProblemSol {
 				}
 			}
 			if (maxJ != -1) {
-				double newObj = swapObj(i, maxJ);
-				result = new double[3];
-				result[0] = newObj;
-				result[1] = i;
-				result[2] = maxJ;
+				result = new MaxProbabilitySol(this);
+				result.swap(i,maxJ);
 				found = true;
 			}
 
@@ -643,7 +631,7 @@ public class MaxProbabilitySol extends ProblemSol {
 		return result;
 	}
 
-	private double[][] maxMinSwap(int iteration, int[][] tabuList) {
+	private MaxProbabilitySol[] maxMinSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
 		int nj = -1;
@@ -711,17 +699,19 @@ public class MaxProbabilitySol extends ProblemSol {
 			}
 		}
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new MaxProbabilitySol(this);
+			results[0].swap(bi,bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new MaxProbabilitySol(this);
+			results[1].swap(bi,bj);
+		}
 		return results;
 	}
 
-	private double[] ratioMutate(int iteration, int[][] tabuList) {
+	private MaxProbabilitySol ratioMutate(int iteration, int[][] tabuList) {
 		// Get index of min ratio
 		int i = minRatio(0);
 
@@ -750,8 +740,8 @@ public class MaxProbabilitySol extends ProblemSol {
 		if (mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT() || tabuList[i][j] >= iteration) {
 			return null;
 		}
-		double newObj = swapObj(i, j);
-		double[] result = {newObj, i, j};
+		MaxProbabilitySol result = new MaxProbabilitySol(this);
+		result.swap(i,j);
 
 		return result;
 	}
@@ -793,7 +783,7 @@ public class MaxProbabilitySol extends ProblemSol {
 	}
 
 	// Find the best swap possible that keeps the knapsack feasible
-	private double[][] bestSwap(int iteration, int[][] tabuList) {
+	private MaxProbabilitySol[] bestSwap(int iteration, int[][] tabuList) {
 		int curTotalA = getTotalA();
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -827,18 +817,20 @@ public class MaxProbabilitySol extends ProblemSol {
 			return null;
 		}
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new MaxProbabilitySol(this);
+			results[0].swap(bi,bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new MaxProbabilitySol(this);
+			results[1].swap(bi,bj);
+		}
 		return results;
 	}
 
 	// Return the first improving swap that keeps the knapsack feasible
-	private double[][] firstSwap(int iteration, int[][] tabuList) {
+	private MaxProbabilitySol[] firstSwap(int iteration, int[][] tabuList) {
 		int curTotalA = getTotalA();
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -866,13 +858,15 @@ public class MaxProbabilitySol extends ProblemSol {
 			}
 		}
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new MaxProbabilitySol(this);
+			results[0].swap(bi,bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new MaxProbabilitySol(this);
+			results[1].swap(bi,bj);
+		}
 		return results;
 	}
 
@@ -986,15 +980,6 @@ public class MaxProbabilitySol extends ProblemSol {
 			}
 		}
 	}
-
-	@Override
-	public boolean betterThan(double newObj) {
-		if (newObj > getObj()) {
-			return true;
-		}
-		return false;
-	}
-
 
 	//TODO Finish writing/reading solution methods
 	public void writeSolution(String filename) {

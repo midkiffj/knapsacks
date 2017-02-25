@@ -126,7 +126,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 		}
 		// Perform the best improving swap (if found)
 		if (bi != -1) {
-			current.swap(bObj,bi,bj);
+			current.swap(bi,bj);
 		}
 	}
 

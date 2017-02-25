@@ -58,13 +58,10 @@ public class tabuSearch extends Metaheuristic {
 				// Attempt 20 best swaps
 				for (int d = 0; d < 20; d++) {
 					// Get swap
-					double[] swap = current.bestMutate();
+					ProblemSol swap = current.bestMutate();
 					if (swap != null) {
-						double newObj = swap[0];
-						int j = (int) swap[1];
-						int k = (int) swap[2];
 						// Update current
-						current.swap(newObj,j,k);
+						current = swap;
 						if (!current.getValid()) {
 							TestLogger.logger.info("Healing...Current: " + current.getObj());
 							current.healSol();
@@ -95,37 +92,27 @@ public class tabuSearch extends Metaheuristic {
 
 			// Otherwise, do a swap
 			if (!shifted) {
-				double[][] swap = current.tabuMutate(i,tabuList);
+				ProblemSol[] swap = current.tabuMutate(i,tabuList);
 				if (swap != null) {
-					double[] tabu = swap[0];
-					double[] nonTabu = swap[1];
-					double newObj = -1;
-					int j = -1;
-					int k = -1;
+					ProblemSol tabu = swap[0];
+					ProblemSol nonTabu = swap[1];
+					
+					boolean swapped = false;
 					// Check if tabu swap better than best
-					if (best.betterThan(tabu[0])) {
-						newObj = tabu[0];
-						j = (int)tabu[1];
-						k = (int)tabu[2];
-
+					if (tabu != null && tabu.compareTo(best) > 0) {
+						current = tabu;
+						swapped = true;
 					}
 					// Otherwise, use nonTabu
 					else {
-						if (nonTabu[1] != -1 && nonTabu[2] != -1) {
-							newObj = nonTabu[0];
-							j = (int)nonTabu[1];
-							k = (int)nonTabu[2];
+						if (nonTabu != null) {
+							current = nonTabu;
+							swapped = true;
 						}
 					}
 
-					// Perform swap and make tabu
-					if (j != -1 && k != -1) {
-						current.swap(newObj,j,k);
-						makeTabu(j,k,i);
-						stuck = 0;
-					} 
 					// Otherwise, stuck. Attempt shift after tabu duration passed
-					else {
+					if (!swapped) {
 						TestLogger.logger.info("ERROR: Unable to Swap");
 						stuck++;
 						if (stuck > tabuDuration) {

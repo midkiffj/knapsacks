@@ -24,7 +24,7 @@ public class genAlgo extends Metaheuristic{
 	private int removeAttempts;
 	private int numGens;
 	private long time;
-	
+
 	/*
 	 * Setup the parameters and initial population
 	 */
@@ -34,14 +34,14 @@ public class genAlgo extends Metaheuristic{
 		removeAttempts = n/5;
 		// Default small population size ensures enough solutions can be generated
 		int popSize = 10;
-		
+
 		// Set number of generations to run
 		if (numGens == -1) {
 			this.numGens = 50*popSize;
 		} else {
 			this.numGens = numGens;
 		}
-		
+
 		// Set time to run
 		if (time == -1) {
 			this.time = 60000000000L*5;
@@ -52,7 +52,7 @@ public class genAlgo extends Metaheuristic{
 		// Fill population with specified solution and random solutions
 		population = new ArrayList<ProblemSol>();
 		population.add(ps);
-		
+
 		ProblemSol ps2;
 		for (int i = 0; i < popSize-1; i++) {
 			ps2 = ProblemFactory.genRndSol();
@@ -63,7 +63,7 @@ public class genAlgo extends Metaheuristic{
 		}
 		Collections.sort(population);
 	}
-	
+
 	/*
 	 * Tracks time and generations ran
 	 * - Stores the best solution generated
@@ -114,7 +114,9 @@ public class genAlgo extends Metaheuristic{
 			// Attempt to generate/add an individual
 			while (!added && j < 30) {
 				ProblemSol ps = generateIndividual();
-				added = tryAdd(newPop, ps);
+				if (ps != null) {
+					added = tryAdd(newPop, ps);
+				}
 				j++;
 			}
 			// Otherwise, add a random solution
@@ -133,7 +135,7 @@ public class genAlgo extends Metaheuristic{
 	 * Attempt to add the new solution to the population
 	 * - Avoid duplicates
 	 * - Avoid too many invalid solutions (if allowed)
-	*/ 
+	 */ 
 	private boolean tryAdd(ArrayList<ProblemSol> newPop, ProblemSol ps) {
 		// Check for duplicate
 		if (newPop.contains(ps))  {
@@ -215,5 +217,5 @@ public class genAlgo extends Metaheuristic{
 			return ps2;
 		}
 	}
-	
+
 }

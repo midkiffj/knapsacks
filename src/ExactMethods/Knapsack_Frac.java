@@ -15,7 +15,7 @@ import ilog.cplex.IloCplex;
  * @author midkiffj
  *
  */
-public class Knapsack {
+public class Knapsack_Frac {
 	private IloCplex cplex;
 	private boolean exportLPs = true;
 
@@ -35,7 +35,7 @@ public class Knapsack {
 	//	a - weights
 	// 	b - knapsack capacity
 	//  useExact - (T) Use cplex or (F) use fractional approximation
-	public Knapsack(int[] a,  int b, int[] c, boolean useExact) {
+	public Knapsack_Frac(int[] a,  int b, int[] c, boolean useExact) {
 		this.a = a;
 		this.b = b;
 		this.c = c;
@@ -184,7 +184,7 @@ public class Knapsack {
 		int[] a = {10, 20, 15};
 		int b = 35;
 		int[] c = {8, 20, 10};
-		Knapsack k = new Knapsack(a,b,c,true);
+		Knapsack_Frac k = new Knapsack_Frac(a,b,c,true);
 		System.out.println(k.getBestObj());
 	}
 }

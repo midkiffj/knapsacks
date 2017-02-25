@@ -53,7 +53,7 @@ public class CubicSol extends KnapsackSol {
 		}
 	}
 
-	private double[] swapMutate() {
+	private CubicSol swapMutate() {
 		if (rnd.nextDouble() < 0.8) {
 			return ratioMutate();
 		} else {
@@ -77,54 +77,48 @@ public class CubicSol extends KnapsackSol {
 		}
 	}
 
-	public double[][] tabuMutate(int iteration, int[][] tabuList) {
+	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
 		}
 		if (rnd.nextDouble() < 0.4) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
-			double[] ratioSwap = ratioMutate(iteration, tabuList);
-			if (ratioSwap == null) {
-				return null;
-			}
-			double[][] result = {ratioSwap, ratioSwap};
+			CubicSol ratioSwap = ratioMutate(iteration, tabuList);
+			CubicSol[] result = {ratioSwap, ratioSwap};
 			return result;
 		}
 	}
 
-	public double[] mutate() {
+	public ProblemSol mutate() {
 		if (getRSize() == 0) {
 			return null;
 		}
 		if (rnd.nextDouble() < 0.6) {
-			double[][] ret = maxMinSwap(1, new int[n][n]);
+			CubicSol[] ret = maxMinSwap(1, new int[n][n]);
 			if (ret == null) {
 				return null;
 			} else {
 				return ret[0];
 			}
 		} else {
-			double[] ratioSwap = ratioMutate();
-			if (ratioSwap == null) {
-				return null;
-			}
+			CubicSol ratioSwap = ratioMutate();
 			return ratioSwap;
 		}
 	}
 
-	public double[] bestMutate() {
+	public ProblemSol bestMutate() {
 		if (getRSize() == 0) {
 			return null;
 		}
 		if (p.getN() >= 500) {
-			double[][] fs = firstSwap(1, new int[n][n]);
+			CubicSol[] fs = firstSwap(1, new int[n][n]);
 			if (fs != null) {
 				return fs[0];
 			}
 			return null;
 		}
-		double[][] bs = bestSwap(1, new int[n][n]);
+		CubicSol[] bs = bestSwap(1, new int[n][n]);
 		if (bs != null) {
 			return bs[0];
 		} else {
@@ -132,7 +126,7 @@ public class CubicSol extends KnapsackSol {
 		}
 	}
 
-	public double[][] tabuBestMutate(int iteration, int[][] tabuList) {
+	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
 		}
@@ -188,10 +182,7 @@ public class CubicSol extends KnapsackSol {
 			if (newCS.getRSize() == 0) {
 				newCS.shift();
 			} else {
-				double[] swap = newCS.mutate();
-				if (swap != null) {
-					newCS.swap(swap[0], (int)swap[1], (int)swap[2]);
-				}
+				return newCS.mutate();
 			}
 		} else {
 			newCS = genMutate2(newCS, removeAttempts);
@@ -263,8 +254,8 @@ public class CubicSol extends KnapsackSol {
 		}
 	}
 
-	private double[] ratioMutate() {
-		double[] result = null;
+	private CubicSol ratioMutate() {
+		CubicSol result = null;
 		boolean found = false;
 		int min = 0;
 		while (!found && min < getXSize()) {
@@ -282,11 +273,8 @@ public class CubicSol extends KnapsackSol {
 			}
 
 			if (c.getA(j) - c.getA(i) <= b - getTotalA()) {
-				double newObj = swapObj(i, j);
-				result = new double[3];
-				result[0] = newObj;
-				result[1] = i;
-				result[2] = j;
+				result = new CubicSol(this);
+				result.swap(i, j);
 				found = true;
 			}
 
@@ -296,8 +284,8 @@ public class CubicSol extends KnapsackSol {
 		return result;
 	}
 
-	private double[] bestRatioMutate() {
-		double[] result = null;
+	private CubicSol bestRatioMutate() {
+		CubicSol result = null;
 		boolean found = false;
 		int min = 0;
 		while (!found && min < getXSize()) {
@@ -315,11 +303,8 @@ public class CubicSol extends KnapsackSol {
 				}
 			}
 			if (maxJ != -1) {
-				double newObj = swapObj(i, maxJ);
-				result = new double[3];
-				result[0] = newObj;
-				result[1] = i;
-				result[2] = maxJ;
+				result = new CubicSol(this);
+				result.swap(i, maxJ);
 				found = true;
 			}
 
@@ -329,7 +314,7 @@ public class CubicSol extends KnapsackSol {
 		return result;
 	}
 
-	private double[][] maxMinSwap(int iteration, int[][] tabuList) {
+	private CubicSol[] maxMinSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
 		int nj = -1;
@@ -397,17 +382,19 @@ public class CubicSol extends KnapsackSol {
 			}
 		}
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		CubicSol[] results = new CubicSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new CubicSol(this);
+			results[0].swap(bi, bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new CubicSol(this);
+			results[1].swap(ni, nj);
+		}
 		return results;
 	}
 
-	private double[] ratioMutate(int iteration, int[][] tabuList) {
+	private CubicSol ratioMutate(int iteration, int[][] tabuList) {
 		// Get index of min ratio
 		int i = minRatio(0);
 
@@ -436,10 +423,9 @@ public class CubicSol extends KnapsackSol {
 		if (c.getA(j) - c.getA(i) > b - getTotalA() || tabuList[i][j] >= iteration) {
 			return null;
 		}
-		double newObj = swapObj(i, j);
-		double[] result = {newObj, i, j};
-
-		return result;
+		CubicSol results = new CubicSol(this);
+		results.swap(i, j);
+		return results;
 	}
 
 	private int minRatio(int k) {
@@ -479,7 +465,7 @@ public class CubicSol extends KnapsackSol {
 	}
 
 	// Find the best swap possible that keeps the knapsack feasible
-	private double[][] bestSwap(int iteration, int[][] tabuList) {
+	private CubicSol[] bestSwap(int iteration, int[][] tabuList) {
 		int curTotalA = getTotalA();
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -513,18 +499,20 @@ public class CubicSol extends KnapsackSol {
 			return null;
 		}
 		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		CubicSol[] results = new CubicSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new CubicSol(this);
+			results[0].swap(bi, bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new CubicSol(this);
+			results[1].swap(ni, nj);
+		}
 		return results;
 	}
 
 	// Return the first improving swap that keeps the knapsack feasible
-	private double[][] firstSwap(int iteration, int[][] tabuList) {
+	private CubicSol[] firstSwap(int iteration, int[][] tabuList) {
 		int curTotalA = getTotalA();
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -551,14 +539,15 @@ public class CubicSol extends KnapsackSol {
 				}
 			}
 		}
-		// Compile and return data
-		double[][] results = new double[2][3];
-		results[0][0] = bObj;
-		results[0][1] = bi;
-		results[0][2] = bj;
-		results[1][0] = nTObj;
-		results[1][1] = ni;
-		results[1][2] = nj;
+		CubicSol[] results = new CubicSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new CubicSol(this);
+			results[0].swap(bi, bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new CubicSol(this);
+			results[1].swap(ni, nj);
+		}
 		return results;
 	}
 
@@ -601,14 +590,6 @@ public class CubicSol extends KnapsackSol {
 				return 1;
 			}
 		}
-	}
-
-	@Override
-	public boolean betterThan(double newObj) {
-		if (newObj > getObj()) {
-			return true;
-		}
-		return false;
 	}
 
 	

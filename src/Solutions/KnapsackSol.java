@@ -126,14 +126,14 @@ public abstract class KnapsackSol extends ProblemSol {
 		return p.swapObj(i,j,x,obj);
 	}
 
-	/**
+	/*
 	 * Swap the boolean values in the current x array at indexes i and j
 	 * @param curX
 	 * @param i
 	 * @param j
 	 */
-	public void swap(double newObj, int i, int j) {
-		this.obj = newObj;
+	public void swap(int i, int j) {
+		this.obj = swapObj(i,j);
 		this.totalA = p.removeA(i,p.addA(j,totalA));
 		updateValid();
 		xVals[i] = false;

@@ -17,7 +17,7 @@ public class TestBed {
 	
 	// Select problem(s) to run
 	private static boolean c = false;
-	private static boolean cm = false;
+	private static boolean cm = true;
 	private static boolean mp = false;
 	private static boolean f = false;
 
@@ -78,7 +78,7 @@ public class TestBed {
 	 */
 	private static void mainCubicMult() {
 		boolean g = false;
-		boolean rh = false;
+		boolean rh = true;
 		boolean mip = false;
 		boolean log = false;
 		CubicMultTest cmt = new CubicMultTest(g,rh,mip,log);
