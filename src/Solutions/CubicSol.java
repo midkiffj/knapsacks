@@ -1,55 +1,48 @@
 package Solutions;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Scanner;
 
 import Problems.Cubic;
 
 public class CubicSol extends KnapsackSol {
 
-	private static Cubic c;
-	private int b;
-
+	private static Cubic c = (Cubic)p;
+	
 	public CubicSol() {
 		super();
-		updateB();
 	}
 
 	public CubicSol(String filename) {
 		super(filename);
-		c = (Cubic)p;
-		updateB();
 	}
 
 	public CubicSol(CubicSol cs) {
 		super((KnapsackSol)cs);
-		c = (Cubic)p;
-		updateB();
 	}
 
 	public CubicSol(boolean[] xVals) {
 		super(xVals);
-		c = (Cubic)p;
-		updateB();
 	}
 
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
-		c = (Cubic)p;
-		updateB();
 	}
 
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
 		super(x,r,obj,totalA);
-		c = (Cubic)p;
-		updateB();
 	}
-
-	private void updateB() {
-		if (useHealing) {
-			b = Integer.MAX_VALUE;
+	
+	public void updateValid() {
+		calcTotalA();
+		if (getTotalA() <= c.getB()) {
+			setValid(true);
 		} else {
-			b = c.getB();
+			setValid(false);
 		}
 	}
 
@@ -61,6 +54,21 @@ public class CubicSol extends KnapsackSol {
 		}
 	}
 
+	/*
+	 * Swap the boolean values in the current x array at indexes i and j
+	 * @param curX
+	 * @param i
+	 * @param j
+	 */
+	public void swap(int i, int j) {
+		setObj(swapObj(i,j));
+		removeA(i);
+		addA(j);
+		addI(j);
+		removeI(i);
+		updateValid();
+	}
+	
 	// Shift a variable in or out of the current solution
 	public int shift() {
 		if (getRSize() == 0) {
@@ -75,6 +83,29 @@ public class CubicSol extends KnapsackSol {
 				return trySub();
 			}
 		}
+	}
+
+	// Try to add a variable to the solution
+	public int tryAdd() {
+		int index = tryAdd(getTotalA(), getX(), getR(), false);
+		if (index != -1) {
+			addI(index);
+			addA(index);
+			setObj(addObj(index));
+			updateValid();
+		}
+		return index;
+	}
+
+	public int trySub() {
+		int index = trySub(getX(), false);
+		if (index != -1) {
+			removeI(index);
+			removeA(index);
+			setObj(subObj(index));
+			updateValid();
+		}
+		return index;
 	}
 
 	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
@@ -144,7 +175,7 @@ public class CubicSol extends KnapsackSol {
 				newXVals[i] = this.getXVals(i);
 				if (newXVals[i]) {
 					x.add(i);
-					newTotalA = p.addA(i,newTotalA);
+					newTotalA += c.getA(i);
 				} else {
 					r.add(i);
 				}
@@ -155,19 +186,19 @@ public class CubicSol extends KnapsackSol {
 
 		ArrayList<ratioNode> ratio = computeRatios(x, r);
 
-		while (ratio.size() > 0 && newTotalA < b) {
+		while (ratio.size() > 0 && newTotalA < getB()) {
 			int i = rnd.nextInt(ratio.size());
 			int j = rnd.nextInt(ratio.size());
 			i = Math.max(i,j);
 			ratioNode rni = ratio.get(i);
-			if (p.addA(rni.x,newTotalA) <= b) {
+			if (newTotalA + c.getA(rni.x) <= getB()) {
 				ratio.remove(i);
 				newXVals[rni.x] = true;
 				//				updateRatios(x, ratio, rni.x);
 				//				Collections.sort(ratio);
 				x.add(rni.x);
 				r.remove(Integer.valueOf(rni.x));
-				newTotalA = p.addA(rni.x,newTotalA);
+				newTotalA += c.getA(rni.x);
 			} else {
 				ratio.remove(i);
 			}
@@ -191,6 +222,118 @@ public class CubicSol extends KnapsackSol {
 			}
 		}
 		return newCS;
+	}
+
+	private int trySub(ArrayList<Integer> x, boolean improveOnly) {
+		if (x.size() <= 1) {
+			return -1;
+		}
+		int minI = minRatio(0);
+
+		if (minI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = subObj(minI);
+			if (change > getObj()) {
+				return minI;
+			} else {
+				return -1;
+			}
+		} else {
+			return minI;
+		}
+	}
+
+	private int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
+		if (x.size() == n) {
+			return -1;
+		}
+		double maxRatio = -1*Double.MAX_VALUE;
+		int maxI = -1;
+		for (Integer i: r) {
+			if (totalA + c.getA(i) <= getB()) {
+				double ratio = c.getRatio(i);
+				if (ratio > maxRatio) {
+					maxRatio = ratio;
+					maxI = i;
+				}
+			}
+		}
+
+		if (maxI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = addObj(maxI);
+			if (change > getObj()) {
+				return maxI;
+			} else {
+				return -1;
+			}
+		} else {
+			return maxI;
+		}
+	}
+
+	private double subObj(int i) {
+		double oldObj = getObj() - c.getCi(i);
+		ArrayList<Integer> curX = getX();
+		for (int k = 0; k < curX.size(); k++) {
+			int xk = curX.get(k);
+			if (xk != i) {
+				oldObj = oldObj - c.getCij(i,xk);
+				for (int l = k+1; l < curX.size(); l++) {
+					int xl = curX.get(l);
+					if (xl != i) {
+						oldObj = oldObj - c.getDijk(i,xk,xl);
+					}
+				}
+			}
+		}
+		return oldObj;
+	}
+
+	private double addObj(int i) {
+		double oldObj = getObj() + c.getCi(i);
+		ArrayList<Integer> curX = getX();
+		for (int k = 0; k < curX.size(); k++) {
+			int xk = curX.get(k);
+			if (xk != i) {
+				oldObj = oldObj + c.getCij(i,xk);
+				for (int l = k+1; l < curX.size(); l++) {
+					int xl = curX.get(l);
+					if (xl != i) {
+						oldObj = oldObj + c.getDijk(i,xk,xl);
+					}
+				}
+			}
+		}
+		return oldObj;
+	}
+	
+	private double swapObj(int i, int j) {
+		return swapObj(i,j,getX(),getObj());
+	}
+
+	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
+		oldObj = oldObj - c.getCi(i);
+		oldObj = oldObj + c.getCi(j);
+		for (int k = 0; k < curX.size(); k++) {
+			int xk = curX.get(k);
+			if (xk != i) {
+				oldObj = oldObj - c.getCij(i,xk);
+				oldObj = oldObj + c.getCij(j,xk);
+				for (int l = k+1; l < curX.size(); l++) {
+					int xl = curX.get(l);
+					if (xl != i) {
+						oldObj = oldObj - c.getDijk(i,xk,xl);
+						oldObj = oldObj + c.getDijk(j,xk,xl);
+					}
+				}
+			}
+		}
+		return oldObj;
 	}
 
 	private CubicSol genMutate2(CubicSol cs, int removeAttempts) {
@@ -258,21 +401,22 @@ public class CubicSol extends KnapsackSol {
 		CubicSol result = null;
 		boolean found = false;
 		int min = 0;
+		ArrayList<Integer> curR = getR();
 		while (!found && min < getXSize()) {
 			// Get index of min ratio
 			int i = minRatio(min);
 
 			// Swap with a random node and return
 			int j = rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			int rndCount = 0;
-			while (c.getA(j) - c.getA(i) > b - getTotalA() && rndCount < 10) {
+			while (c.getA(j) - c.getA(i) > getB() - getTotalA() && rndCount < 10) {
 				j = rnd.nextInt(getRSize());
-				j = getRItem(j);
+				j = curR.get(j);
 				rndCount++;
 			}
 
-			if (c.getA(j) - c.getA(i) <= b - getTotalA()) {
+			if (c.getA(j) - c.getA(i) <= getB() - getTotalA()) {
 				result = new CubicSol(this);
 				result.swap(i, j);
 				found = true;
@@ -297,7 +441,7 @@ public class CubicSol extends KnapsackSol {
 			int maxJ = -1;
 			for (Integer j: getR()) {
 				double newObj = swapObj(i, j);
-				if (newObj > maxObj && c.getA(j) - c.getA(i) <= b - getTotalA()) {
+				if (newObj > maxObj && c.getA(j) - c.getA(i) <= getB() - getTotalA()) {
 					maxObj = newObj;
 					maxJ = j;
 				}
@@ -328,7 +472,7 @@ public class CubicSol extends KnapsackSol {
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = true;
-		while (c.getA(j) - c.getA(i) > b - getTotalA() && ki < n) {
+		while (c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < n) {
 			if (changeI) {
 				ki++;
 				i = minRatio(ki);
@@ -342,7 +486,7 @@ public class CubicSol extends KnapsackSol {
 			}
 		}
 
-		if (c.getA(j) - c.getA(i) > b - getTotalA()) {
+		if (c.getA(j) - c.getA(i) > getB() - getTotalA()) {
 			return null;
 		}
 
@@ -356,7 +500,7 @@ public class CubicSol extends KnapsackSol {
 			nTObj = newObj;
 		} else {
 			boolean newMin = false;
-			while (tabuList[i][j] >= iteration && c.getA(j) - c.getA(i) > b - getTotalA() && ki < n) {
+			while (tabuList[i][j] >= iteration && c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < n) {
 				if (newMin) {
 					ki++;
 					i = minRatio(ki);
@@ -399,12 +543,13 @@ public class CubicSol extends KnapsackSol {
 		int i = minRatio(0);
 
 		// Swap with a random node and return
+		ArrayList<Integer> curR = getR();
 		int j = rnd.nextInt(getRSize());
-		j = getRItem(j);
+		j = curR.get(j);
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = false;
-		while (tabuList[i][j] >= iteration && c.getA(j) - c.getA(i) > b - getTotalA() && ki < n) {
+		while (tabuList[i][j] >= iteration && c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < n) {
 			if (changeI) {
 				ki++;
 				i = minRatio(ki);
@@ -413,14 +558,14 @@ public class CubicSol extends KnapsackSol {
 
 			kj++;
 			j =  rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			if (kj == n-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
 		}
 
-		if (c.getA(j) - c.getA(i) > b - getTotalA() || tabuList[i][j] >= iteration) {
+		if (c.getA(j) - c.getA(i) > getB() - getTotalA() || tabuList[i][j] >= iteration) {
 			return null;
 		}
 		CubicSol results = new CubicSol(this);
@@ -477,7 +622,7 @@ public class CubicSol extends KnapsackSol {
 		for(Integer i: getX()) {
 			for(Integer j: getR()) {
 				// Check for knapsack feasibility
-				if (c.getA(j)-c.getA(i) <= b - curTotalA) {
+				if (c.getA(j)-c.getA(i) <= getB() - curTotalA) {
 					double newObj = swapObj(i, j);
 					if (newObj > nTObj && tabuList[i][j] < iteration) {
 						ni = i;
@@ -524,7 +669,7 @@ public class CubicSol extends KnapsackSol {
 		for(Integer i: getX()) {
 			for(Integer j: getR()) {
 				// Check for knapsack feasibility
-				if (c.getA(j)-c.getA(i) <= b - curTotalA) {
+				if (c.getA(j)-c.getA(i) <= getB() - curTotalA) {
 					double newObj = swapObj(i, j);
 					if (newObj > nTObj && tabuList[i][j] < iteration) {
 						ni = i;
@@ -592,55 +737,84 @@ public class CubicSol extends KnapsackSol {
 		}
 	}
 
-	
+
 	@Override
 	public void healSol() {
-//		healSolImproving();
+		//		healSolImproving();
 		healSolRatio();
 	}
 
 	// most improving
 	public void healSolImproving() {
-		int totalA = this.getTotalA();
-		double obj = this.getObj();
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
 			int maxI = -1;
 			for (Integer i: this.getX()) {
-				double newObj = c.subObj(i, this.getX(), obj);
+				double newObj = subObj(i);
 				if (newObj > maxObj) {
 					maxObj = newObj;
 					maxI = i;
 				}
 			}
 			if (maxI != -1) {
-				getX().remove(Integer.valueOf(maxI));
-				getR().add(Integer.valueOf(maxI));
-				setXVals(maxI,false);
-				obj = maxObj;
-				totalA = p.removeA(maxI, totalA);
-				this.setTotalA(totalA);
-				this.setObj(obj);
+				removeI(maxI);
+				setObj(maxObj);
+				removeA(maxI);
 			} else {
 				System.err.println("Couldn't find an improving objective!!!");
 				System.exit(-1);
 			}
 		}
 	}
-	
+
 	//min ratio healing
 	public void healSolRatio() {
-		int totalA = this.getTotalA();
-		double obj = this.getObj();
 		while(!this.getValid()) {
 			int j = minRatio(0);
-			getX().remove(Integer.valueOf(j));
-			getR().add(Integer.valueOf(j));
-			setXVals(j,false);
-			obj = p.subObj(j, getX(), obj);
-			totalA = p.removeA(j, totalA);
-			this.setTotalA(totalA);
-			this.setObj(obj);
+			removeI(j);
+			setObj(subObj(j));
+			removeA(j);
+		}
+	}
+
+	public void writeSolution(String filename) {
+		try {
+			PrintWriter pw = new PrintWriter(filename);
+			pw.write(getObj() + "\n");
+			pw.write(getTotalA() + "\n");
+			for (Integer i: getX()) {
+				pw.write(i + " ");
+			}
+			pw.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("Error with Print Writer");
+		}
+	}
+
+	public void readSolution(String filename) { 
+		Scanner scr;
+		try {
+			scr = new Scanner(new FileInputStream(filename));
+
+			double readObj = scr.nextDouble();
+			int readTotalA = scr.nextInt();
+			if (readObj != -1) {
+				ArrayList<Integer> readX = new ArrayList<Integer>();
+				while (scr.hasNextInt()) {
+					readX.add(scr.nextInt());
+				}
+				ArrayList<Integer> readR = new ArrayList<Integer>();
+				for (int i = 0; i < n; i++) {
+					readR.add(i);
+				}
+				readR.removeAll(readX);
+				setObj(readObj);
+				setTotalA(readTotalA);
+				setX(readX);
+				setR(readR);
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Error finding file: " + filename);
 		}
 	}
 }

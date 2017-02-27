@@ -174,7 +174,6 @@ public class CubicMult extends MultipleKnapsack {
 		}
 	}
 
-
 	/**
 	 * Generate a solution by adding x's until knapsack full
 	 * and update the current objective value. 
@@ -205,7 +204,7 @@ public class CubicMult extends MultipleKnapsack {
 			} else {
 				x.add(i);
 				r.remove(Integer.valueOf(i));
-				totalAx = addA(i,totalAx);
+				addA(i,totalAx);
 				inX[i] = true;
 			}
 		}
@@ -214,8 +213,6 @@ public class CubicMult extends MultipleKnapsack {
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
-		int swaps = 0;
-		//		while (swapping && swaps < 5) {
 		while (swapping) {
 			int maxI = -1;
 			int maxJ = -1;
@@ -243,13 +240,13 @@ public class CubicMult extends MultipleKnapsack {
 				x.add(addI);
 				r.remove(Integer.valueOf(addI));
 				curObj = curObj + add[0];
-				totalAx = addA(addI,totalAx);
+				addA(addI,totalAx);
 			} else if (subChange > maxChange) {
 				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
 				curObj = curObj + sub[0];
-				totalAx = removeA(subI,totalAx);
+				removeA(subI,totalAx);
 			} else {
 				if (maxI == -1 && maxJ == -1) {
 					swapping = false;
@@ -259,218 +256,15 @@ public class CubicMult extends MultipleKnapsack {
 					x.remove(Integer.valueOf(maxI));
 					r.add(maxI);
 					curObj = curObj + maxChange;
-					totalAx = addA(maxJ,removeA(maxI,totalAx));
+					removeA(maxI,totalAx);
+					addA(maxJ,totalAx);
 				}
 			}
-			swaps++;
 		}
 
 		System.out.println("Generated Incumbent: " + curObj);
 		Collections.sort(x);
 		System.out.println(x.toString());
-	}
-
-	/**
-	 * Calculate the objective value with the given x values.
-	 */
-	public double getObj(ArrayList<Integer> x) {
-		int i,j,k;
-		double curObj = 0;
-		for(i = 0; i < x.size(); i++){
-			int xi = x.get(i);
-			curObj += ci[xi];
-			for (j = i+1; j < x.size(); j++){
-				int xj = x.get(j);
-				curObj += this.getCij(xi, xj);
-				for(k = j+1; k < x.size(); k++) {
-					int xk = x.get(k);
-					curObj += this.getDijk(xi,xj,xk);
-				}
-			}
-		} 
-		return curObj;
-	}
-
-
-	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
-		if (x.size() <= 1) {
-			return -1;
-		}
-		double minRatio = Double.MAX_VALUE;
-		int minI = -1;
-		for (Integer i: x) {
-			double ratio = this.getRatio(i);
-			if (ratio < minRatio) {
-				minRatio = ratio;
-				minI = i;
-			}
-		}
-
-		if (minI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = subObj(minI, x, 0);
-			if (change > 0) {
-				return minI;
-			} else {
-				return -1;
-			}
-		} else {
-			return minI;
-		}
-	}
-
-	public int tryAdd(int[] totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
-		if (x.size() == this.getN()) {
-			return -1;
-		}
-		double maxRatio = -1*Double.MAX_VALUE;
-		int maxI = -1;
-		for (Integer i: r) {
-			if (addTotalA(totalA,i)) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
-					maxI = i;
-				}
-			}
-		}
-
-		if (maxI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = addObj(maxI, x, 0);
-			if (change > 0) {
-				return maxI;
-			} else {
-				return -1;
-			}
-		} else {
-			return maxI;
-		}
-	}
-
-	public double subObj(int i, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj - this.getCi(i);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj - this.getCij(i,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj - this.getDijk(i,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
-
-	public double addObj(int i, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj + this.getCi(i);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj + this.getCij(i,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj + this.getDijk(i,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
-
-	public int[] removeA(int i, int[] totalA) {
-		int[] newTotalA = new int[m];
-		for (int j = 0; j < m; j++) {
-			newTotalA[j] = totalA[j] - a[j][i];
-		}
-		return newTotalA;
-	}
-
-	public int[] addA(int i, int[] totalA) {
-		int[] newTotalA = new int[m];
-		for (int j = 0; j < m; j++) {
-			newTotalA[j] = totalA[j] + a[j][i];
-		}
-		return newTotalA;
-	}
-
-	public boolean checkValid(ArrayList<Integer> x) {
-		int[] totalA = calcAllTotalA(x);
-		return totalAValid(totalA);
-	}
-	
-	public int[] calcAllTotalA(ArrayList<Integer> x) {
-		int[] totalA = new int[m];
-		for (Integer i: x) {
-			for(int j = 0; j < m; j++) {
-				totalA[j] += a[j][i];
-			}
-		}
-		return totalA;
-	}
-	
-	public boolean totalAValid(int[] totalA) {
-		for (int i = 0; i < m; i++) {
-			if (totalA[i] > b[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public boolean addTotalA(int[] totalA, int j) {
-		for (int i = 0; i < m; i++) {
-			if (totalA[i] + a[i][j] > b[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public boolean subTotalA(int[] totalA, int j) {
-		for (int i = 0; i < m; i++) {
-			if (totalA[i] - a[i][j] > b[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean swapTotalA(int[] totalA, int i, int j) {
-		for (int k = 0; k < m; k++) {
-			if (totalA[k] + a[k][j] - a[k][i] > b[k]) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj - this.getCi(i);
-		oldObj = oldObj + this.getCi(j);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj - this.getCij(i,xk);
-				oldObj = oldObj + this.getCij(j,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj - this.getDijk(i,xk,xl);
-						oldObj = oldObj + this.getDijk(j,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
 	}
 
 	// Try to add a variable to the solution
@@ -522,10 +316,95 @@ public class CubicMult extends MultipleKnapsack {
 		return result;
 	}
 
+	private void addA(int i, int[] totalA) {
+		for (int j = 0; j < m; j++) {
+			totalA[j] += a[j][i];
+		}
+	}
+
+	private void removeA(int i, int[] totalA) {
+		for (int j = 0; j < m; j++) {
+			totalA[j] -= a[j][i];
+		}
+	}
+
+	private boolean totalAValid(int[] totalA) {
+		for (int i = 0; i < m; i++) {
+			if (totalA[i] > b[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean addTotalA(int[] totalA, int j) {
+		for (int i = 0; i < m; i++) {
+			if (totalA[i] + a[i][j] > b[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean swapTotalA(int[] totalA, int i, int j) {
+		for (int k = 0; k < m; k++) {
+			if (totalA[k] + a[k][j] - a[k][i] > b[k]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+
+	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
+		oldObj = oldObj - this.getCi(i);
+		oldObj = oldObj + this.getCi(j);
+		for (int k = 0; k < curX.size(); k++) {
+			int xk = curX.get(k);
+			if (xk != i) {
+				oldObj = oldObj - this.getCij(i,xk);
+				oldObj = oldObj + this.getCij(j,xk);
+				for (int l = k+1; l < curX.size(); l++) {
+					int xl = curX.get(l);
+					if (xl != i) {
+						oldObj = oldObj - this.getDijk(i,xk,xl);
+						oldObj = oldObj + this.getDijk(j,xk,xl);
+					}
+				}
+			}
+		}
+		return oldObj;
+	}
+
+	/**
+	 * Calculate the objective value with the given x values.
+	 */
+	public double getObj(ArrayList<Integer> x) {
+		int i,j,k;
+		double curObj = 0;
+		for(i = 0; i < x.size(); i++){
+			int xi = x.get(i);
+			curObj += ci[xi];
+			for (j = i+1; j < x.size(); j++){
+				int xj = x.get(j);
+				curObj += this.getCij(xi, xj);
+				for(k = j+1; k < x.size(); k++) {
+					int xk = x.get(k);
+					curObj += this.getDijk(xi,xj,xk);
+				}
+			}
+		} 
+		return curObj;
+	}
+
+
+
+
 	public int getN() {
 		return n;
 	}
-	
+
 	public int getM() {
 		return m;
 	}

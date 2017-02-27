@@ -18,13 +18,21 @@ import Runner.RndGen;
 public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<ProblemSol>{
 
 	static Problem p = ProblemFactory.getProblem();
+	static int n = p.getN();
 	static boolean useHealing = false;
-
-	public int n = p.getN();
-	public Random rnd = RndGen.getRnd();
+	static Random rnd = RndGen.getRnd();
+	
+	private ArrayList<Integer> x;
+	private ArrayList<Integer> r;
+	private boolean[] xVals;
+	private boolean valid;
+	private double obj;
 
 	public ProblemSol() {
 		updateProblem();
+		x = new ArrayList<Integer>();
+		r = new ArrayList<Integer>();
+		xVals = new boolean[n];
 	}
 
 	private void updateProblem() {
@@ -40,59 +48,122 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 		return useHealing;
 	}
 
-	//*****************
-	// Access Methods
-	//*****************
+	//**********************
+	// Access/Setter Methods
+	//**********************
 
 	/*
 	 * Return the solution objective
 	 */
-	public abstract double getObj();
+	public double getObj() {
+		return obj;
+	}
+	
+	/*
+	 * Set the solution objective
+	 */
+	public void setObj(double newObj) {
+		obj = newObj;
+	}
 
 	/*
 	 * Get the entire solution array
 	 */
-	public abstract ArrayList<Integer> getX();
+	public ArrayList<Integer> getX() {
+		return x;
+	}
+	
+	/*
+	 * Set the entire solution array
+	 */
+	public void setX(ArrayList<Integer> newX) {
+		x = new ArrayList<Integer>(newX);
+	}
 
 	/*
 	 * Get the entire unused variable array
 	 */
-	public abstract ArrayList<Integer> getR();
-
+	public ArrayList<Integer> getR() {
+		return r;
+	}
+	
 	/*
-	 * Return the i'th item in the solution
+	 * Set the entire solution array
 	 */
-	public abstract int getXItem(int i);
-
-	/*
-	 * Return the i'th item not in the solution
-	 */
-	public abstract int getRItem(int i);
+	public void setR(ArrayList<Integer> newR) {
+		r = new ArrayList<Integer>(newR);
+	}
 
 	/*
 	 * Return the size of the solution
 	 */
-	public abstract int getXSize();
+	public int getXSize() {
+		return x.size();
+	}
 
 	/*
 	 * Return the amount of unused variables
 	 */
-	public abstract int getRSize();
-	
-	/*
-	 * Return if the solution is feasible/valid
-	 */
-	public abstract boolean getValid();
+	public int getRSize() {
+		return r.size();
+	}
 
 	/*
 	 * Return xVals[i] where xVals[i] is true iff i is in the solution
 	 */
-	public abstract boolean getXVals(int i);
+	public boolean getXVals(int i) {
+		return xVals[i];
+	}
+	
+	/*
+	 * Set xVals[i] to the specified boolean
+	 */
+	public void setXVals(int i, boolean val) {
+		xVals[i] = val;
+	}
+	
+	/*
+	 * Return if the solution is feasible/valid
+	 */
+	public boolean getValid() {
+		updateValid();
+		return valid;
+	}
+	
+	/*
+	 * Set the problem validity
+	 */
+	public void setValid(boolean newValid) {
+		valid = newValid;
+	}
+	
+	/*
+	 * Update the problem validity
+	 */
+	public abstract void updateValid();
 
 	
 	//*****************
 	// Mutation Methods
 	//*****************
+	
+	/*
+	 * Add variable i to the solution
+	 */
+	public void addI(int i) {
+		xVals[i] = true;
+		x.add(i);
+		r.remove(Integer.valueOf(i));
+	}
+	
+	/*
+	 * Remove variable i from the solution
+	 */
+	public void removeI(int i) {
+		xVals[i] = false;
+		r.add(i);
+		x.remove(Integer.valueOf(i));
+	}
 	
 	/*
 	 * Swap item i out of the solution and item j into the solution
@@ -213,4 +284,11 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 	public int compare(ProblemSol o1, ProblemSol o2) {
 		return o1.compareTo(o2);
 	}
+	
+	//************
+	// File I/O
+	//************
+	public abstract void writeSolution(String filename);
+	
+	public abstract void readSolution(String filename);
 }

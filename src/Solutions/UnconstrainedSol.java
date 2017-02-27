@@ -1,6 +1,10 @@
 package Solutions;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import Problems.Unconstrained;
 
@@ -96,42 +100,8 @@ public class UnconstrainedSol extends ProblemSol {
 	@Override
 	public void swap(int i, int j) {
 		this.obj = u.swapObj(i, j, x, obj);
-		xVals[i] = false;
-		xVals[j] = true;
-		remove(x,i);
-		x.add(j);
-		remove(r,j);
-		r.add(i);
-	}
-
-	@Override
-	public ArrayList<Integer> getX() {
-		return x;
-	}
-
-	@Override
-	public ArrayList<Integer> getR() {
-		return r;
-	}
-
-	@Override
-	public int getRItem(int i) {
-		return r.get(i);
-	}
-
-	@Override
-	public int getXItem(int i) {
-		return x.get(i);
-	}
-
-	@Override
-	public int getRSize() {
-		return r.size();
-	}
-
-	@Override
-	public int getXSize() {
-		return x.size();
+		removeI(i);
+		addI(j);
 	}
 
 	@Override
@@ -227,8 +197,9 @@ public class UnconstrainedSol extends ProblemSol {
 		int i = maxTau(0);
 
 		// Swap with a random node and return
+		ArrayList<Integer> curR = getR();
 		int j = rnd.nextInt(getRSize());
-		j = getRItem(j);
+		j = curR.get(j);
 
 		UnconstrainedSol result = new UnconstrainedSol(this);
 		result.swap(i, j);
@@ -326,8 +297,9 @@ public class UnconstrainedSol extends ProblemSol {
 		int i = maxTau(0);
 
 		// Swap with a random node and return
+		ArrayList<Integer> curR = getR();
 		int j = rnd.nextInt(getRSize());
-		j = getRItem(j);
+		j = curR.get(j);
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = false;
@@ -340,7 +312,7 @@ public class UnconstrainedSol extends ProblemSol {
 
 			kj++;
 			j =  rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			if (kj == n-1) {
 				kj = -1;
 				changeI = !changeI;
@@ -407,23 +379,19 @@ public class UnconstrainedSol extends ProblemSol {
 
 	// Try to add a variable to the solution
 	private int tryAdd() {
-		int index = p.tryAdd(-1, x, r, false);
+		int index = u.tryAdd(-1, x, r, false);
 		if (index != -1) {
-			xVals[index] = true;
-			x.add(index);
-			remove(r, index);
-			this.obj = p.addObj(index, x, obj);
+			addI(index);
+			this.obj = u.addObj(index, x, obj);
 		}
 		return index;
 	}
 
 	private int trySub() {
-		int index = p.trySub(x, false);
+		int index = u.trySub(x, false);
 		if (index != -1) {
-			xVals[index] = false;
-			r.add(index);
-			remove(x, index);
-			this.obj = p.subObj(index, x, obj);
+			removeI(index);
+			this.obj = u.subObj(index, x, obj);
 		}
 		return index;
 	}
@@ -438,20 +406,6 @@ public class UnconstrainedSol extends ProblemSol {
 	public ProblemSol genMutate(int removeAttempts) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public boolean getValid() {
-		return valid;
-	}
-
-	@Override
-	public boolean getXVals(int i) {
-		return xVals[i];
-	}
-
-	private void remove(ArrayList<Integer> arr, int i) {
-		arr.remove(Integer.valueOf(i));
 	}
 
 	@Override
@@ -476,6 +430,50 @@ public class UnconstrainedSol extends ProblemSol {
 	public void healSol() {
 		// Unneeded: There are no infeasible solutions to the Unconstrained Cubic.
 		return;
+	}
+	
+	public void writeSolution(String filename) {
+		try {
+			PrintWriter pw = new PrintWriter(filename);
+			pw.write(getObj() + "\n");
+			for (Integer i: getX()) {
+				pw.write(i + " ");
+			}
+			pw.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("Error with Print Writer");
+		}
+	}
+	
+	public void readSolution(String filename) { 
+		Scanner scr;
+		try {
+			scr = new Scanner(new FileInputStream(filename));
+
+			double readObj = scr.nextDouble();
+			if (readObj != -1) {
+				ArrayList<Integer> readX = new ArrayList<Integer>();
+				while (scr.hasNextInt()) {
+					readX.add(scr.nextInt());
+				}
+				ArrayList<Integer> readR = new ArrayList<Integer>();
+				for (int i = 0; i < n; i++) {
+					readR.add(i);
+				}
+				readR.removeAll(readX);
+				setObj(readObj);
+				setX(readX);
+				setR(readR);
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Error finding file: " + filename);
+		}
+	}
+
+	@Override
+	public void updateValid() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

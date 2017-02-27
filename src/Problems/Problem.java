@@ -11,8 +11,6 @@ public abstract class Problem {
 		ProblemFactory.setProblem(this);
 	}
 	
-	public abstract boolean checkValid(ArrayList<Integer> x);
-	
 	public abstract double getObj(ArrayList<Integer> x);
 	
 	public abstract int getN();

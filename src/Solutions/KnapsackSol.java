@@ -1,244 +1,110 @@
 package Solutions;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Random;
-import java.util.Scanner;
 
-import Problems.Problem;
-import Problems.ProblemFactory;
+import Problems.Knapsack;
 
 
 public abstract class KnapsackSol extends ProblemSol {
 
-	private ArrayList<Integer> x;
-	private ArrayList<Integer> r;
-	private boolean[] xVals;
-	private boolean valid;
-	private double obj;
+	Knapsack k = (Knapsack)p;
 	private int totalA;
+	private int b;
 
 	public KnapsackSol() {
 		super();
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		xVals = new boolean[p.getN()];
-		p.genInit(x, r);
-		for (Integer i: x) {
-			xVals[i] = true;
+		k.genInit(getX(), getR());
+		for (Integer i: getX()) {
+			setXVals(i,true);
 		}
-		obj = p.getObj(x);
+		setObj(k.getObj(getX()));
 		calcTotalA();
 		updateValid();
+		updateB();
 	}
 	
 	public KnapsackSol(String filename) {
 		super();
 		readSolution(filename);
-		xVals = new boolean[p.getN()];
-		for (Integer i : x) {
-			xVals[i] = true;
+		for (Integer i : getX()) {
+			setXVals(i,true);
 		}
 		updateValid();
+		updateB();
 	}
 	
 	public KnapsackSol(KnapsackSol ks) {
 		super();
-		xVals = new boolean[p.getN()];
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		for (Integer i : ks.getX()) {
-			x.add(i);
-			xVals[i] = true;
+		setX(ks.getX());
+		setR(ks.getR());
+		for (Integer i : getX()) {
+			setXVals(i,true);
 		}
-		for (Integer i : ks.getR()) {
-			r.add(i);
-		}
-		obj = ks.getObj();
+		setObj(ks.getObj());
 		totalA = ks.getTotalA();
 		updateValid();
+		updateB();
 	}
 
 	public KnapsackSol(boolean[] xVals) {
 		super();
-		this.xVals = xVals;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
+		ArrayList<Integer> x = new ArrayList<Integer>();
+		ArrayList<Integer> r = new ArrayList<Integer>();
 		for (int i = 0; i < xVals.length; i++) {
 			if (xVals[i]) {
 				x.add(i);
 			} else {
 				r.add(i);
 			}
+			setXVals(i,xVals[i]);
 		}
-		obj = p.getObj(x);
+		setX(x);
+		setR(r);
+		setObj(k.getObj(x));
 		calcTotalA();
 		updateValid();
+		updateB();
 	}
 
 	public KnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super();
-		xVals = new boolean[p.getN()];
-		this.x = x;
-		this.r = r;
+		setX(x);
+		setR(r);
 		for (Integer i: x) {
-			xVals[i] = true;
+			setXVals(i,true);
 		}
-		obj = p.getObj(x);
+		setObj(k.getObj(x));
 		calcTotalA();
 		updateValid();
+		updateB();
 	}
 
 	public KnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
 		super();
-		xVals = new boolean[p.getN()];
-		this.x = x;
-		this.r = r;
+		setX(x);
+		setR(r);
 		for (Integer i: x) {
-			xVals[i] = true;
+			setXVals(i,true);
 		}
-		this.obj = obj;
+		setObj(obj);
 		this.totalA = totalA;
 		updateValid();
-	}
-
-	public void update(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
-		this.x = new ArrayList<Integer>(x);
-		this.r = new ArrayList<Integer>(r);
-		for (Integer i: x) {
-			xVals[i] = true;
-		}
-		for (Integer i: r) {
-			xVals[i] = false;
-		}
-		this.obj = obj;
-		this.totalA = totalA;
-		updateValid();
-	}
-
-	private void updateValid() {
-		valid = p.checkValid(x);
-	}
-
-	public double swapObj(int i, int j) {
-		return p.swapObj(i,j,x,obj);
-	}
-
-	/*
-	 * Swap the boolean values in the current x array at indexes i and j
-	 * @param curX
-	 * @param i
-	 * @param j
-	 */
-	public void swap(int i, int j) {
-		this.obj = swapObj(i,j);
-		this.totalA = p.removeA(i,p.addA(j,totalA));
-		updateValid();
-		xVals[i] = false;
-		xVals[j] = true;
-		remove(x,i);
-		x.add(j);
-		remove(r,j);
-		r.add(i);
+		updateB();
 	}
 	
-	public int tryImproveAdd() {
-		int index = p.tryAdd(totalA, x, r, true);
-		if (index != -1) {
-			xVals[index] = true;
-			x.add(index);
-			remove(r, index);
-			totalA = p.addA(index, totalA);
-			this.obj = p.addObj(index, x, obj);
-			updateValid();
-		}
-		return index;
-	}
-
-	public int tryImproveSub() {
-		int index = p.trySub(x, true);
-		if (index != -1) {
-			xVals[index] = false;
-			r.add(index);
-			remove(x, index);
-			totalA = p.removeA(index, totalA);
-			this.obj = p.subObj(index, x, obj);
-			updateValid();
-		}
-		return index;
-	}
-
-	// Try to add a variable to the solution
-	public int tryAdd() {
-		int index = p.tryAdd(totalA, x, r, false);
-		if (index != -1) {
-			xVals[index] = true;
-			x.add(index);
-			remove(r, index);
-			setTotalA(p.addA(index, totalA));
-			setObj(p.addObj(index, x, obj));
-			updateValid();
-		}
-		return index;
-	}
-
-	public int trySub() {
-		int index = p.trySub(x, false);
-		if (index != -1) {
-			xVals[index] = false;
-			r.add(index);
-			remove(x, index);
-			setTotalA(p.removeA(index, totalA));
-			setObj(p.subObj(index, x, obj));
-			updateValid();
-		}
-		return index;
-	}
-
-	public int getXSize() {
-		return x.size();
-	}
-
-	public int getXItem(int i) {
-		if (i >= 0 && i < x.size()) {
-			return x.get(i);
+	private void updateB() {
+		if (useHealing) {
+			b = Integer.MAX_VALUE;
 		} else {
-			return -1;
+			b = k.getB();
 		}
-	}
-
-	public int getRSize() {
-		return r.size();
-	}
-
-	public int getRItem(int i) {
-		if (i >= 0 && i < r.size()) {
-			return r.get(i);
-		} else {
-			return -1;
-		}
-	}
-
-	public ArrayList<Integer> getX() {
-		return x;
-	}
-
-	public ArrayList<Integer> getR() {
-		return r;
-	}
-
-	public double getObj() {
-		return obj;
-	}
-
-	public void setObj(double obj) {
-		this.obj = obj;
 	}
 
 	public void calcTotalA() {
-		setTotalA(p.calcTotalA(x));
+		int totalA = 0;
+		for (Integer i: getX()) {
+			totalA += k.getA(i);
+		}
+		setTotalA(totalA);
 	}
 
 	public int getTotalA() {
@@ -248,65 +114,16 @@ public abstract class KnapsackSol extends ProblemSol {
 	public void setTotalA(int totalA) {
 		this.totalA = totalA;
 	}
-
-	public boolean getValid() {
-		updateValid();
-		return valid;
-	}
-
-	public void setValid(boolean validity) {
-		valid = validity;
-	}
-
-	public boolean getXVals(int i) {
-		return xVals[i];
+	
+	public void addA(int i) {
+		this.totalA += k.getA(i);
 	}
 	
-	public void setXVals(int i, boolean bool) {
-		xVals[i] = bool;
-	}
-
-	private void remove(ArrayList<Integer> arr, int i) {
-		arr.remove(Integer.valueOf(i));
+	public void removeA(int i) {
+		this.totalA -= k.getA(i);
 	}
 	
-	public void writeSolution(String filename) {
-		try {
-			PrintWriter pw = new PrintWriter(filename);
-			pw.write(obj + "\n");
-			pw.write(totalA + "\n");
-			for (Integer i: x) {
-				pw.write(i + " ");
-			}
-			pw.close();
-		} catch (FileNotFoundException e) {
-			System.err.println("Error with Print Writer");
-		}
+	public int getB() {
+		return b;
 	}
-	
-	public void readSolution(String filename) { 
-		Scanner scr;
-		try {
-			scr = new Scanner(new FileInputStream(filename));
-
-			double readObj = scr.nextDouble();
-			int readTotalA = scr.nextInt();
-			if (readObj != -1) {
-				x = new ArrayList<Integer>();
-				while (scr.hasNextInt()) {
-					x.add(scr.nextInt());
-				}
-				r = new ArrayList<Integer>();
-				for (int i = 0; i < n; i++) {
-					r.add(i);
-				}
-				r.removeAll(x);
-				obj = readObj;
-				totalA = readTotalA;
-			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Error finding file: " + filename);
-		}
-	}
-	
 }

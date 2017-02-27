@@ -9,183 +9,55 @@ import java.util.Scanner;
 
 import Problems.Fractional;
 
-public class FractionalSol extends ProblemSol {
+public class FractionalSol extends KnapsackSol {
 
-	private static Fractional f;
+	private static Fractional f = (Fractional)p;
 
-	private ArrayList<Integer> x;
-	private ArrayList<Integer> r;
-	private boolean[] xVals;
-	private boolean valid;
-	private double obj;
 	private long[] num;
 	private long[] den;
-	private int totalA;
-
-	private int b;
 
 	public FractionalSol() {
 		super();
-		f = (Fractional)p;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		xVals = new boolean[p.getN()];
-		p.genInit(x, r);
-		for (Integer i: x) {
-			xVals[i] = true;
-		}
-		obj = f.getObj(x);
-		long[] fNum = f.getNum();
-		long[] fDen = f.getDen();
-		num = new long[f.getM()];
-		den = new long[f.getM()];
-		for (int i = 0; i < f.getM(); i++) {
-			num[i] = fNum[i];
-			den[i] = fDen[i];
-		}
+		setNum(f.getNum());
+		setDen(f.getDen());
 		calcTotalA();
-		updateValid();
-		updateB();
 	}
 
 	public FractionalSol(String filename) {
-		super();
-		f = (Fractional)p;
-		readSolution(filename);
-		xVals = new boolean[p.getN()];
-		for (Integer i : x) {
-			xVals[i] = true;
-		}
-		updateValid();
-		updateB();
+		super(filename);
 	}
 
 	public FractionalSol(FractionalSol fs) {
 		super();
-		f = (Fractional)p;
-		xVals = new boolean[p.getN()];
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		for (Integer i : fs.getX()) {
-			x.add(i);
-			xVals[i] = true;
-		}
-		for (Integer i : fs.getR()) {
-			r.add(i);
-		}
-		obj = fs.getObj();
-		totalA = fs.getTotalA();
-		long[] fNum = fs.getNum();
-		long[] fDen = fs.getDen();
-		num = new long[f.getM()];
-		den = new long[f.getM()];
-		for (int i = 0; i < f.getM(); i++) {
-			num[i] = fNum[i];
-			den[i] = fDen[i];
-		}
-		updateValid();
-		updateB();
+		setNum(fs.getNum());
+		setDen(fs.getDen());
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, long[] num, long[] den) {
 		super();
-		f = (Fractional)p;
-		xVals = new boolean[p.getN()];
-		this.x = new ArrayList<Integer>(x);
-		this.r = new ArrayList<Integer>(r);
-		for (Integer i : x) {
-			xVals[i] = true;
-		}
-		this.obj = obj;
-		calcTotalA();
-		this.num = new long[f.getM()];
-		this.den = new long[f.getM()];
-		for (int i = 0; i < f.getM(); i++) {
-			this.num[i] = num[i];
-			this.den[i] = den[i];
-		}
-		updateValid();
-		updateB();
+		setNum(num);
+		setDen(num);
 	}
 
 	public FractionalSol(boolean[] newXVals) {
 		super();
-		f = (Fractional)p;
-		this.xVals = newXVals;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		for (int i = 0; i < xVals.length; i++) {
-			if (xVals[i]) {
-				x.add(i);
-			} else {
-				r.add(i);
-			}
-		}
-		obj = f.getObj(x);
-		calcTotalA();
-		long[] fNum = f.getNum();
-		long[] fDen = f.getDen();
-		num = new long[f.getM()];
-		den = new long[f.getM()];
-		for (int i = 0; i < f.getM(); i++) {
-			num[i] = fNum[i];
-			den[i] = fDen[i];
-		}
-		updateValid();
-		updateB();
+		setNum(f.getNum());
+		setDen(f.getDen());
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super();
-		f = (Fractional)p;
-		xVals = new boolean[p.getN()];
-		this.x = new ArrayList<Integer>(x);
-		this.r = new ArrayList<Integer>(r);
-		for (Integer i : x) {
-			xVals[i] = true;
-		}
-		this.obj = f.getObj(x);
+		setNum(f.getNum());
+		setDen(f.getDen());
+	}
+
+	public void updateValid() {
 		calcTotalA();
-		long[] fNum = f.getNum();
-		long[] fDen = f.getDen();
-		num = new long[f.getM()];
-		den = new long[f.getM()];
-		for (int i = 0; i < f.getM(); i++) {
-			num[i] = fNum[i];
-			den[i] = fDen[i];
-		}
-		updateValid();
-		updateB();
-	}
-
-	private void updateB() {
-		if (useHealing) {
-			b = Integer.MAX_VALUE;
+		if (getTotalA() <= f.getB()) {
+			setValid(true);
 		} else {
-			b = f.getB();
+			setValid(false);
 		}
-	}
-
-	private void calcTotalA() {
-		totalA = f.calcTotalA(x);
-	}
-
-	private void updateValid() {
-		calcTotalA();
-		if (totalA <= f.getB()) {
-			valid = true;
-		} else {
-			valid = false;
-		}
-	}
-
-	public int getTotalA() {
-		return totalA;
-	}
-
-	@Override
-	public double getObj() {
-		return obj;
 	}
 
 	public long[] getNum() {
@@ -196,49 +68,30 @@ public class FractionalSol extends ProblemSol {
 		return den;
 	}
 
+	public void setNum(long[] num) {
+		this.num = new long[n];
+		for (int i = 0; i < n; i++) {
+			this.num[i] = num[i];
+		}
+	}
+
+	public void setDen(long[] den) {
+		this.den = new long[n];
+		for (int i = 0; i < n; i++) {
+			this.den[i] = den[i];
+		}
+	}
+
 	@Override
 	public void swap(int i, int j) {
-		this.totalA = f.removeA(i,f.addA(j,totalA));
-		this.obj = swapObj(i, j);
-		this.num = f.swapNum(i,j,num);
-		this.den = f.swapDen(i,j,den);
+		addA(j);
+		removeA(i);
+		setObj(swapObj(i, j));
+		this.num = swapNum(i,j,num);
+		this.den = swapDen(i,j,den);
+		addI(j);
+		removeI(i);
 		updateValid();
-		xVals[i] = false;
-		xVals[j] = true;
-		x.remove(Integer.valueOf(i));
-		x.add(j);
-		r.remove(Integer.valueOf(j));
-		r.add(i);	
-	}
-
-	@Override
-	public ArrayList<Integer> getX() {
-		return x;
-	}
-
-	@Override
-	public ArrayList<Integer> getR() {
-		return r;
-	}
-
-	@Override
-	public int getRItem(int i) {
-		return r.get(i);
-	}
-
-	@Override
-	public int getXItem(int i) {
-		return x.get(i);
-	}
-
-	@Override
-	public int getRSize() {
-		return r.size();
-	}
-
-	@Override
-	public int getXSize() {
-		return x.size();
 	}
 
 	// Shift a variable in or out of the current solution
@@ -259,38 +112,121 @@ public class FractionalSol extends ProblemSol {
 
 	// Try to add a variable to the solution
 	private int tryAdd() {
-		int index = f.tryAdd(totalA, x, r, false, num, den);
+		int index = tryAdd(getTotalA(), getX(), getR(), false, num, den);
 		if (index != -1) {
-			xVals[index] = true;
-			x.add(index);
-			r.remove(Integer.valueOf(index));
-			totalA = f.addA(index, totalA);
-			obj = f.addObj(index, x, num, den);
-			num = f.addNum(index, num);
-			den = f.addDen(index, den);
+			addI(index);
+			addA(index);
+			setObj(addObj(index,num,den));
+			num = addNum(index, num);
+			den = addDen(index, den);
 			updateValid();
 		}
 		return index;
 	}
 
 	private int trySub() {
-		int index = f.trySub(x, false, num, den);
+		int index = trySub(getX(), false, num, den);
 		if (index != -1) {
-			xVals[index] = false;
-			r.add(index);
-			x.remove(Integer.valueOf(index));
-			totalA = f.removeA(index, totalA);
-			obj = f.subObj(index, x, num, den);
-			num = f.subNum(index, num);
-			den = f.subDen(index, den);
+			removeI(index);
+			removeA(index);
+			setObj(subObj(index, num, den));
+			num = subNum(index, num);
+			den = subDen(index, den);
 			updateValid();
 		}
 		return index;
 	}
 
+	private int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
+			boolean improveOnly, long[] num, long[] den) {
+		if (r.size() < 1) {
+			return -1;
+		}
+
+		int b = this.getB();
+		double maxRatio = Double.MIN_VALUE;
+		int maxI = -1;
+		for (Integer i: r) {
+			if (totalA + f.getA(i) <= b) {
+				double ratio = f.getRatio(i);
+				if (ratio > maxRatio) {
+					maxRatio = ratio;
+					maxI = i;
+				}
+			}
+		}
+
+		if (maxI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = addObj(maxI, num, den);
+			double curObj = 0;
+			for (int j = 0; j < f.getM(); j++) {
+				curObj += (double)(num[j])/den[j];
+			}
+			if (change > curObj) {
+				return maxI;
+			} else {
+				return -1;
+			}
+		} else {
+			return maxI;
+		}
+	}
+
+	private int trySub(ArrayList<Integer> x, boolean improveOnly, long[] num, long[] den) {
+		if (x.size() <= 1) {
+			return -1;
+		}
+		int minI = minRatio(0);
+
+		if (minI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = subObj(minI, num, den);
+			double curObj = 0;
+			for (int j = 0; j < f.getM(); j++) {
+				curObj += (double)(num[j])/den[j];
+			}
+			if (change > curObj) {
+				return minI;
+			} else {
+				return -1;
+			}
+		} else {
+			return minI;
+		}
+	}
+
+	private double subObj(int i, long[] num, long[] den) {
+		double obj = 0;
+		for (int j = 0; j < f.getM(); j++) {
+			if (den[j]-f.getD(j,i) == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			obj += (double)(num[j]-f.getC(j,i))/(den[j]-f.getD(j,i));
+		}
+
+		return obj;
+	}
+
+	private double addObj(int i, long[] num, long[] den) {
+		double obj = 0;
+		for (int j = 0; j < f.getM(); j++) {
+			if (den[j]+f.getD(j,i) == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			obj += (double)(num[j]+f.getC(j,i))/(den[j]+f.getD(j,i));
+		}
+
+		return obj;
+	}
+
 	private double swapObj(int i, int j) {
-		long[] num = f.swapNum(i, j, this.num);
-		long[] den = f.swapDen(i, j, this.den);
+		long[] num = swapNum(i, j, this.num);
+		long[] den = swapDen(i, j, this.den);
 		double newObj = 0;
 		for (int k = 0; k < f.getM(); k++) {
 			if (den[k] == 0) {
@@ -299,6 +235,54 @@ public class FractionalSol extends ProblemSol {
 			newObj += (double)(num[k])/den[k];
 		}
 		return newObj;
+	}
+
+	public long[] swapNum(int i, int j, long[] num) {
+		long[] newNum = new long[num.length];
+		for (int k = 0; k < f.getM(); k++) {
+			newNum[k] = num[k] + f.getC(k,j) - f.getC(k,i);
+		}
+		return newNum;
+	}
+
+	public long[] subNum(int i, long[] num) {
+		long[] newNum = new long[num.length];
+		for (int k = 0; k < f.getM(); k++) {
+			newNum[k] = num[k] - f.getC(k,i);
+		}
+		return newNum;
+	}
+
+	public long[] addNum(int i, long[] num) {
+		long[] newNum = new long[num.length];
+		for (int k = 0; k < f.getM(); k++) {
+			newNum[k] = num[k] + f.getC(k,i);
+		}
+		return newNum;
+	}
+
+	public long[] swapDen(int i, int j, long[] den) {
+		long[] newDen = new long[den.length];
+		for (int k = 0; k < f.getM(); k++) {
+			newDen[k] = den[k] + f.getC(k,j) - f.getC(k,i);
+		}
+		return newDen;
+	}
+
+	public long[] subDen(int i, long[] den) {
+		long[] newDen = new long[den.length];
+		for (int k = 0; k < f.getM(); k++) {
+			newDen[k] = den[k] - f.getC(k,i);
+		}
+		return newDen;
+	}
+
+	public long[] addDen(int i, long[] den) {
+		long[] newDen = new long[den.length];
+		for (int k = 0; k < f.getM(); k++) {
+			newDen[k] = den[k] + f.getC(k,i);
+		}
+		return newDen;
 	}
 
 	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
@@ -371,7 +355,7 @@ public class FractionalSol extends ProblemSol {
 				newXVals[i] = this.getXVals(i);
 				if (newXVals[i]) {
 					x.add(i);
-					newTotalA = f.addA(i,newTotalA);
+					newTotalA += f.getA(i);
 				}
 			} else {
 				r.add(i);
@@ -385,13 +369,13 @@ public class FractionalSol extends ProblemSol {
 			int j = rnd.nextInt(ratio.size());
 			i = Math.max(i,j);
 			ratioNode rni = ratio.get(i);
-			if (p.addA(rni.x,newTotalA) <= f.getB()) {
+			if (newTotalA + f.getA(rni.x) <= f.getB()) {
 				ratio.remove(i);
 				newXVals[rni.x] = true;
 				//				updateRatios(x, ratio, rni.x);
 				//				Collections.sort(ratio);
 				x.add(rni.x);
-				newTotalA = f.addA(rni.x,newTotalA);
+				newTotalA += f.getA(rni.x);
 			} else {
 				ratio.remove(i);
 			}
@@ -491,22 +475,23 @@ public class FractionalSol extends ProblemSol {
 		FractionalSol result = null;
 		boolean found = false;
 		int min = 0;
+		ArrayList<Integer> curR = getR();
 		while (!found && min < getXSize()) {
 			// Get index of min ratio
 			int i = minRatio(min);
 
 			// Swap with a random node and return
 			int j = rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			int rndCount = 0;
 			while ((f.getA(j) - f.getA(i) > f.getB() - getTotalA()) && rndCount < 10) {
 				j = rnd.nextInt(getRSize());
-				j = getRItem(j);
+				j = curR.get(j);
 				rndCount++;
 			}
 
 			if (f.getA(j) - f.getA(i) <= f.getB() - getTotalA()) {
-				
+
 				result = new FractionalSol(this);
 				result.swap(i,j);
 			}
@@ -632,8 +617,9 @@ public class FractionalSol extends ProblemSol {
 		int i = minRatio(0);
 
 		// Swap with a random node and return
+		ArrayList<Integer> curR = getR();
 		int j = rnd.nextInt(getRSize());
-		j = getRItem(j);
+		j = curR.get(j);
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = false;
@@ -646,7 +632,7 @@ public class FractionalSol extends ProblemSol {
 
 			kj++;
 			j =  rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			if (kj == n-1) {
 				kj = -1;
 				changeI = !changeI;
@@ -734,16 +720,16 @@ public class FractionalSol extends ProblemSol {
 			return null;
 		}
 		// Compile and return data
-				FractionalSol[] results = new FractionalSol[2];
-				if (bi != -1 && bj != -1) {
-					results[0] = new FractionalSol(this);
-					results[0].swap(bi,bj);
-				}
-				if (ni != -1 && nj != -1) {
-					results[1] = new FractionalSol(this);
-					results[1].swap(bi,bj);
-				}
-				return results;
+		FractionalSol[] results = new FractionalSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new FractionalSol(this);
+			results[0].swap(bi,bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new FractionalSol(this);
+			results[1].swap(bi,bj);
+		}
+		return results;
 	}
 
 	// Return the first improving swap that keeps the knapsack feasible
@@ -775,22 +761,16 @@ public class FractionalSol extends ProblemSol {
 			}
 		}
 		// Compile and return data
-				FractionalSol[] results = new FractionalSol[2];
-				if (bi != -1 && bj != -1) {
-					results[0] = new FractionalSol(this);
-					results[0].swap(bi,bj);
-				}
-				if (ni != -1 && nj != -1) {
-					results[1] = new FractionalSol(this);
-					results[1].swap(bi,bj);
-				}
-				return results;
-	}
-
-	@Override
-	public boolean getValid() {
-		updateValid();
-		return valid;
+		FractionalSol[] results = new FractionalSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new FractionalSol(this);
+			results[0].swap(bi,bj);
+		}
+		if (ni != -1 && nj != -1) {
+			results[1] = new FractionalSol(this);
+			results[1].swap(bi,bj);
+		}
+		return results;
 	}
 
 	@Override
@@ -802,28 +782,22 @@ public class FractionalSol extends ProblemSol {
 
 	// most improving
 	private void healSolImproving() {
-		int totalA = this.getTotalA();
-		double obj = this.getObj();
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
 			int maxI = -1;
 			for (Integer i: this.getX()) {
-				double newObj = f.subObj(i, this.getX(), num, den);
+				double newObj = subObj(i, num, den);
 				if (newObj > maxObj) {
 					maxObj = newObj;
 					maxI = i;
 				}
 			}
 			if (maxI != -1) {
-				getX().remove(Integer.valueOf(maxI));
-				getR().add(Integer.valueOf(maxI));
-				xVals[maxI] = false;
-				obj = maxObj;
-				totalA = p.removeA(maxI, totalA);
-				this.totalA = totalA;
-				this.obj = obj;
-				this.num = f.subNum(maxI, this.num);
-				this.den = f.subDen(maxI, this.den);
+				removeI(maxI);
+				removeA(maxI);
+				setObj(maxObj);
+				this.num = subNum(maxI, this.num);
+				this.den = subDen(maxI, this.den);
 			} else {
 				System.err.println("Couldn't find an improving objective!!!");
 				System.exit(-1);
@@ -837,22 +811,12 @@ public class FractionalSol extends ProblemSol {
 		double obj = this.getObj();
 		while(!this.getValid()) {
 			int j = minRatio(0);
-			int k = 1;
-			getX().remove(Integer.valueOf(j));
-			getR().add(Integer.valueOf(j));
-			xVals[j] = false;
-			obj = f.subObj(j, getX(), num, den);
-			num = f.subNum(j, num);
-			den = f.subDen(j, den);
-			totalA = p.removeA(j, totalA);
-			this.totalA = totalA;
-			this.obj = obj;
+			removeI(j);
+			removeA(j);
+			setObj(subObj(j, num, den));
+			num = subNum(j, num);
+			den = subDen(j, den);
 		}
-	}
-
-	@Override
-	public boolean getXVals(int i) {
-		return xVals[i];
 	}
 
 	@Override
@@ -882,8 +846,8 @@ public class FractionalSol extends ProblemSol {
 	public void writeSolution(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
-			pw.write(obj + "\n");
-			pw.write(totalA + "\n");
+			pw.write(getObj() + "\n");
+			pw.write(getTotalA() + "\n");
 			for (int i = 0; i < f.getM(); i++) {
 				pw.write(num[i] + " ");
 			}
@@ -893,7 +857,7 @@ public class FractionalSol extends ProblemSol {
 			}
 			pw.write("\n");
 
-			for (Integer i: x) {
+			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}
 			pw.close();
@@ -918,19 +882,19 @@ public class FractionalSol extends ProblemSol {
 				readDen[i] = scr.nextLong();
 			}
 			if (readObj != -1) {
-				x = new ArrayList<Integer>();
+				ArrayList<Integer> readX = new ArrayList<Integer>();
 				while (scr.hasNextInt()) {
-					x.add(scr.nextInt());
+					readX.add(scr.nextInt());
 				}
-				r = new ArrayList<Integer>();
+				ArrayList<Integer> readR = new ArrayList<Integer>();
 				for (int i = 0; i < n; i++) {
-					r.add(i);
+					readR.add(i);
 				}
-				r.removeAll(x);
-				obj = readObj;
-				num = readNum;
-				den = readDen;
-				totalA = readTotalA;
+				readR.removeAll(readX);
+				setObj(readObj);
+				setNum(readNum);
+				setDen(readDen);
+				setTotalA(readTotalA);
 			} else {
 				System.err.println("NO INCUMBENT SOLUTION IN FILE");
 			}

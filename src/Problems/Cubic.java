@@ -84,7 +84,6 @@ public class Cubic extends Problem {
 			}
 			
 			a[i] = rnd.nextInt(50)+1;
-			//			cij[i][i] = 0;
 			totalA += a[i];
 			tau[i] += ci[i];
 			for (j = i+1; j < n; j++){
@@ -98,7 +97,6 @@ public class Cubic extends Problem {
 				} else {
 					cij[i][j-i] = 0;
 				}
-				//				cij[j][i] = cij[i][j];
 				tau[i] += cij[i][j-i];
 				tau[j] += cij[i][j-i];
 				for(k = j+1; k < n; k++) {
@@ -111,11 +109,6 @@ public class Cubic extends Problem {
 					} else {
 						dijk[i][j-i][k-j] = 0;
 					}
-					//					dijk[i][k][j] = dijk[i][j][k];
-					//					dijk[j][k][i] = dijk[i][j][k];
-					//					dijk[j][i][k] = dijk[i][j][k];
-					//					dijk[k][i][j] = dijk[i][j][k];
-					//					dijk[k][j][i] = dijk[i][j][k];
 					tau[i] += dijk[i][j-i][k-j];
 					tau[j] += dijk[i][j-i][k-j];
 					tau[k] += dijk[i][j-i][k-j];
@@ -199,8 +192,6 @@ public class Cubic extends Problem {
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
-		int swaps = 0;
-//		while (swapping && swaps < 5) {
 		while (swapping) {
 			int maxI = -1;
 			int maxJ = -1;
@@ -247,7 +238,6 @@ public class Cubic extends Problem {
 					totalAx = totalAx + a[maxJ] - a[maxI];
 				}
 			}
-			swaps++;
 		}
 		
 		System.out.println("Generated Incumbent: " + curObj);
@@ -275,128 +265,8 @@ public class Cubic extends Problem {
 		} 
 		return curObj;
 	}
-
 	
-	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
-		if (x.size() <= 1) {
-			return -1;
-		}
-		double minRatio = Double.MAX_VALUE;
-		int minI = -1;
-		for (Integer i: x) {
-			double ratio = this.getRatio(i);
-			if (ratio < minRatio) {
-				minRatio = ratio;
-				minI = i;
-			}
-		}
-		
-		if (minI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = subObj(minI, x, 0);
-			if (change > 0) {
-				return minI;
-			} else {
-				return -1;
-			}
-		} else {
-			return minI;
-		}
-	}
-	
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
-		if (x.size() == this.getN()) {
-			return -1;
-		}
-		int b = this.getB();
-		double maxRatio = -1*Double.MAX_VALUE;
-		int maxI = -1;
-		for (Integer i: r) {
-			if (totalA + this.getA(i) <= b) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
-					maxI = i;
-				}
-			}
-		}
-		
-		if (maxI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = addObj(maxI, x, 0);
-			if (change > 0) {
-				return maxI;
-			} else {
-				return -1;
-			}
-		} else {
-			return maxI;
-		}
-	}
-	
-	public double subObj(int i, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj - this.getCi(i);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj - this.getCij(i,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj - this.getDijk(i,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
-	
-	public double addObj(int i, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj + this.getCi(i);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj + this.getCij(i,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj + this.getDijk(i,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
-	
-	public int removeA(int i, int totalA) {
-		return totalA - a[i];
-	}
-	
-	public int addA(int i, int totalA) {
-		return totalA + a[i];
-	}
-	
-	public boolean checkValid(ArrayList<Integer> x) {
-		int totalA = calcTotalA(x);
-		if (totalA <= b) {
-			return true;
-		}
-		return false;
-	}
-	
-	public int calcTotalA(ArrayList<Integer> x) {
-		int totalA = 0;
-		for (Integer i: x) {
-			totalA += a[i];
-		}
-		return totalA;
-	}
-	
-	public double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
+	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj - this.getCi(i);
 		oldObj = oldObj + this.getCi(j);
 		for (int k = 0; k < curX.size(); k++) {

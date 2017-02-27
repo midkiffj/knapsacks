@@ -157,7 +157,7 @@ public class Fractional extends Knapsack {
 					}
 				}
 			}
-			double[] add = tryAdd(totalAx,x,r);
+			double[] add = tryAdd(totalAx,r);
 			double[] sub = trySub(x);
 			double addObj = add[1];
 			double subObj = sub[1];
@@ -191,6 +191,13 @@ public class Fractional extends Knapsack {
 		Collections.sort(x);
 		System.out.println(x.toString());
 	}
+	
+	private double swapObj(int i, int j, ArrayList<Integer> x, double oldObj) {
+		ArrayList<Integer> newX = new ArrayList<Integer>(x);
+		newX.remove(Integer.valueOf(i));
+		newX.add(j);
+		return getObj(newX, false);
+	}
 
 	private double[] trySub(ArrayList<Integer> x) {
 		double[] fail = {-1,-1};
@@ -211,7 +218,7 @@ public class Fractional extends Knapsack {
 		if (minI == -1) {
 			return fail;
 		}
-		double change = subObj(minI, x, num, den);
+		double change = subObj(minI, num, den);
 		double curObj = 0;
 		for (int j = 0; j < m; j++) {
 			curObj += (double)(num[j])/den[j];
@@ -224,7 +231,7 @@ public class Fractional extends Knapsack {
 		}
 	}
 
-	private double[] tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r) {
+	private double[] tryAdd(int totalA, ArrayList<Integer> r) {
 		double[] fail = {-1,-1};
 		if (r.size() < 1) {
 			return fail;
@@ -247,7 +254,7 @@ public class Fractional extends Knapsack {
 		if (maxI == -1) {
 			return fail;
 		}
-		double change = addObj(maxI, x, num, den);
+		double change = addObj(maxI, num, den);
 		double curObj = 0;
 		for (int j = 0; j < m; j++) {
 			curObj += (double)(num[j])/den[j];
@@ -286,27 +293,7 @@ public class Fractional extends Knapsack {
 		}
 	}
 
-	@Override
-	public double swapObj(int i, int j, ArrayList<Integer> x, double oldObj) {
-		ArrayList<Integer> newX = new ArrayList<Integer>(x);
-		newX.remove(Integer.valueOf(i));
-		newX.add(j);
-		return getObj(newX, false);
-	}
-
-
-	@Override
-	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
-		System.err.println("Used unimplemented f.trySub(x,boolean)");
-		return -1;
-	}
-
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
-		System.err.println("Used unimplemented f.tryAdd(totalA,x,r,boolean)");
-		return -1;
-	}
-
-	public double subObj(int i, ArrayList<Integer> x, long[] num, long[] den) {
+	private double subObj(int i, long[] num, long[] den) {
 		double obj = 0;
 		for (int j = 0; j < m; j++) {
 			if (den[j]-d[j][i] == 0) {
@@ -318,78 +305,7 @@ public class Fractional extends Knapsack {
 		return obj;
 	}
 
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
-			boolean improveOnly, long[] num, long[] den) {
-		if (r.size() < 1) {
-			return -1;
-		}
-
-		int b = this.getB();
-		double maxRatio = Double.MIN_VALUE;
-		int maxI = -1;
-		for (Integer i: r) {
-			if (totalA + this.getA(i) <= b) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
-					maxI = i;
-				}
-			}
-		}
-
-		if (maxI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = addObj(maxI, x, num, den);
-			double curObj = 0;
-			for (int j = 0; j < m; j++) {
-				curObj += (double)(num[j])/den[j];
-			}
-			if (change > curObj) {
-				return maxI;
-			} else {
-				return -1;
-			}
-		} else {
-			return maxI;
-		}
-	}
-
-	public int trySub(ArrayList<Integer> x, boolean improveOnly, long[] num, long[] den) {
-		if (x.size() <= 1) {
-			return -1;
-		}
-		double minRatio = Double.MAX_VALUE;
-		int minI = -1;
-		for (Integer i: x) {
-			double ratio = this.getRatio(i);
-			if (ratio < minRatio) {
-				minRatio = ratio;
-				minI = i;
-			}
-		}
-
-		if (minI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = subObj(minI, x, num, den);
-			double curObj = 0;
-			for (int j = 0; j < m; j++) {
-				curObj += (double)(num[j])/den[j];
-			}
-			if (change > curObj) {
-				return minI;
-			} else {
-				return -1;
-			}
-		} else {
-			return minI;
-		}
-	}
-
-	public double addObj(int i, ArrayList<Integer> x, long[] num, long[] den) {
+	private double addObj(int i, long[] num, long[] den) {
 		double obj = 0;
 		for (int j = 0; j < m; j++) {
 			if (den[j]+d[j][i] == 0) {
@@ -399,37 +315,6 @@ public class Fractional extends Knapsack {
 		}
 		
 		return obj;
-	}
-
-	@Override
-	public double subObj(int i, ArrayList<Integer> x, double oldObj) {
-		System.err.println("Used unimplemented method: f.subObj(i,x,oldObj)");
-		return 0;
-	}
-
-	@Override
-	public double addObj(int i, ArrayList<Integer> x, double oldObj) {
-		System.err.println("Used unimplemented method: f.addObj(i,x,oldObj");
-		return 0;
-	}
-
-	@Override
-	public int removeA(int i, int totalA) {
-		return totalA - a[i];
-	}
-
-	@Override
-	public int addA(int i, int totalA) {
-		return totalA + a[i];
-	}
-
-	@Override
-	public boolean checkValid(ArrayList<Integer> x) {
-		int totalA = calcTotalA(x);
-		if (totalA <= b) {
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -482,30 +367,6 @@ public class Fractional extends Knapsack {
 
 	public long[] getNum() {
 		return num;
-	}
-
-	public long[] swapNum(int i, int j, long[] num) {
-		long[] newNum = new long[num.length];
-		for (int k = 0; k < m; k++) {
-			newNum[k] = num[k] + c[k][j] - c[k][i];
-		}
-		return newNum;
-	}
-
-	public long[] subNum(int i, long[] num) {
-		long[] newNum = new long[num.length];
-		for (int k = 0; k < m; k++) {
-			newNum[k] = num[k] - c[k][i];
-		}
-		return newNum;
-	}
-
-	public long[] addNum(int i, long[] num) {
-		long[] newNum = new long[num.length];
-		for (int k = 0; k < m; k++) {
-			newNum[k] = num[k] + c[k][i];
-		}
-		return newNum;
 	}
 
 	public long[] getDen() {
@@ -571,15 +432,6 @@ public class Fractional extends Knapsack {
 
 	public double getRatio(int i) {
 		return ratio[i];
-	}
-
-	@Override
-	public int calcTotalA(ArrayList<Integer> x) {
-		int totalA = 0;
-		for (int i: x) {
-			totalA += a[i];
-		}
-		return totalA;
 	}
 
 	public void readFromFile(String filename) {

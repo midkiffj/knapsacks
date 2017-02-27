@@ -255,7 +255,7 @@ public class MaxProbability extends Knapsack {
 		if (minI == -1) {
 			return fail;
 		}
-		double change = subObj(minI, x, num, den);
+		double change = subObj(minI, num, den);
 		if (!improvingOnly || change > (num*num)/den) {
 			double[] success = {minI, change};
 			return success;
@@ -287,7 +287,7 @@ public class MaxProbability extends Knapsack {
 		if (maxI == -1) {
 			return fail;
 		}
-		double change = addObj(maxI, x, num, den);
+		double change = addObj(maxI, num, den);
 		if (change > 0) {
 			double[] add = {maxI, change};
 			return add;
@@ -386,145 +386,25 @@ public class MaxProbability extends Knapsack {
 		}
 	}
 
-	@Override
-	public double swapObj(int i, int j, ArrayList<Integer> x, double oldObj) {
+	private double swapObj(int i, int j, ArrayList<Integer> x, double oldObj) {
 		ArrayList<Integer> newX = new ArrayList<Integer>(x);
 		newX.remove(Integer.valueOf(i));
 		newX.add(j);
 		return getObj(newX, false);
 	}
 
-	@Override
-	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
-		System.err.println("Used unimplemented method: mp.trySub");
-		return 0;
-	}
-
-	public int trySub(int totalU, ArrayList<Integer> x, boolean improveOnly, 
-			double num, double den) {
-		if (x.size() <= 1) {
-			return -1;
-		}
-
-		double minRatio = Double.MAX_VALUE;
-		int minI = -1;
-		for (Integer i: x) {
-			if (totalU - u[i] >= t) {
-				double ratio = this.getRatio(i);
-				if (ratio < minRatio) {
-					minRatio = ratio;
-					minI = i;
-				}
-			}
-		}
-
-		if (minI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = subObj(minI, x, num, den);
-			if (change > (num*num)/den) {
-				return minI;
-			} else {
-				return -1;
-			}
-		} else {
-			return minI;
-		}
-	}
-
-	public double subObj(int i, ArrayList<Integer> x, double num,
+	private double subObj(int i, double num,
 			double den) {
 		num -= u[i];
 		den -= s[i];
 		return (num*num)/den;
 	}
 
-	@Override
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r,
-			boolean improveOnly) {
-		System.err.println("Used unimplemented method: mp.tryAdd");
-		return 0;
-	}
-
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
-			boolean improveOnly, double num, double den) {
-		if (r.size() < 1) {
-			return -1;
-		}
-
-		int maxI = -1;
-		int b = this.getB();
-		double maxRatio = -1*Double.MAX_VALUE;
-		for (Integer i: r) {
-			if (totalA + this.getA(i) <= b) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
-					maxI = i;
-				}
-			}
-		}
-
-		if (maxI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = addObj(maxI, x, num, den);
-			if (change > (num*num)/den) {
-				return maxI;
-			} else {
-				return -1;
-			}
-		} else {
-			return maxI;
-		}
-	}
-
-	public double addObj(int i, ArrayList<Integer> x, double num,
+	private double addObj(int i, double num,
 			double den) {
 		num += u[i];
 		den += s[i];
 		return (num*num)/den;
-	}
-
-	@Override
-	public double subObj(int i, ArrayList<Integer> x, double oldObj) {
-		System.err.println("Used unimplemented method: mp.subObj");
-		return 0;
-	}
-
-	@Override
-	public double addObj(int i, ArrayList<Integer> x, double oldObj) {
-		System.err.println("Used unimplemented method: mp.addObj");
-		return 0;
-	}
-
-	@Override
-	public int removeA(int i, int totalA) {
-		return totalA - a[i];
-	}
-
-	@Override
-	public int addA(int i, int totalA) {
-		return totalA + a[i];
-	}
-
-	public int removeU(int i, int totalU) {
-		return totalU - u[i];
-	}
-
-	public int addU(int i, int totalU) {
-		return totalU + u[i];
-	}
-
-	@Override
-	public boolean checkValid(ArrayList<Integer> x) {
-		int totalA = calcTotalA(x);
-		if (totalA <= b) {
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -563,43 +443,18 @@ public class MaxProbability extends Knapsack {
 		return num;
 	}
 
-	public double swapNum(int i, int j, double num) {
-		return num + u[j] - u[i];
-	}
-
-	public double subNum(int i, double num) {
-		return num - u[i];
-	}
-
-	public double addNum(int i, double num) {
-		return num + u[i];
-	}
-
 	public double getDen() {
 		return den;
 	}
 
-	public double swapDen(int i, int j, double den) {
-		return den + s[j] - s[i];
-	}
-
-	public double subDen(int i, double den) {
-		return den - s[i];
-	}
-
-	public double addDen(int i, double den) {
-		return den + s[i];
-	}
-
-	@Override
 	public int getN() {
 		return n;
 	}
-
+	
 	public int getB() {
 		return b;
 	}
-
+	
 	public double getT() {
 		return t;
 	}
@@ -618,23 +473,6 @@ public class MaxProbability extends Knapsack {
 
 	public double getRatio(int i) {
 		return ratio[i];
-	}
-
-	@Override
-	public int calcTotalA(ArrayList<Integer> x) {
-		int totalA = 0;
-		for (int i: x) {
-			totalA += a[i];
-		}
-		return totalA;
-	}
-
-	public int calcTotalU(ArrayList<Integer> x) {
-		int totalU = 0;
-		for (int i: x) {
-			totalU += u[i];
-		}
-		return totalU;
 	}
 
 	public void readFromFile(String filename) {

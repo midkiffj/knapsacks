@@ -10,164 +10,86 @@ import java.util.Scanner;
 import ExactMethods.Knapsack_Frac;
 import Problems.MaxProbability;
 
-public class MaxProbabilitySol extends ProblemSol {
+public class MaxProbabilitySol extends KnapsackSol {
 
-	private static MaxProbability mp;
+	private static MaxProbability mp = (MaxProbability)p;
 
-	private ArrayList<Integer> x;
-	private ArrayList<Integer> r;
-	private boolean[] xVals;
-	private boolean valid;
-	private double obj;
 	private double num;
 	private double den;
-	private int totalA;
 	private int totalU;
-
-	private int b;
 
 	public MaxProbabilitySol() {
 		super();
-		mp = (MaxProbability)p;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		xVals = new boolean[p.getN()];
-		p.genInit(x, r);
-		for (Integer i: x) {
-			xVals[i] = true;
-		}
-		obj = mp.getObj(x);
 		num = mp.getNum();
 		den = mp.getDen();
-		calcTotalAU();
+		calcTotalU();
 		updateValid();
-		updateB();
 	}
 
 	public MaxProbabilitySol(String filename) {
-		super();
-		mp = (MaxProbability)p;
-		readSolution(filename);
-		xVals = new boolean[p.getN()];
-		for (Integer i : x) {
-			xVals[i] = true;
-		}
-		updateValid();
-		updateB();
+		super(filename);
 	}
 
 	public MaxProbabilitySol(MaxProbabilitySol mps) {
-		super();
-		mp = (MaxProbability)p;
-		xVals = new boolean[p.getN()];
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		for (Integer i : mps.getX()) {
-			x.add(i);
-			xVals[i] = true;
-		}
-		for (Integer i : mps.getR()) {
-			r.add(i);
-		}
-		obj = mps.getObj();
-		totalA = mps.getTotalA();
+		super(mps);
 		totalU = mps.getTotalU();
 		num = mps.getNum();
 		den = mps.getDen();
 		updateValid();
-		updateB();
 	}
 
 	public MaxProbabilitySol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, double num, double den) {
-		super();
-		mp = (MaxProbability)p;
-		xVals = new boolean[p.getN()];
-		this.x = new ArrayList<Integer>(x);
-		this.r = new ArrayList<Integer>(r);
-		for (Integer i : x) {
-			xVals[i] = true;
-		}
-		this.obj = obj;
-		calcTotalAU();
+		super(x,r,obj,totalA);
+		calcTotalU();
 		this.num = num;
 		this.den = den;
 		updateValid();
-		updateB();
 	}
 
 	public MaxProbabilitySol(boolean[] newXVals) {
-		super();
-		mp = (MaxProbability)p;
-		this.xVals = newXVals;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		for (int i = 0; i < xVals.length; i++) {
-			if (xVals[i]) {
-				x.add(i);
-			} else {
-				r.add(i);
-			}
-		}
-		obj = mp.getObj(x);
-		calcTotalAU();
-		this.num = mp.getNum();
-		this.den = mp.getDen();
+		super(newXVals);
+		calcTotalU();
+		num = mp.getNum();
+		den = mp.getDen();
 		updateValid();
-		updateB();
 	}
 
 	public MaxProbabilitySol(ArrayList<Integer> x, ArrayList<Integer> r) {
-		super();
-		mp = (MaxProbability)p;
-		xVals = new boolean[p.getN()];
-		this.x = new ArrayList<Integer>(x);
-		this.r = new ArrayList<Integer>(r);
-		for (Integer i : x) {
-			xVals[i] = true;
-		}
-		this.obj = mp.getObj(x);
-		calcTotalAU();
-		this.num = mp.getNum();
-		this.den = mp.getDen();
+		super(x,r);
+		calcTotalU();
+		num = mp.getNum();
+		den = mp.getDen();
 		updateValid();
-		updateB();
 	}
 
-	private void updateB() {
-		if (useHealing) {
-			b = Integer.MAX_VALUE;
-		} else {
-			b = mp.getB();
+	private void calcTotalU() {
+		totalU = 0;
+		for (int i: getX()) {
+			totalU += mp.getU(i);
 		}
 	}
 
-	private void calcTotalAU() {
-		totalA = mp.calcTotalA(x);
-		totalU = mp.calcTotalU(x);
-	}
-
-	private void updateValid() {
-		calcTotalAU();
-		if (totalA <= mp.getB() && totalU >= mp.getT()) {
-			valid = true;
+	public void updateValid() {
+		calcTotalU();
+		if (getTotalA() <= mp.getB() && totalU >= mp.getT()) {
+			setValid(true);
 		} else {
-			valid = false;
+			setValid(false);
 		}
-	}
-
-	public int getTotalA() {
-		return totalA;
 	}
 
 	public int getTotalU() {
 		return totalU;
 	}
 
-	@Override
-	public double getObj() {
-		return obj;
+	public void addU(int i) {
+		this.totalU += mp.getU(i);
 	}
-
+	
+	public void removeU(int i) {
+		this.totalU -= mp.getU(i);
+	}
+	
 	public double getNum() {
 		return num;
 	}
@@ -176,50 +98,43 @@ public class MaxProbabilitySol extends ProblemSol {
 		return den;
 	}
 
+	public double swapNum(int i, int j, double num) {
+		return num + mp.getU(j) - mp.getU(i);
+	}
+
+	public double subNum(int i, double num) {
+		return num - mp.getU(i);
+	}
+
+	public double addNum(int i, double num) {
+		return num + mp.getU(i);
+	}
+
+	public double swapDen(int i, int j, double den) {
+		return den + mp.getS(j) - mp.getS(i);
+		
+	}
+
+	public double subDen(int i, double den) {
+		return den - mp.getS(i);
+	}
+
+	public double addDen(int i, double den) {
+		return den + mp.getS(i);
+	}
+	
 	@Override
 	public void swap(int i, int j) {
-		this.totalA = mp.removeA(i,mp.addA(j,totalA));
-		this.totalU = mp.removeU(i,mp.addU(j,totalU));
-		this.obj = swapObj(i,j);
-		this.num = mp.swapNum(i,j,num);
-		this.den = mp.swapDen(i,j,den);
+		addA(j);
+		removeA(i);
+		addU(j);
+		removeU(i);
+		setObj(swapObj(i,j));
+		this.num = swapNum(i,j,num);
+		this.den = swapDen(i,j,den);
 		updateValid();
-		xVals[i] = false;
-		xVals[j] = true;
-		x.remove(Integer.valueOf(i));
-		x.add(j);
-		r.remove(Integer.valueOf(j));
-		r.add(i);	
-	}
-
-	@Override
-	public ArrayList<Integer> getX() {
-		return x;
-	}
-
-	@Override
-	public ArrayList<Integer> getR() {
-		return r;
-	}
-
-	@Override
-	public int getRItem(int i) {
-		return r.get(i);
-	}
-
-	@Override
-	public int getXItem(int i) {
-		return x.get(i);
-	}
-
-	@Override
-	public int getRSize() {
-		return r.size();
-	}
-
-	@Override
-	public int getXSize() {
-		return x.size();
+		addI(j);
+		removeI(i);
 	}
 
 	// Shift a variable in or out of the current solution
@@ -240,40 +155,108 @@ public class MaxProbabilitySol extends ProblemSol {
 
 	// Try to add a variable to the solution
 	private int tryAdd() {
-		int index = mp.tryAdd(totalA, x, r, false, num, den);
+		int index = tryAdd(getTotalA(), getX(), getR(), false, num, den);
 		if (index != -1) {
-			xVals[index] = true;
-			x.add(index);
-			r.remove(Integer.valueOf(index));
-			totalA = mp.addA(index, totalA);
-			totalU = mp.addU(index, totalU);
-			obj = mp.addObj(index, x, num, den);
-			num = mp.addNum(index, num);
-			den = mp.addDen(index, den);
+			addI(index);
+			addA(index);
+			addU(index);
+			setObj(addObj(index, getX(), num, den));
+			num = addNum(index, num);
+			den = addDen(index, den);
 			updateValid();
 		}
 		return index;
 	}
 
 	private int trySub() {
-		int index = mp.trySub(totalU, x, false, num, den);
+		int index = trySub(totalU, getX(), false, num, den);
 		if (index != -1) {
-			xVals[index] = false;
-			r.add(index);
-			x.remove(Integer.valueOf(index));
-			totalA = mp.removeA(index, totalA);
-			totalU = mp.removeU(index, totalU);
-			obj = mp.subObj(index, x, num, den);
-			num = mp.subNum(index, num);
-			den = mp.subDen(index, den);
+			removeI(index);
+			removeA(index);
+			removeU(index);
+			setObj(subObj(index, getX(), num, den));
+			num = subNum(index, num);
+			den = subDen(index, den);
 			updateValid();
 		}
 		return index;
 	}
 
+
+	private int trySub(int totalU, ArrayList<Integer> x, boolean improveOnly, 
+			double num, double den) {
+		if (x.size() <= 1) {
+			return -1;
+		}
+
+		int minI = minRatio(0);
+
+		if (minI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = subObj(minI, x, num, den);
+			if (change > (num*num)/den) {
+				return minI;
+			} else {
+				return -1;
+			}
+		} else {
+			return minI;
+		}
+	}
+
+	public double subObj(int i, ArrayList<Integer> x, double num,
+			double den) {
+		num -= mp.getU(i);
+		den -= mp.getS(i);
+		return (num*num)/den;
+	}
+
+	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
+			boolean improveOnly, double num, double den) {
+		if (r.size() < 1) {
+			return -1;
+		}
+
+		int maxI = -1;
+		int b = this.getB();
+		double maxRatio = -1*Double.MAX_VALUE;
+		for (Integer i: r) {
+			if (totalA + mp.getA(i) <= b) {
+				double ratio = mp.getRatio(i);
+				if (ratio > maxRatio) {
+					maxRatio = ratio;
+					maxI = i;
+				}
+			}
+		}
+
+		if (maxI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = addObj(maxI, x, num, den);
+			if (change > (num*num)/den) {
+				return maxI;
+			} else {
+				return -1;
+			}
+		} else {
+			return maxI;
+		}
+	}
+
+	public double addObj(int i, ArrayList<Integer> x, double num,
+			double den) {
+		num += mp.getU(i);
+		den += mp.getS(i);
+		return (num*num)/den;
+	}
+
 	private double swapObj(int i, int j) {
-		double num = mp.swapNum(i, j, this.num);
-		double den = mp.swapDen(i, j, this.den);
+		double num = swapNum(i, j, this.num);
+		double den = swapDen(i, j, this.den);
 		return (num*num)/den;
 	}
 
@@ -346,8 +329,8 @@ public class MaxProbabilitySol extends ProblemSol {
 			if (this.getXVals(i) == mps2.getXVals(i)) {
 				if (this.getXVals(i)) {
 					x.add(i);
-					newTotalA = mp.addA(i,newTotalA);
-					newTotalU = mp.addU(i,newTotalU);
+					newTotalA += mp.getA(i);
+					newTotalU += mp.getU(i);
 				} else {
 					r.add(i);
 				}
@@ -356,21 +339,8 @@ public class MaxProbabilitySol extends ProblemSol {
 			}
 		}
 
-		int k = 0;
 		ArrayList<Integer> tempR = new ArrayList<Integer>(r);
 		ArrayList<Integer> tempX = new ArrayList<Integer>(x);
-		//		while (newTotalU < mp.getT() && k < r.size()) {
-		//			int maxU = mp.maxURatio(r,k);
-		//			if (p.addA(maxU,newTotalA) <= mp.getB()) {
-		//				newXVals[maxU] = true;
-		//				x.add(maxU);
-		//				newTotalA = mp.addA(maxU,newTotalA);
-		//				newTotalU = mp.addU(maxU,newTotalU);
-		//				r.remove(Integer.valueOf(maxU));
-		//			} else {
-		//				k++;
-		//			}
-		//		}
 
 
 		ArrayList<ratioNode> ratio = computeRatios(x, r);
@@ -380,14 +350,14 @@ public class MaxProbabilitySol extends ProblemSol {
 			int j = rnd.nextInt(ratio.size());
 			i = Math.max(i,j);
 			ratioNode rni = ratio.get(i);
-			if (p.addA(rni.x,newTotalA) <= mp.getB()) {
+			if (newTotalA + mp.getA(rni.x) <= getB()) {
 				ratio.remove(i);
 				//				updateRatios(x, ratio, rni.x);
 				//				Collections.sort(ratio);
 				x.add(rni.x);
 				r.remove(Integer.valueOf(rni.x));
-				newTotalA = mp.addA(rni.x,newTotalA);
-				newTotalU = mp.addU(rni.x,newTotalU);
+				newTotalA += mp.getA(rni.x);
+				newTotalU += mp.getU(rni.x);
 			} else {
 				ratio.remove(i);
 			}
@@ -463,7 +433,6 @@ public class MaxProbabilitySol extends ProblemSol {
 			newTotalU += mp.getU(i);
 		}
 
-		int k = 0;
 		ArrayList<Integer> tempR = new ArrayList<Integer>(r);
 		ArrayList<Integer> tempX = new ArrayList<Integer>(x);
 		ArrayList<ratioNode> ratio = computeRatios(x, r);
@@ -473,14 +442,14 @@ public class MaxProbabilitySol extends ProblemSol {
 			int j = rnd.nextInt(ratio.size());
 			i = Math.max(i,j);
 			ratioNode rni = ratio.get(i);
-			if (p.addA(rni.x,newTotalA) <= mp.getB()) {
+			if (newTotalA + mp.getA(rni.x) <= getB()) {
 				ratio.remove(i);
 				//				updateRatios(x, ratio, rni.x);
 				//				Collections.sort(ratio);
 				x.add(rni.x);
 				r.remove(Integer.valueOf(rni.x));
-				newTotalA = mp.addA(rni.x,newTotalA);
-				newTotalU = mp.addU(rni.x,newTotalU);
+				newTotalA += mp.getA(rni.x);
+				newTotalU += mp.getU(rni.x);
 			} else {
 				ratio.remove(i);
 			}
@@ -575,17 +544,18 @@ public class MaxProbabilitySol extends ProblemSol {
 		MaxProbabilitySol result = null;
 		boolean found = false;
 		int min = 0;
+		ArrayList<Integer> curR = getR();
 		while (!found && min < getXSize()) {
 			// Get index of min ratio
 			int i = minRatio(min);
 
 			// Swap with a random node and return
 			int j = rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			int rndCount = 0;
 			while ((mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT()) && rndCount < 10) {
 				j = rnd.nextInt(getRSize());
-				j = getRItem(j);
+				j = curR.get(j);
 				rndCount++;
 			}
 
@@ -716,8 +686,9 @@ public class MaxProbabilitySol extends ProblemSol {
 		int i = minRatio(0);
 
 		// Swap with a random node and return
+		ArrayList<Integer> curR = getR();
 		int j = rnd.nextInt(getRSize());
-		j = getRItem(j);
+		j = curR.get(j);
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = false;
@@ -730,7 +701,7 @@ public class MaxProbabilitySol extends ProblemSol {
 
 			kj++;
 			j =  rnd.nextInt(getRSize());
-			j = getRItem(j);
+			j = curR.get(j);
 			if (kj == n-1) {
 				kj = -1;
 				changeI = !changeI;
@@ -871,12 +842,6 @@ public class MaxProbabilitySol extends ProblemSol {
 	}
 
 	@Override
-	public boolean getValid() {
-		updateValid();
-		return valid;
-	}
-
-	@Override
 	public void healSol() {
 		//		healSolImproving();
 		healSolRatio();
@@ -884,31 +849,23 @@ public class MaxProbabilitySol extends ProblemSol {
 
 	// most improving
 	public void healSolImproving() {
-		int totalA = this.getTotalA();
-		int totalU = this.getTotalU();
-		double obj = this.getObj();
-		double num = this.num;
-		double den = this.den;
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
 			int maxI = -1;
 			for (Integer i: this.getX()) {
-				double newObj = mp.subObj(i, this.getX(), num, den);
+				double newObj = subObj(i, getX(), num, den);
 				if (newObj > maxObj && totalU - mp.getU(i) >= mp.getT()) {
 					maxObj = newObj;
 					maxI = i;
 				}
 			}
 			if (maxI != -1) {
-				getX().remove(Integer.valueOf(maxI));
-				getR().add(Integer.valueOf(maxI));
-				xVals[maxI] = false;
-				obj = maxObj;
-				totalA = p.removeA(maxI, totalA);
-				this.totalA = totalA;
-				this.obj = obj;
-				this.num = mp.subNum(maxI,num);
-				this.den = mp.subDen(maxI, den);
+				removeI(maxI);
+				setObj(maxObj);
+				removeA(maxI);
+				removeU(maxI);
+				this.num = subNum(maxI, num);
+				this.den = subDen(maxI, den);
 			} else {
 				System.err.println("Couldn't find an improving objective!!!");
 				System.exit(-1);
@@ -918,11 +875,6 @@ public class MaxProbabilitySol extends ProblemSol {
 
 	//min ratio healing
 	public void healSolRatio() {
-		int totalA = this.getTotalA();
-		int totalU = this.getTotalU();
-		double obj = this.getObj();
-		double num = this.num;
-		double den = this.den;
 		while(!this.getValid()) {
 			int j = minRatio(0);
 			int k = 1;
@@ -931,34 +883,28 @@ public class MaxProbabilitySol extends ProblemSol {
 				k++;
 			}
 			if (totalU - mp.getU(j) >= mp.getT()) {
-				getX().remove(Integer.valueOf(j));
-				getR().add(Integer.valueOf(j));
-				xVals[j] = false;
-				obj = mp.subObj(j, getX(), num, den);
-				num = mp.subNum(j, num);
-				den = mp.subDen(j, den);
-				totalA = p.removeA(j, totalA);
-				this.totalA = totalA;
-				this.obj = obj;
-				this.num = num;
-				this.den = den;
+				removeI(j);
+				removeA(j);
+				removeU(j);
+				setObj(subObj(j,getX(),num,den));
+				num = subNum(j, num);
+				den = subDen(j, den);
 			} else {
-				mp.genRndInit(x, r);
-				for (Integer i: x) {
-					xVals[i] = true;
+				mp.genRndInit(getX(), getR());
+				for (Integer i: getX()) {
+					setXVals(i,true);
 				}
-				obj = mp.getObj(x);
+				for (Integer i: getR()) {
+					setXVals(i,false);
+				}
+				setObj(mp.getObj(getX()));
 				num = mp.getNum();
 				den = mp.getDen();
-				calcTotalAU();
+				calcTotalA();
+				calcTotalU();
 				updateValid();
 			}
 		}
-	}
-
-	@Override
-	public boolean getXVals(int i) {
-		return xVals[i];
 	}
 
 	@Override
@@ -981,16 +927,15 @@ public class MaxProbabilitySol extends ProblemSol {
 		}
 	}
 
-	//TODO Finish writing/reading solution methods
 	public void writeSolution(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
-			pw.write(obj + "\n");
+			pw.write(getObj() + "\n");
 			pw.write(num + "\n");
 			pw.write(den + "\n");
-			pw.write(totalA + "\n");
+			pw.write(getTotalA() + "\n");
 			pw.write(totalU + "\n");
-			for (Integer i: x) {
+			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}
 			pw.close();
@@ -1010,19 +955,19 @@ public class MaxProbabilitySol extends ProblemSol {
 			int readTotalA = scr.nextInt();
 			int readTotalU = scr.nextInt();
 			if (readObj != -1) {
-				x = new ArrayList<Integer>();
+				ArrayList<Integer> readX = new ArrayList<Integer>();
 				while (scr.hasNextInt()) {
-					x.add(scr.nextInt());
+					readX.add(scr.nextInt());
 				}
-				r = new ArrayList<Integer>();
+				ArrayList<Integer> readR = new ArrayList<Integer>();
 				for (int i = 0; i < n; i++) {
-					r.add(i);
+					readR.add(i);
 				}
-				r.removeAll(x);
-				obj = readObj;
+				readR.removeAll(readX);
+				setObj(readObj);
 				num = readNum;
 				den = readDen;
-				totalA = readTotalA;
+				setTotalA(readTotalA);
 				totalU = readTotalU;
 			} else {
 				System.err.println("NO INCUMBENT SOLUTION IN FILE");
