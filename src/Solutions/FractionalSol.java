@@ -92,12 +92,23 @@ public class FractionalSol extends KnapsackSol {
 	public void swap(int i, int j) {
 		addA(j);
 		removeA(i);
-		setObj(swapObj(i, j));
 		this.num = swapNum(i,j,num);
 		this.den = swapDen(i,j,den);
+		setObj(updateObj(num,den));
 		addI(j);
 		removeI(i);
 		updateValid();
+	}
+	
+	private double updateObj(long[] num, long[] den) {
+		double newObj = 0;
+		for (int k = 0; k < f.getM(); k++) {
+			if (den[k] == 0) {
+				return Double.NEGATIVE_INFINITY;
+			}
+			newObj += (double)(num[k])/den[k];
+		}
+		return newObj;
 	}
 
 	// Shift a variable in or out of the current solution
@@ -122,9 +133,9 @@ public class FractionalSol extends KnapsackSol {
 		if (index != -1) {
 			addI(index);
 			addA(index);
-			setObj(addObj(index,num,den));
 			num = addNum(index, num);
 			den = addDen(index, den);
+			setObj(updateObj(num,den));
 			updateValid();
 		}
 		return index;
@@ -135,9 +146,9 @@ public class FractionalSol extends KnapsackSol {
 		if (index != -1) {
 			removeI(index);
 			removeA(index);
-			setObj(subObj(index, num, den));
 			num = subNum(index, num);
 			den = subDen(index, den);
+			setObj(updateObj(num,den));
 			updateValid();
 		}
 		return index;
@@ -167,10 +178,7 @@ public class FractionalSol extends KnapsackSol {
 		}
 		if (improveOnly) {
 			double change = addObj(maxI, num, den);
-			double curObj = 0;
-			for (int j = 0; j < f.getM(); j++) {
-				curObj += (double)(num[j])/den[j];
-			}
+			double curObj = updateObj(num, den);
 			if (change > curObj) {
 				return maxI;
 			} else {
@@ -192,10 +200,7 @@ public class FractionalSol extends KnapsackSol {
 		}
 		if (improveOnly) {
 			double change = subObj(minI, num, den);
-			double curObj = 0;
-			for (int j = 0; j < f.getM(); j++) {
-				curObj += (double)(num[j])/den[j];
-			}
+			double curObj = updateObj(num,den);
 			if (change > curObj) {
 				return minI;
 			} else {
@@ -233,14 +238,7 @@ public class FractionalSol extends KnapsackSol {
 	private double swapObj(int i, int j) {
 		long[] num = swapNum(i, j, this.num);
 		long[] den = swapDen(i, j, this.den);
-		double newObj = 0;
-		for (int k = 0; k < f.getM(); k++) {
-			if (den[k] == 0) {
-				return Double.NEGATIVE_INFINITY;
-			}
-			newObj += (double)(num[k])/den[k];
-		}
-		return newObj;
+		return updateObj(num,den);
 	}
 
 	public long[] swapNum(int i, int j, long[] num) {
