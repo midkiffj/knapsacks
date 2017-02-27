@@ -55,7 +55,7 @@ public class CubicMultGreedy extends ConstHeuristic {
 			updateRatio(cms.getX(),ratio,i);
 		}
 
-		return new CubicMultSol(x,r);
+		return new CubicMultSol(cms.getX(),cms.getR());
 	}
 	
 	/*

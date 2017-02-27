@@ -11,13 +11,14 @@ import Problems.Fractional;
 
 public class FractionalSol extends KnapsackSol {
 
-	private static Fractional f = (Fractional)p;
+	private static Fractional f;
 
 	private long[] num;
 	private long[] den;
 
 	public FractionalSol() {
 		super();
+		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
 		calcTotalA();
@@ -25,28 +26,33 @@ public class FractionalSol extends KnapsackSol {
 
 	public FractionalSol(String filename) {
 		super(filename);
+		f = (Fractional)p;
 	}
 
 	public FractionalSol(FractionalSol fs) {
 		super();
+		f = (Fractional)p;
 		setNum(fs.getNum());
 		setDen(fs.getDen());
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, long[] num, long[] den) {
 		super();
+		f = (Fractional)p;
 		setNum(num);
 		setDen(num);
 	}
 
 	public FractionalSol(boolean[] newXVals) {
 		super();
+		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super();
+		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
 	}
@@ -867,6 +873,7 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
+		f = (Fractional)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

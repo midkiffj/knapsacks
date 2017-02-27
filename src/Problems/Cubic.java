@@ -11,7 +11,7 @@ import java.util.Scanner;
 import Runner.TestLogger;
 
 
-public class Cubic extends Problem {
+public class Cubic extends Knapsack {
 	// Cubic setup vars
 	private int n;
 	private Random rnd;

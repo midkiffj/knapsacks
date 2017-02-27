@@ -22,7 +22,7 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 	/*
 	 * Specify problem to solve
 	 */
-	public CubicMultGreedyFill(CubicMult c) {
+	public CubicMultGreedyFill(CubicMult cm) {
 		this.cm = cm;
 	}
 
@@ -55,14 +55,16 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 			updateRatio(cms.getX(),ratio,i);
 		}
 
-		return fillUpNExchange(cms);
+		return fillUpNExchange(cms.getX(),cms.getR());
 	}
 
 	/* 
 	 * Complete bestImprovingSwaps or additions until no more items can be 
 	 *	either swapped or added
 	 */
-	private CubicMultSol fillUpNExchange(CubicMultSol current) {
+	private CubicMultSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r) {
+		CubicMultSol current = new CubicMultSol(x,r);
+		
 		boolean done = false;
 		double curObj = current.getObj();
 		while (!done) {

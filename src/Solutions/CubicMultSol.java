@@ -11,30 +11,36 @@ import Problems.CubicMult;
 
 public class CubicMultSol extends MultKnapsackSol {
 
-	private static CubicMult cm = (CubicMult)p;
+	private static CubicMult cm;
 
 	public CubicMultSol() {
 		super();
+		cm = (CubicMult)p;
 	}
 
 	public CubicMultSol(String filename) {
 		super(filename);
+		cm = (CubicMult)p;
 	}
 
 	public CubicMultSol(CubicMultSol cs) {
 		super((MultKnapsackSol)cs);
+		cm = (CubicMult)p;
 	}
 
 	public CubicMultSol(boolean[] xVals) {
 		super(xVals);
+		cm = (CubicMult)p;
 	}
 
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
+		cm = (CubicMult)p;
 	}
 
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int[] totalA) {
 		super(x,r,obj,totalA);
+		cm = (CubicMult)p;
 	}
 	
 	public void updateValid() {
@@ -813,6 +819,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
+		cm = (CubicMult)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

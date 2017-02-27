@@ -4,6 +4,10 @@ import java.util.ArrayList;
 
 public abstract class MultipleKnapsack extends Problem {
 
+	public MultipleKnapsack() {
+		super();
+	}
+	
 	public abstract int getM();
 
 	public abstract int getA(int i,int j);

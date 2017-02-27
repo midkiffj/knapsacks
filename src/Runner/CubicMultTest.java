@@ -3,10 +3,15 @@ package Runner;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
+import Constructive.CubicMultFillUp;
+import Constructive.CubicMultGreedy;
+import Constructive.CubicMultGreedyFill;
 import ExactMethods.CubicMult_Forrester;
+import Problems.Cubic;
 import Problems.CubicMult;
 import Problems.ProblemFactory;
 import Solutions.CubicMultSol;
+import Solutions.CubicSol;
 
 /**
  * Cubic Multiple Knapsack test bed runner
@@ -162,7 +167,6 @@ public class CubicMultTest extends ProblemTest {
 						@SuppressWarnings("unused")
 						CubicMult c2 = new CubicMult("problems/cm/"+file2);
 						CubicMultSol cs2 = new CubicMultSol("incumbents/cm/"+file2+"inc.txt");
-						cs2.setHealing(true);
 						double incumbent2 = cs2.getObj();
 
 						String result2;
@@ -220,7 +224,6 @@ public class CubicMultTest extends ProblemTest {
 						@SuppressWarnings("unused")
 						CubicMult c2 = new CubicMult("problems/cm/"+file2);
 						CubicMultSol cs2 = new CubicMultSol("incumbents/cm/"+file2+"inc.txt");
-						cs2.setHealing(true);
 						double incumbent2 = cs2.getObj();
 
 						String[] args2 = {file2};
@@ -238,6 +241,95 @@ public class CubicMultTest extends ProblemTest {
 			}
 		}
 		pw.close();
+	}
+	
+	
+	/*
+	 * Run and time the test bed on the 4 cubic constructive heuristics
+	 */
+	public void runConstructive() throws FileNotFoundException {
+		PrintWriter pw;
+		pw = new PrintWriter("cubMultResultsConst.csv");
+		pw.write("n,m,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times:,DP,Greedy,Fill,Hybrid\n");
+		
+		for (int m: knapsacks) {
+			for (int i = 0; i < densities.length; i++) {
+				double density = densities[i];
+				for (int j = 0; j < probSizes.length; j++) {
+					int n = probSizes[j];
+					for (int k = 0; k < K; k++) {
+						String file1 = n+"_"+m+"_"+density+"_false_"+k;
+						System.out.println("--"+file1+"--");
+						@SuppressWarnings("unused")
+						CubicMult c1 = new CubicMult("problems/cm/"+file1);
+						CubicMultSol cs1 = new CubicMultSol("incumbents/cm/"+file1+"inc.txt");
+						double incumbent1 = cs1.getObj();
+
+						String result1;
+						result1 = runConst(c1);
+
+						if (k == 0) {
+							pw.write(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+						} else {
+							pw.write(",,,"+k+",false,"+incumbent1+","+result1+"\n");
+						}
+					}
+					for (int k = 0; k < K; k++) {
+						String file2 = n+"_"+m+"_"+density+"_true_"+k;
+						System.out.println("--"+file2+"--");
+						@SuppressWarnings("unused")
+						CubicMult c2 = new CubicMult("problems/cm/"+file2);
+						CubicMultSol cs2 = new CubicMultSol("incumbents/cm/"+file2+"inc.txt");
+						double incumbent2 = cs2.getObj();
+
+						String result2;
+						result2 = runConst(c2);
+
+						if (k == 0) {
+							pw.write(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+						} else {
+							pw.write(",,,"+k+",true,"+incumbent2+","+result2+"\n");
+						}
+					}
+				}
+			}
+		}
+		pw.close();
+	}
+	
+	/*
+	 * Runs the cubic problem with all constructive heuristics
+	 * - Returns a comma-delimited string of results
+	 */
+	private static String runConst(CubicMult cm) {
+//		System.err.println("--Starting DP");
+//		CubicDP cdp = new CubicDP(cm);
+//		cdp.run();
+//		double cdpBest = cdp.getResult().getObj();
+//		long cdpTime = cdp.getTime();
+		double cdpBest = -1;
+		long cdpTime = -1;
+
+		System.err.println("--Starting Greedy");
+		CubicMultGreedy cg = new CubicMultGreedy(cm);
+		cg.run();
+		double greedy = cg.getResult().getObj();
+		long greedyTime = cg.getTime();
+
+		System.err.println("--Starting Fill");
+		CubicMultFillUp cfu = new CubicMultFillUp(cm);
+		cfu.run();
+		double fill = cfu.getResult().getObj();
+		long fillTime = cfu.getTime();
+
+		System.err.println("--Starting Hybrid");
+		CubicMultGreedyFill cgf = new CubicMultGreedyFill(cm);
+		cgf.run();
+		double hybrid = cgf.getResult().getObj();
+		long hybridTime = cgf.getTime();
+
+		String ret = cdpBest + "," + greedy + "," + fill + "," + hybrid + ",,," + cdpTime + "," + greedyTime + "," + fillTime + "," + hybridTime;
+		return ret;
 	}
 
 }

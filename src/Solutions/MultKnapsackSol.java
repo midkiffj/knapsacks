@@ -28,6 +28,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		}
 		setObj(mk.getObj(getX()));
 		calcTotalA();
+		updateB();
 		updateValid();
 	}
 	
@@ -38,6 +39,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		for (Integer i : getX()) {
 			setXVals(i,true);
 		}
+		updateB();
 		updateValid();
 	}
 	
@@ -47,10 +49,11 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		setX(mks.getX());
 		setR(mks.getR());
 		for (Integer i : mks.getX()) {
-			
+			setXVals(i,true);
 		}
 		setObj(mks.getObj());
 		setTotalA(mks.getTotalA());
+		updateB();
 		updateValid();
 	}
 
@@ -71,6 +74,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		setR(r);
 		setObj(mk.getObj(x));
 		calcTotalA();
+		updateB();
 		updateValid();
 	}
 
@@ -84,6 +88,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		}
 		setObj(mk.getObj(x));
 		calcTotalA();
+		updateB();
 		updateValid();
 	}
 
@@ -97,6 +102,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		for (Integer i: x) {
 			setXVals(i,true);
 		}
+		updateB();
 		updateValid();
 	}
 	
@@ -163,6 +169,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	}
 
 	public void setTotalA(int[] totalA) {
+		this.totalA = new int[m];
 		for (int i = 0; i < m; i++) {
 			this.totalA[i] = totalA[i];
 		}

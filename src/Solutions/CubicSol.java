@@ -11,30 +11,36 @@ import Problems.Cubic;
 
 public class CubicSol extends KnapsackSol {
 
-	private static Cubic c = (Cubic)p;
+	private static Cubic c;
 	
 	public CubicSol() {
 		super();
+		c = (Cubic)p;
 	}
 
 	public CubicSol(String filename) {
 		super(filename);
+		c = (Cubic)p;
 	}
 
 	public CubicSol(CubicSol cs) {
 		super((KnapsackSol)cs);
+		c = (Cubic)p;
 	}
 
 	public CubicSol(boolean[] xVals) {
 		super(xVals);
+		c = (Cubic)p;
 	}
 
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
+		c = (Cubic)p;
 	}
 
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
 		super(x,r,obj,totalA);
+		c = (Cubic)p;
 	}
 	
 	public void updateValid() {
@@ -792,6 +798,7 @@ public class CubicSol extends KnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
+		c = (Cubic)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

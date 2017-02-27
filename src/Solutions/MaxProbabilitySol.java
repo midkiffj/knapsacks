@@ -12,7 +12,7 @@ import Problems.MaxProbability;
 
 public class MaxProbabilitySol extends KnapsackSol {
 
-	private static MaxProbability mp = (MaxProbability)p;
+	private static MaxProbability mp;
 
 	private double num;
 	private double den;
@@ -20,6 +20,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 
 	public MaxProbabilitySol() {
 		super();
+		mp = (MaxProbability)p;
 		num = mp.getNum();
 		den = mp.getDen();
 		calcTotalU();
@@ -28,10 +29,12 @@ public class MaxProbabilitySol extends KnapsackSol {
 
 	public MaxProbabilitySol(String filename) {
 		super(filename);
+		mp = (MaxProbability)p;
 	}
 
 	public MaxProbabilitySol(MaxProbabilitySol mps) {
 		super(mps);
+		mp = (MaxProbability)p;
 		totalU = mps.getTotalU();
 		num = mps.getNum();
 		den = mps.getDen();
@@ -40,6 +43,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 
 	public MaxProbabilitySol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, double num, double den) {
 		super(x,r,obj,totalA);
+		mp = (MaxProbability)p;
 		calcTotalU();
 		this.num = num;
 		this.den = den;
@@ -48,6 +52,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 
 	public MaxProbabilitySol(boolean[] newXVals) {
 		super(newXVals);
+		mp = (MaxProbability)p;
 		calcTotalU();
 		num = mp.getNum();
 		den = mp.getDen();
@@ -56,6 +61,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 
 	public MaxProbabilitySol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
+		mp = (MaxProbability)p;
 		calcTotalU();
 		num = mp.getNum();
 		den = mp.getDen();
@@ -945,6 +951,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
+		mp = (MaxProbability)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

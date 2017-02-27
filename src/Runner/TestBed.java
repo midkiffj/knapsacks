@@ -50,7 +50,7 @@ public class TestBed {
 	 */
 	private static void mainCubic() {
 		boolean g = false;
-		boolean rh = false;
+		boolean rh = true;
 		boolean mip = false;
 		boolean log = false;
 		boolean inc = false;
@@ -81,9 +81,13 @@ public class TestBed {
 		boolean rh = true;
 		boolean mip = false;
 		boolean log = false;
+		boolean constr = false;
 		CubicMultTest cmt = new CubicMultTest(g,rh,mip,log);
 		try {
 			cmt.run();
+			if (constr) {
+				cmt.runConstructive();
+			}
 		} catch (FileNotFoundException e) {
 			System.err.println("Error Running Cubic: " + e.getMessage());
 		}
