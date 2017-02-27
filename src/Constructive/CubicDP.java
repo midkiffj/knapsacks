@@ -28,14 +28,14 @@ public class CubicDP extends ConstHeuristic {
 	}
 
 	protected ProblemSol construct() {
-		return dpHeuristic2();
+		return dpHeuristic();
 	}
 
 	/*
 	 * Generate an incumbent solution using DP
 	 * - Changes the algorithm to use a list instead of an array
 	 */
-	private CubicSol dpHeuristic2() {
+	private CubicSol dpHeuristic() {
 		// Initialize Arrays/Lists
 		int b = c.getB();
 		long[] f = new long[b+1];
@@ -113,8 +113,12 @@ public class CubicDP extends ConstHeuristic {
 				bestImprovingSwap(current);
 			}
 			curObj = current.getObj();
-			// Attempt a shift
-			improvingShift(current);
+			// Attempt an improving shift
+			CubicSol shift = new CubicSol(current);
+			int change = shift.shift();
+			if (change != -1 && shift.compareTo(current) > 0) {
+				current = shift;
+			}
 			// Stop if no change from swapping and shifting
 			if (current.getObj() <= curObj) {
 				done = true;	
@@ -129,8 +133,10 @@ public class CubicDP extends ConstHeuristic {
 	private void bestImprovingSwap(CubicSol current) {
 		// Occasionally perform a shift
 		if (rnd.nextDouble() < 0.6) {
-			int change = improvingShift(current);
-			if (change != -1) {
+			CubicSol shift= new CubicSol(current);
+			int change = shift.shift();
+			if (change != -1 && shift.compareTo(current) > 0) {
+				current = shift;
 				return;
 			}
 		}
@@ -157,21 +163,6 @@ public class CubicDP extends ConstHeuristic {
 		// Complete the best improving swap (if found)
 		if (bi != -1) {
 			current.swap(bi,bj);
-		}
-	}
-
-	/*
-	 *  Shift a variable in or out of the current solution
-	 */
-	private int improvingShift(CubicSol current) {
-		if (current.getXSize() < 2) {
-			return current.tryImproveAdd();
-		} else {
-			if (rnd.nextDouble() < 0.8) {
-				return current.tryImproveAdd();
-			} else {
-				return current.tryImproveSub();
-			}
 		}
 	}
 }

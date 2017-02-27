@@ -86,7 +86,7 @@ public class CubicSol extends KnapsackSol {
 	}
 
 	// Try to add a variable to the solution
-	public int tryAdd() {
+	private int tryAdd() {
 		int index = tryAdd(getTotalA(), getX(), getR(), false);
 		if (index != -1) {
 			addI(index);
@@ -97,7 +97,7 @@ public class CubicSol extends KnapsackSol {
 		return index;
 	}
 
-	public int trySub() {
+	private int trySub() {
 		int index = trySub(getX(), false);
 		if (index != -1) {
 			removeI(index);
@@ -312,7 +312,7 @@ public class CubicSol extends KnapsackSol {
 		return oldObj;
 	}
 	
-	private double swapObj(int i, int j) {
+	public double swapObj(int i, int j) {
 		return swapObj(i,j,getX(),getObj());
 	}
 

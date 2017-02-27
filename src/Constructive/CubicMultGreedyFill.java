@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-import Problems.Cubic;
+import Problems.CubicMult;
 import Runner.RndGen;
-import Solutions.CubicSol;
+import Solutions.CubicMultSol;
 import Solutions.ProblemSol;
 
 /**
@@ -14,16 +14,16 @@ import Solutions.ProblemSol;
  * 
  * @author midkiffj
  */
-public class CubicGreedyFill extends ConstHeuristic {
+public class CubicMultGreedyFill extends ConstHeuristic {
 
-	private Cubic c;
+	private CubicMult cm;
 	private Random rnd = RndGen.getRnd();
 
 	/*
 	 * Specify problem to solve
 	 */
-	public CubicGreedyFill(Cubic c) {
-		this.c = c;
+	public CubicMultGreedyFill(CubicMult c) {
+		this.cm = cm;
 	}
 
 	protected ProblemSol construct() {
@@ -35,51 +35,46 @@ public class CubicGreedyFill extends ConstHeuristic {
 	 * Then try to use the fill algorithm to improve it
 	 * 
 	 */
-	private CubicSol hybrid() {
+	private CubicMultSol hybrid() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		ArrayList<Integer> r = new ArrayList<Integer>();
 
 		// Add all items to knapsack
-		int totalA = 0;
-		for (int i = 0; i < c.getN(); i++) {
+		for (int i = 0; i < cm.getN(); i++) {
 			x.add(i);
-			totalA += c.getA(i);
 		}
+		
+		CubicMultSol cms = new CubicMultSol(x,r);
 
-		int b = c.getB();
 		// Remove items, picking the item that minimizes the loss-to-weight ratio
 		ArrayList<ratioNode> ratio = computeRatio(x);
-		while (totalA > b) {
+		while (!cms.getValid()) {
 			int i = ratio.remove(0).x;
-			x.remove(Integer.valueOf(i));
-			r.add(i);
-			totalA -= c.getA(i);
-			updateRatio(x,ratio,i);
+			cms.removeI(i);
+			cms.removeA(i);
+			updateRatio(cms.getX(),ratio,i);
 		}
 
-
-		return fillUpNExchange(x,r,totalA);
+		return fillUpNExchange(cms);
 	}
 
-	/*
-	 *  Complete bestImprovingSwaps or additions until no more items can be 
-	 *  either swapped or shifted
-	 */	
-	private CubicSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r, int totalA) {
-		CubicSol current = new CubicSol(x,r);
-
+	/* 
+	 * Complete bestImprovingSwaps or additions until no more items can be 
+	 *	either swapped or added
+	 */
+	private CubicMultSol fillUpNExchange(CubicMultSol current) {
 		boolean done = false;
 		double curObj = current.getObj();
 		while (!done) {
 			boolean swap = false;
-			// Perform an operation
+			// Perform an operation (50/50 swap or shift)
 			if (rnd.nextDouble() < 0.5) {
 				bestImprovingSwap(current);
 				swap = true;
 			} else {
 				tryAdd(current);
 			}
-
+			
 			// If no change, try the opposite operation
 			if (curObj == current.getObj()) {
 				if (swap) {
@@ -88,7 +83,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 					bestImprovingSwap(current);
 				}
 			}
-
+			
 			// If no change overall, stop
 			if (curObj == current.getObj()) {
 				done = true;
@@ -103,20 +98,20 @@ public class CubicGreedyFill extends ConstHeuristic {
 	/*
 	 * Try to add a variable to the solution, maintaining knapsack feasibility
 	 */
-	private void tryAdd(CubicSol current) {
+	private void tryAdd(CubicMultSol current) {
 		double maxChange = 0;
 		int maxI = -1;
 		// Check all possible shifts
 		for(Integer i: current.getR()) {
 			// Knapsack feasibility
-			if (current.getTotalA() + c.getA(i) <= c.getB()) {
-				double obj = current.getObj() + c.getCi(i);
+			if (current.addTotalA(current.getTotalA(), i)) {
+				double obj = current.getObj() + cm.getCi(i);
 				for (int j = 0; j < current.getXSize(); j++) {
 					int xj = current.getX().get(j);
-					obj += c.getCij(i,xj);
+					obj += cm.getCij(i,xj);
 					for (int k = j+1; k < current.getXSize(); k++) {
 						int xk = current.getX().get(k);
-						obj += c.getDijk(i,xj,xk);
+						obj += cm.getDijk(i,xj,xk);
 					}
 				}
 				// Track best improving addition
@@ -137,10 +132,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 	/*
 	 *  Perform the best improving swap that keeps the knapsack feasible
 	 */
-	private void bestImprovingSwap(CubicSol current) {
-		// Store b
-		int b = c.getB();
-		int curTotalA = current.getTotalA();
+	private void bestImprovingSwap(CubicMultSol current) {
 		// Store best swaps
 		int bi = -1;
 		int bj = -1;
@@ -148,7 +140,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 		for(Integer i: current.getX()) {
 			for(Integer j: current.getR()) {
 				// Check for knapsack feasibility
-				if (c.getA(j)-c.getA(i) <= b - curTotalA) {
+				if (current.swapTotalA(current.getTotalA(), i, j)) {
 					double newObj = current.swapObj(i, j);
 					if (newObj > bObj) {
 						bi = i;
@@ -158,7 +150,8 @@ public class CubicGreedyFill extends ConstHeuristic {
 				}
 			}
 		}
-		// Perform the best improving swap (if found)
+		
+		// Swap the best improving swap (if found)
 		if (bi != -1) {
 			current.swap(bi,bj);
 		}
@@ -171,6 +164,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 	 * Store the ratios in a list of ratioNodes
 	 */
 	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
+		// List of ratios to return
 		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
 		// For each item
 		for (Integer i: x) {
@@ -178,17 +172,21 @@ public class CubicGreedyFill extends ConstHeuristic {
 			// (positive: obj function goes down)
 			// (negative: obj function goes up)
 			// We want negative ratios since that'll improve the objective
-			long objChange = c.getCi(i);
+			long objChange = cm.getCi(i);
 			for (int j = 0; j < x.size(); j++) {
 				int xj = x.get(j);
-				objChange += c.getCij(i,xj);
+				objChange += cm.getCij(i,xj);
 				for (int k = j+1; k < x.size(); k++) {
 					int xk = x.get(k);
-					objChange += c.getDijk(i,xj,xk);
+					objChange += cm.getDijk(i,xj,xk);
 				}
 			}
 			// Compute loss-to-weight and store as ratioNode
-			double lossToWeight = (double)objChange / c.getA(i);
+			double sumRatios = 0;
+			for (int j = 0; j < cm.getM(); j++) {
+				sumRatios += (double)(objChange)/cm.getA(j,i);
+			}
+			double lossToWeight = (double)sumRatios / cm.getM();
 			ratioNode rni = new ratioNode(i, lossToWeight);
 			rni.objChange = objChange;
 			ratio.add(rni);
@@ -197,7 +195,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 		Collections.sort(ratio);
 		return ratio;
 	}
-
+	
 	/*
 	 *  Update the ratios by removing the specified item from the ratio calculation
 	 *  for every other item
@@ -209,13 +207,17 @@ public class CubicGreedyFill extends ConstHeuristic {
 			// Get objective change
 			long objChange = rni.objChange;
 			// Subtract the contribution with the specified item
-			objChange -= c.getCij(i,j);
+			objChange -= cm.getCij(i,j);
 			for (int k = 0; k < x.size(); k++) {
 				int xk = x.get(k);
-				objChange -= c.getDijk(i,j,xk);
+				objChange -= cm.getDijk(i,j,xk);
 			}
 			// Recompute ratio and update node
-			double lossToWeight = (double)objChange / c.getA(i);
+			double sumRatios = 0;
+			for (int k = 0; k < cm.getM(); k++) {
+				sumRatios += (double)(objChange)/cm.getA(k,i);
+			}
+			double lossToWeight = (double)sumRatios / cm.getM();
 			rni.ratio = lossToWeight;
 			rni.objChange = objChange;
 		}

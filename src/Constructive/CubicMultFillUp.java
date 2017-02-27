@@ -3,28 +3,28 @@ package Constructive;
 import java.util.ArrayList;
 import java.util.Random;
 
-import Problems.Cubic;
+import Problems.CubicMult;
 import Runner.RndGen;
-import Solutions.CubicSol;
+import Solutions.CubicMultSol;
 import Solutions.ProblemSol;
 
 /**
- * Fill Up and Exchange Heuristic for the Cubic Knapsack
+ * Fill Up and Exchange Heuristic for the Cubic Multiple Knapsack
  * (does what the name implies)
  * 
  * @author midkiffj
  */
-public class CubicFillUp extends ConstHeuristic {
+public class CubicMultFillUp extends ConstHeuristic {
 
-	private Cubic c;
+	private CubicMult cm;
 	private Random rnd = RndGen.getRnd();
 
 	/*
 	 *  Specify problem to create solution
 	 */
-	public CubicFillUp(Cubic c) {
+	public CubicMultFillUp(CubicMult cm) {
 		super();
-		this.c = c;
+		this.cm = cm;
 	}
 
 	protected ProblemSol construct() {
@@ -34,23 +34,22 @@ public class CubicFillUp extends ConstHeuristic {
 	/*
 	 *  Create lists to store solution and call sub-method
 	 */
-	private CubicSol fillUpNExchange() {
+	private CubicMultSol fillUpNExchange() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		ArrayList<Integer> r = new ArrayList<Integer>();
-		for (int i = 0; i < c.getN(); i++) {
+		for (int i = 0; i < cm.getN(); i++) {
 			r.add(i);
 		}
-		int totalA = 0;
 
-		return fillUpNExchange(x,r,totalA);
+		return fillUpNExchange(x,r);
 	}
 
 	/* 
 	 * Complete bestImprovingSwaps or additions until no more items can be 
 	 *	either swapped or added
 	 */
-	private CubicSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r, int totalA) {
-		CubicSol current = new CubicSol(x,r);
+	private CubicMultSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r) {
+		CubicMultSol current = new CubicMultSol(x,r);
 
 		boolean done = false;
 		double curObj = current.getObj();
@@ -87,20 +86,20 @@ public class CubicFillUp extends ConstHeuristic {
 	/*
 	 * Try to add a variable to the solution, maintaining knapsack feasibility
 	 */
-	private void tryAdd(CubicSol current) {
+	private void tryAdd(CubicMultSol current) {
 		double maxChange = 0;
 		int maxI = -1;
 		// Check all possible shifts
 		for(Integer i: current.getR()) {
 			// Knapsack feasibility
-			if (current.getTotalA() + c.getA(i) <= c.getB()) {
-				double obj = current.getObj() + c.getCi(i);
+			if (current.addTotalA(current.getTotalA(), i)) {
+				double obj = current.getObj() + cm.getCi(i);
 				for (int j = 0; j < current.getXSize(); j++) {
 					int xj = current.getX().get(j);
-					obj += c.getCij(i,xj);
+					obj += cm.getCij(i,xj);
 					for (int k = j+1; k < current.getXSize(); k++) {
 						int xk = current.getX().get(k);
-						obj += c.getDijk(i,xj,xk);
+						obj += cm.getDijk(i,xj,xk);
 					}
 				}
 				// Track best improving addition
@@ -121,11 +120,7 @@ public class CubicFillUp extends ConstHeuristic {
 	/*
 	 *  Perform the best improving swap that keeps the knapsack feasible
 	 */
-	private void bestImprovingSwap(CubicSol current) {
-		// Get b
-		int b = c.getB();
-		int curTotalA = current.getTotalA();
-		
+	private void bestImprovingSwap(CubicMultSol current) {
 		// Store best swaps
 		int bi = -1;
 		int bj = -1;
@@ -133,7 +128,7 @@ public class CubicFillUp extends ConstHeuristic {
 		for(Integer i: current.getX()) {
 			for(Integer j: current.getR()) {
 				// Check for knapsack feasibility
-				if (c.getA(j)-c.getA(i) <= b - curTotalA) {
+				if (current.swapTotalA(current.getTotalA(), i, j)) {
 					double newObj = current.swapObj(i, j);
 					if (newObj > bObj) {
 						bi = i;

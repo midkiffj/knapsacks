@@ -15,9 +15,9 @@ import Problems.ProblemFactory;
 public abstract class MultKnapsackSol extends ProblemSol {
 
 	private MultipleKnapsack mk = (MultipleKnapsack)p;
-	int m;
 	private int[] totalA;
 	private int[] b;
+	protected int m;
 
 	public MultKnapsackSol() {
 		super();

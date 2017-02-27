@@ -108,7 +108,7 @@ public class CubicIncumbent extends ConstHeuristic {
 				r.remove(Integer.valueOf(addI));
 				toUse.remove(Integer.valueOf(addI));
 				curObj = curObj + add[0];
-				totalAx = c.addA(addI, totalAx);
+				totalAx += c.getA(addI);
 			} 
 			// If sub is best, remove an item
 			else if (subChange > maxChange) {
@@ -117,7 +117,7 @@ public class CubicIncumbent extends ConstHeuristic {
 				r.add(subI);
 				toUse.add(subI);
 				curObj = curObj + sub[0];
-				totalAx = c.removeA(subI, totalAx);
+				totalAx -= c.getA(subI);
 			} 
 			// Else, perform the best improving swap
 			else {
@@ -133,7 +133,7 @@ public class CubicIncumbent extends ConstHeuristic {
 					r.add(maxI);
 					toUse.add(maxI);
 					curObj = curObj + maxChange;
-					totalAx = c.removeA(maxI, c.addA(maxJ,totalAx));
+					totalAx = totalAx + c.getA(maxJ) - c.getA(maxI);
 				}
 			}
 		}

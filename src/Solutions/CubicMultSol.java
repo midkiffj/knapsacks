@@ -57,7 +57,7 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
-	private double swapObj(int i, int j) {
+	public double swapObj(int i, int j) {
 		return swapObj(i,j,getX(),getObj());
 	}
 	
