@@ -143,17 +143,23 @@ public class Knapsack_Frac {
 		bestObj = 0;
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		xVals = new boolean[a.length];
-		int i = 0;
-		int xi = ratios.get(ratios.size()-1-i).x;
-		while (totalA + a[xi] <= b && i < ratios.size()) {
-			xVals[xi] = true;
-			x.add(xi);
-			bestObj += c[xi];
-			totalA += a[xi];
-			i++;
-			xi = ratios.get(ratios.size()-1-i).x;
+		int failedI = -1;
+		for (int i = 0; i < ratios.size(); i++) {
+			int xi = ratios.get(ratios.size()-(i+1)).x;
+			if (totalA + a[xi] <= b) {
+				xVals[xi] = true;
+				x.add(xi);
+				bestObj += c[xi];
+				totalA += a[xi];
+			} else {
+				failedI = i;
+				i = ratios.size();
+			}
 		}
-		bestObj += c[xi]*((double)(b-totalA)/a[xi]);
+		if (failedI != -1) {
+			int xi = ratios.get(ratios.size()-1-failedI).x;
+			bestObj += c[xi]*((double)(b-totalA)/a[xi]);
+		}
 	}
 	
 	private class ratioNode implements Comparable<ratioNode>{

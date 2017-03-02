@@ -83,7 +83,7 @@ public class MaxProbability extends Knapsack {
 			u[i] = rnd.nextInt(100) + 1;
 			s[i] = rnd.nextInt(10000) + 1;
 			totalA += a[i];
-			tau[i] = (double)(u[i]) / s[i];
+			tau[i] = (double)(u[i]*1000) / s[i];
 			ratio[i] = tau[i] / a[i];
 		}
 		b = (int) Math.floor(0.01*P*totalA);
@@ -118,9 +118,7 @@ public class MaxProbability extends Knapsack {
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
-		int swaps = 0;
 		while (swapping) {
-			//		while (swapping) {
 			int maxI = -1;
 			int maxJ = -1;
 			double maxChange = 0;
@@ -174,64 +172,6 @@ public class MaxProbability extends Knapsack {
 		System.out.println("Generated Incumbent: " + curObj);
 		Collections.sort(x);
 		System.out.println(x.toString());
-	}
-
-	public int minURatio(ArrayList<Integer> x) {
-		int minI = -1;
-		double minURatio = Double.MAX_VALUE;
-		for (Integer i: x) {
-			double uRatio = (double)u[i] / a[i];
-			if (uRatio < minURatio) {
-				minI = i;
-				minURatio = uRatio;
-			}
-		}
-		return minI;
-	}
-
-	public int maxURatio(ArrayList<Integer> r, int k) {
-		// Find the maximum ratio not in the solution
-		double maxURatio = -1*Double.MAX_VALUE;
-		int maxI = -1;
-		ArrayList<Integer> bestIs = new ArrayList<Integer>();
-		while (bestIs.size() <= k && bestIs.size() < r.size()) {
-			for (Integer i: r) {
-				double uRatio = (double)u[i] / a[i];
-				if (uRatio > maxURatio && !bestIs.contains(i)) {
-					maxURatio = uRatio;
-					maxI = i;
-				}
-			}
-			maxURatio = -1*Double.MAX_VALUE;
-			bestIs.add(maxI);
-		}
-		return maxI;
-	}
-
-	private double[] tryAddU(int totalA, ArrayList<Integer> x, ArrayList<Integer> r) {
-		double[] fail = {-1,-1};
-		if (r.size() < 1) {
-			return fail;
-		}
-
-		double maxURatio = -1;
-		int maxI = -1;
-		for (Integer i: r) {
-			if (totalA + a[i] < b) {
-				double uRatio = (double)(u[i] / a[i]) * 1000 / a[i];
-				if (uRatio > maxURatio) {
-					maxURatio = uRatio;
-					maxI = i;
-				}
-			}
-		}
-
-
-		if (maxI == -1) {
-			return fail;
-		}
-		double[] add = {maxI, u[maxI]};
-		return add;
 	}
 
 	private double[] trySub(int totalU, ArrayList<Integer> x, boolean improvingOnly) {
@@ -297,25 +237,27 @@ public class MaxProbability extends Knapsack {
 	}
 
 	@Override
-	/*
+	/**
 	 * Generate a random, feasible solution to the Max Probability problem
 	 *      and fill the given lists with the solution.
 	 * Ensures:
-	 * 		sum(a_i*x_i) <= b
-	 * 		sum(u_i*x_i) >= t
+	 * 		sum(a_i*x_i) <= b (knapsack)
+	 * 		sum(u_i*x_i) >= t (profit)
+	 * 
+	 * @param x solution variables
+	 * @param r unused variables
 	 */
 	public void genRndInit(ArrayList<Integer> x, ArrayList<Integer> r) {
-		// Clear Solution lists
+		// Solution lists
 		// x - variables included in solution
 		// r - variables not included in solution
 		x.clear();
 		r.clear();
 
-		// Initialize sum vars
-		int totalAx = 0;
-		int totalUx = 0;
+		int totalAx = 0; // sum(a_i*x_i)
+		int totalUx = 0; // sum(u_i*x_i)
 
-		// Fill r with all variables
+		// Start with all variables not in the solution
 		for (int j = 0; j < n; j++) {
 			r.add(j);
 		}
@@ -331,36 +273,41 @@ public class MaxProbability extends Knapsack {
 			totalAx += a[k];
 		}
 
-		// Perform swaps and shifts until totalAx <= b
+		// Perform swaps and shifts until knapsack feasible
+		//  (totalAx <= b)
 		int swaps = 0;
 		while (totalAx > b) {
 			// Attempt to find a random swap that reduces totalAx
 			int i = rnd.nextInt(x.size());
 			int j = rnd.nextInt(r.size());
+			// Variables to swap
 			int xi = x.get(i);
-			int xj = r.get(j);
+			int rj = r.get(j);
 			int count = 0;
-			// Change random numbers until a_xi > a_xj
-			while(a[xj] >= a[xi] && count < n/2) {
+			// Change random numbers until a_xi > a_rj
+			//	 so that totalAx reduced
+			while(a[rj] >= a[xi] && count < n/2) {
 				i = rnd.nextInt(x.size());
 				j = rnd.nextInt(r.size());
 				xi = x.get(i);
-				xj = r.get(j);
+				rj = r.get(j);
 				count++;
 			}
-			// Check swap for knapsack feasibility and update
-			if (a[xj] < a[xi] && totalUx - u[xi] + u[xj] > t) {
+			// Check swap for reduced totalAx and profit feasibility 
+			if (a[rj] < a[xi] && totalUx - u[xi] + u[rj] > t) {
+				// Update solution lists
 				x.remove(i);
 				r.add(xi);
 				r.remove(j);
-				x.add(xj);
-				totalUx = totalUx + u[xj] - u[xi];
-				totalAx = totalAx + a[xj] - a[xi];
+				x.add(rj);
+				// Update sums
+				totalUx = totalUx + u[rj] - u[xi];
+				totalAx = totalAx + a[rj] - a[xi];
 			}
 			// Increment swaps
 			swaps++;
 			
-			// After a number of swaps, try a shift
+			// After a number of attempted swaps, try a shift
 			if (totalAx > b && swaps > 10) {
 				// Attempt a substitution: 
 				//	sub = {index, change in objective}
@@ -371,15 +318,16 @@ public class MaxProbability extends Knapsack {
 					int subI = (int) sub[0];
 					x.remove(Integer.valueOf(subI));
 					r.add(subI);
-					totalAx = totalAx - a[subI];
-					totalUx = totalUx - u[subI];
+					totalAx -= a[subI];
+					totalUx -= u[subI];
 				} 
-				// Else, add a random variable to the solution
+				// Else, could not remove a variable, 
+				//	so add a random variable to the solution
 				else {
-					xj = r.remove(rnd.nextInt(r.size()));
-					x.add(Integer.valueOf(xj));
-					totalAx = totalAx + a[xj];
-					totalUx = totalUx + u[xj];
+					rj = r.remove(rnd.nextInt(r.size()));
+					x.add(Integer.valueOf(rj));
+					totalAx += a[rj];
+					totalUx += u[rj];
 				}
 				swaps = 0;
 			}
@@ -507,7 +455,7 @@ public class MaxProbability extends Knapsack {
 		tau = new double[n];
 		ratio = new double[n];
 		for (int i = 0; i < n; i++) {
-			tau[i] = (double)(u[i]) / s[i];
+			tau[i] = (double)(u[i]*1000) / s[i];
 			ratio[i] = tau[i]/a[i];
 		}
 	}

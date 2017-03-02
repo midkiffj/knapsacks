@@ -10,7 +10,7 @@ import Solutions.CubicMultSol;
 import Solutions.ProblemSol;
 
 /**
- * Greedy Heuristic + Fill Up N Exchange
+ * Greedy Heuristic + Fill Up N Exchange for Cubic Multiple Knapsack
  * 
  * @author midkiffj
  */

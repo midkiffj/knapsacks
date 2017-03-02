@@ -8,8 +8,8 @@ import Solutions.CubicMultSol;
 import Solutions.ProblemSol;
 
 /**
- * Greedy Heuristic to the Cubic Knapsack
- * - Fills the knapsack with all items
+ * Greedy Heuristic to the Cubic Multiple Knapsack
+ * - Fills the solution with all items
  * - Removes the item that best improves the objective
  * 
  * @author midkiffj
@@ -32,7 +32,7 @@ public class CubicMultGreedy extends ConstHeuristic {
 	
 	/*
 	 * Creates a solution by:
-	 * - Adding all items to the knapsack
+	 * - Adding all items to the solution
 	 * - Removes an item with the minimum 'ratio' until Ax <= b
 	 */
 	private CubicMultSol greedyHeuristic() {
