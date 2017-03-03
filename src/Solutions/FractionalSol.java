@@ -550,7 +550,7 @@ public class FractionalSol extends KnapsackSol {
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = true;
-		while ((f.getA(j) - f.getA(i) > f.getB() - getTotalA()) && ki < n) {
+		while ((f.getA(j) - f.getA(i) > f.getB() - getTotalA()) && ki < getXSize()) {
 			if (changeI) {
 				ki++;
 				i = minRatio(ki);
@@ -558,7 +558,7 @@ public class FractionalSol extends KnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == n-1) {
+			if (kj == getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -578,7 +578,7 @@ public class FractionalSol extends KnapsackSol {
 			nTObj = newObj;
 		} else {
 			boolean newMin = false;
-			while (tabuList[i][j] >= iteration && (f.getA(j) - f.getA(i) > f.getB() - getTotalA()) && ki < n) {
+			while (tabuList[i][j] >= iteration && (f.getA(j) - f.getA(i) > f.getB() - getTotalA()) && ki < getXSize()) {
 				if (newMin) {
 					ki++;
 					i = minRatio(ki);
@@ -586,9 +586,17 @@ public class FractionalSol extends KnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == n) {
+				if (kj == getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
+				}
+				if (f.getA(j) - f.getA(i) <= getB() - getTotalA()) {
+					newObj = swapObj(i, j);
+					if (newObj > bObj) {
+						bi = i;
+						bj = j;
+						bObj = newObj;
+					}
 				}
 			}
 			if (tabuList[i][j] < iteration) {
@@ -716,12 +724,6 @@ public class FractionalSol extends KnapsackSol {
 					}
 				}
 			}
-		}
-		if (ni == -1 && bi == -1) {
-			if (rnd.nextDouble() < 0.1) {
-				trySub();
-			}
-			return null;
 		}
 		// Compile and return data
 		FractionalSol[] results = new FractionalSol[2];

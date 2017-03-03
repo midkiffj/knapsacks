@@ -527,7 +527,7 @@ public class CubicSol extends KnapsackSol {
 					}
 				}
 			}
-			if (tabuList[i][j] < iteration) {
+			if (tabuList[i][j] < iteration && c.getA(j) - c.getA(i) <= getB() - getTotalA()) {
 				newObj = swapObj(i, j);
 				ni = i;
 				nj = j;
@@ -650,12 +650,6 @@ public class CubicSol extends KnapsackSol {
 					}
 				}
 			}
-		}
-		if (ni == -1 && bi == -1) {
-			if (rnd.nextDouble() < 0.1) {
-				trySub();
-			}
-			return null;
 		}
 		// Compile and return data
 		CubicSol[] results = new CubicSol[2];

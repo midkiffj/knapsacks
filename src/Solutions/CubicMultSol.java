@@ -495,7 +495,7 @@ public class CubicMultSol extends MultKnapsackSol {
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = true;
-		while (!swapTotalA(getTotalA(), i, j) && ki < n) {
+		while (!swapTotalA(getTotalA(), i, j) && ki < getXSize()) {
 			if (changeI) {
 				ki++;
 				i = minRatio(ki);
@@ -503,7 +503,7 @@ public class CubicMultSol extends MultKnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == n-1) {
+			if (kj == getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -523,7 +523,7 @@ public class CubicMultSol extends MultKnapsackSol {
 			nTObj = newObj;
 		} else {
 			boolean newMin = false;
-			while (tabuList[i][j] >= iteration && !swapTotalA(getTotalA(), i, j) && ki < n) {
+			while (tabuList[i][j] >= iteration && !swapTotalA(getTotalA(), i, j) && ki < getXSize()) {
 				if (newMin) {
 					ki++;
 					i = minRatio(ki);
@@ -531,9 +531,17 @@ public class CubicMultSol extends MultKnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == n) {
+				if (kj == getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
+				}
+				if (swapTotalA(getTotalA(), i, j)) {
+					newObj = swapObj(i, j);
+					if (newObj > bObj) {
+						bi = i;
+						bj = j;
+						bObj = newObj;
+					}
 				}
 			}
 			if (tabuList[i][j] < iteration) {
@@ -659,12 +667,6 @@ public class CubicMultSol extends MultKnapsackSol {
 					}
 				}
 			}
-		}
-		if (ni == -1 && bi == -1) {
-			if (rnd.nextDouble() < 0.1) {
-				trySub();
-			}
-			return null;
 		}
 		// Compile and return data
 		CubicMultSol[] results = new CubicMultSol[2];

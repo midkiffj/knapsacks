@@ -102,12 +102,14 @@ public class tabuSearch extends Metaheuristic {
 					if (tabu != null && tabu.compareTo(best) > 0) {
 						current = tabu;
 						swapped = true;
+						makeSwapTabu(i);
 					}
 					// Otherwise, use nonTabu
 					else {
 						if (nonTabu != null) {
 							current = nonTabu;
 							swapped = true;
+							makeSwapTabu(i);
 						}
 					}
 
@@ -154,7 +156,9 @@ public class tabuSearch extends Metaheuristic {
 	/*
 	 * Set swapping indexes i and j tabu
 	 */
-	private void makeTabu(int i, int j, int iteration) {
+	private void makeSwapTabu(int iteration) {
+		int i = current.getX().get(current.getXSize()-1);
+		int j = current.getR().get(current.getRSize()-1);
 		tabuList[i][j] = iteration + tabuDuration;
 		tabuList[j][i] = iteration + tabuDuration;
 	}

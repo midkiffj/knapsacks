@@ -138,7 +138,6 @@ public class UnconstrainedSol extends ProblemSol {
 				}
 			}
 		}
-
 		// Compile and return data
 		UnconstrainedSol[] results = new UnconstrainedSol[2];
 		if (bi != -1 && bj != -1) {
@@ -262,9 +261,15 @@ public class UnconstrainedSol extends ProblemSol {
 				}
 				kj++;
 				j = minTau(kj);
-				if (kj == n) {
+				if (kj == getRSize()-1) {
 					kj = -1;
 					newMax = !newMax;
+				}
+				newObj = u.swapObj(i, j, x, obj);
+				if (newObj < bObj) {
+					bi = i;
+					bj = j;
+					bObj = newObj;
 				}
 			}
 			if (tabuList[i][j] < iteration) {
@@ -473,9 +478,9 @@ public class UnconstrainedSol extends ProblemSol {
 		if (o.getValid() && this.getValid() || !(o.getValid() && this.getValid())) {
 			double diff = this.getObj() - o.getObj();
 			if (diff >= 0) {
-				return 1;
-			} else {
 				return -1;
+			} else {
+				return 1;
 			}
 		} else {
 			if (o.getValid()) {
