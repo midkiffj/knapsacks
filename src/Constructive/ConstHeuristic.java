@@ -15,7 +15,7 @@ public abstract class ConstHeuristic {
 	public ProblemSol result;
 	
 	// Time to complete the construction
-	private long timeTaken;
+	private double timeTaken;
 	
 	public ConstHeuristic() {
 		timeTaken = -1;
@@ -25,7 +25,7 @@ public abstract class ConstHeuristic {
 		return result;
 	}
 	
-	public long getTime() {
+	public double getTime() {
 		return timeTaken;
 	}
 	
@@ -34,7 +34,7 @@ public abstract class ConstHeuristic {
 		long start = System.nanoTime();
 		result = construct();
 		long end = System.nanoTime();
-		timeTaken = end-start;
+		timeTaken = (double)(end-start)/60000000000L;
 	}
 	
 	protected abstract ProblemSol construct();

@@ -17,25 +17,30 @@ import Solutions.ProblemSol;
  * @author midkiffj
  */
 public class MaxProbTest extends ProblemTest {
-	
+
 	// Test bed specifications
 	private int[] sizes = {100, 500, 1000};
 	private int[] possibleK = {65, 75, 85, 95};
 	private int[] possibleP = {5, 10, 30, 50, 75};
 	private int num = 5;
-	
+
 	// Usage booleans
 	boolean generate;
 	boolean runHeuristics;
 	boolean runMIP;
-	
+
+	// Folders
+	private static final String incuFolder = "incumbents/mp/";
+	private static final String probFolder = "problems/mp/";
+	private static final String resFolder = "results/mp/";
+
 	public MaxProbTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
 		runHeuristics = rh;
 		runMIP = mip;
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -45,16 +50,16 @@ public class MaxProbTest extends ProblemTest {
 		if (generate) {
 			generate();
 		}
-		
+
 		if (runHeuristics) {
 			runHeuristics();
 		}
-		
+
 		if (runMIP) {
 			runMIP();
 		}
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -72,8 +77,8 @@ public class MaxProbTest extends ProblemTest {
 						if (!mps.getValid()) {
 							System.err.println("Invalid answer:" + file);
 						}
-						mp.toFile("problems/mp/"+file);
-						mps.writeSolution("incumbents/mp/"+file+"inc.txt");
+						mp.toFile(probFolder+file);
+						mps.writeSolution(incuFolder+file+"inc.txt");
 
 						testObj.put(file, mp.getObj(test));
 
@@ -94,7 +99,7 @@ public class MaxProbTest extends ProblemTest {
 	 */
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("maxProbResults.csv");
+		pw = new PrintWriter(resFolder+"maxProbHeuristics.csv");
 		pw.write("n,#,P,K,incumbent,GA,SA,ST,TS\n");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
@@ -102,8 +107,8 @@ public class MaxProbTest extends ProblemTest {
 					for (int k: possibleK) {
 						String file = n+"_P"+p+"_K"+k+"_"+i;
 						@SuppressWarnings("unused")
-						MaxProbability mp2 = new MaxProbability("problems/mp/"+file);
-						MaxProbabilitySol mps = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
+						MaxProbability mp2 = new MaxProbability(probFolder+file);
+						MaxProbabilitySol mps = new MaxProbabilitySol(incuFolder+file+"inc.txt");
 						TestLogger.setFile("mp/"+file);
 						System.out.println("--"+file+"--");
 						double incumbent1 = mps.getObj();
@@ -130,7 +135,7 @@ public class MaxProbTest extends ProblemTest {
 	 */
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("maxProbMIP.csv");
+		pw = new PrintWriter(resFolder+"maxProbMIP.csv");
 		pw.write("n,#,P,K,incumbent,MIP\n");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
@@ -139,8 +144,8 @@ public class MaxProbTest extends ProblemTest {
 						String file = n+"_P"+p+"_K"+k+"_"+i;
 						System.out.println("--"+file+"--");
 						@SuppressWarnings("unused")
-						MaxProbability mp = new MaxProbability("problems/mp/"+file);
-						MaxProbabilitySol mps = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
+						MaxProbability mp = new MaxProbability(probFolder+file);
+						MaxProbabilitySol mps = new MaxProbabilitySol(incuFolder+file+"inc.txt");
 						double incumbent1 = mps.getObj();
 
 						String[] args = {file};
@@ -159,13 +164,13 @@ public class MaxProbTest extends ProblemTest {
 		}
 		pw.close();
 	}
-	
+
 	/*
 	 * Run the genetic algorithm on the test bed
 	 */
 	public void runMaxProbGA() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("maxProbGA.csv");
+		pw = new PrintWriter(resFolder+"maxProbGA.csv");
 		pw.write("n,#,P,K,incumbent,GA\n");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
@@ -173,8 +178,8 @@ public class MaxProbTest extends ProblemTest {
 					for (int k: possibleK) {
 						String file = n+"_P"+p+"_K"+k+"_"+i;
 						@SuppressWarnings("unused")
-						MaxProbability mp = new MaxProbability("problems/mp/"+file);
-						MaxProbabilitySol mps = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
+						MaxProbability mp = new MaxProbability(probFolder+file);
+						MaxProbabilitySol mps = new MaxProbabilitySol(incuFolder+file+"inc.txt");
 						TestLogger.setFile("mp/"+file);
 						System.out.println("--"+file+"--");
 						double incumbent1 = mps.getObj();
@@ -195,7 +200,7 @@ public class MaxProbTest extends ProblemTest {
 		}
 		pw.close();
 	}
-	
+
 	/*
 	 * Runs a given heuristic and returns the best solution
 	 */

@@ -26,9 +26,14 @@ public class CubicTest extends ProblemTest {
 	private int K = 10;
 	
 	// Method usage
-	boolean generate;
-	boolean runHeuristics;
-	boolean runMIP;
+	private boolean generate;
+	private boolean runHeuristics;
+	private boolean runMIP;
+	
+	// Folders
+	private static final String incuFolder = "incumbents/cubic/";
+	private static final String probFolder = "problems/cubic/";
+	private static final String resFolder = "results/cubic/";
 	
 	public CubicTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
@@ -72,8 +77,8 @@ public class CubicTest extends ProblemTest {
 					Cubic c1 = new Cubic(n,false,seed,density);
 					KnapsackSol ks1 = (KnapsackSol)ProblemFactory.genInitSol();
 					String file1 = n+"_"+density+"_false_"+k;
-					c1.toFile("problems/cubic/"+file1);
-					ks1.writeSolution("incumbents/cubic/"+file1+"inc.txt");
+					c1.toFile(probFolder+file1);
+					ks1.writeSolution(incuFolder+file1+"inc.txt");
 
 					testObj.put(file1, c1.getObj(test));
 
@@ -81,8 +86,8 @@ public class CubicTest extends ProblemTest {
 					Cubic c2 = new Cubic(n,true,seed,density);
 					KnapsackSol ks2 = (KnapsackSol)ProblemFactory.genInitSol();
 					String file2 = n+"_"+density+"_true_"+k;
-					c2.toFile("problems/cubic/"+file2);
-					ks2.writeSolution("incumbents/cubic/"+file2+"inc.txt");
+					c2.toFile(probFolder+file2);
+					ks2.writeSolution(incuFolder+file2+"inc.txt");
 
 					testObj.put(file2, c2.getObj(test));
 				}
@@ -103,13 +108,13 @@ public class CubicTest extends ProblemTest {
 					int n = probSizes[j];
 
 					String file1 = n+"_"+density+"_false_"+k;
-					Cubic c1 = new Cubic("problems/cubic/"+file1);
+					Cubic c1 = new Cubic(probFolder+file1);
 					if(c1.getObj(test) != testObj.get(file1)) {
 						System.err.println(file1 + " incorrect");
 					}
 					
 					String file2 = n+"_"+density+"_true_"+k;
-					Cubic c2 = new Cubic("problems/cubic/"+file2);
+					Cubic c2 = new Cubic(probFolder+file2);
 					if(c2.getObj(test) != testObj.get(file2)) {
 						System.err.println(file2 + " incorrect");
 					}
@@ -125,7 +130,7 @@ public class CubicTest extends ProblemTest {
 	 */
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("tbResults.csv");
+		pw = new PrintWriter(resFolder+"cubHeuristics.csv");
 		pw.write("n,density,#,negCoef,incumbent,GA,SA,ST,TS\n");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
@@ -136,8 +141,8 @@ public class CubicTest extends ProblemTest {
 					TestLogger.setFile("cubic/"+file1);
 					System.out.println("--"+file1+"--");
 					@SuppressWarnings("unused")
-					Cubic c1 = new Cubic("problems/cubic/"+file1);
-					CubicSol cs1 = new CubicSol("incumbents/cubic/"+file1+"inc.txt");
+					Cubic c1 = new Cubic(probFolder+file1);
+					CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
 					double incumbent1 = cs1.getObj();
 
 					String result1;
@@ -156,8 +161,8 @@ public class CubicTest extends ProblemTest {
 					TestLogger.setFile("cubic/"+file2);
 					System.out.println("--"+file2+"--");
 					@SuppressWarnings("unused")
-					Cubic c2 = new Cubic("problems/cubic/"+file2);
-					CubicSol cs2 = new CubicSol("incumbents/cubic/"+file2+"inc.txt");
+					Cubic c2 = new Cubic(probFolder+file2);
+					CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
 					double incumbent2 = cs2.getObj();
 
 					String result2;
@@ -182,7 +187,7 @@ public class CubicTest extends ProblemTest {
 	 * @see Runner.ProblemTest#runMIP()
 	 */
 	public void runMIP() throws FileNotFoundException {
-		PrintWriter pw = new PrintWriter("tbResultsMIP" + probSizes.length + ".csv");
+		PrintWriter pw = new PrintWriter(resFolder+"cubMIP" + probSizes.length + ".csv");
 		pw.write("n,density,#,negCoef,incumbent,MIP\n");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
@@ -192,8 +197,8 @@ public class CubicTest extends ProblemTest {
 					String file1 = n+"_"+density+"_false_"+k;
 					System.err.println(file1);
 					@SuppressWarnings("unused")
-					Cubic c1 = new Cubic("problems/cubic/"+file1);
-					CubicSol cs1 = new CubicSol("incumbents/cubic/"+file1+"inc.txt");
+					Cubic c1 = new Cubic(probFolder+file1);
+					CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
 					String[] args1 = {file1};
 
 					long result1;
@@ -214,8 +219,8 @@ public class CubicTest extends ProblemTest {
 					String file2 = n+"_"+density+"_true_"+k;
 					System.err.println(file2);
 					@SuppressWarnings("unused")
-					Cubic c2 = new Cubic("problems/cubic/"+file2);
-					CubicSol cs2 = new CubicSol("incumbents/cubic/"+file2+"inc.txt");
+					Cubic c2 = new Cubic(probFolder+file2);
+					CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
 					String[] args2 = {file2};
 
 					long result2;
@@ -242,8 +247,8 @@ public class CubicTest extends ProblemTest {
 	 */
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("tbResultsConst.csv");
-		pw.write("n,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times:,DP,Greedy,Fill,Hybrid\n");
+		pw = new PrintWriter(resFolder+"cubConst.csv");
+		pw.write("n,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times(min):,DP,Greedy,Fill,Hybrid\n");
 		
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
@@ -253,8 +258,8 @@ public class CubicTest extends ProblemTest {
 					String file1 = n+"_"+density+"_false_"+k;
 					TestLogger.setFile("cubic/"+file1);
 					System.out.println("--"+file1+"--");
-					Cubic c1 = new Cubic("problems/cubic/"+file1);
-					CubicSol cs1 = new CubicSol("incumbents/cubic/"+file1+"inc.txt");
+					Cubic c1 = new Cubic(probFolder+file1);
+					CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
 					double incumbent1 = cs1.getObj();
 
 					String result1;
@@ -271,8 +276,8 @@ public class CubicTest extends ProblemTest {
 					String file2 = n+"_"+density+"_true_"+k;
 					TestLogger.setFile("cubic/"+file2);
 					System.out.println("--"+file2+"--");
-					Cubic c2 = new Cubic("problems/cubic/"+file2);
-					CubicSol cs2 = new CubicSol("incumbents/cubic/"+file2+"inc.txt");
+					Cubic c2 = new Cubic(probFolder+file2);
+					CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
 					double incumbent2 = cs2.getObj();
 
 					String result2;
@@ -299,25 +304,25 @@ public class CubicTest extends ProblemTest {
 		CubicDP cdp = new CubicDP(c);
 		cdp.run();
 		double cdpBest = cdp.getResult().getObj();
-		long cdpTime = cdp.getTime();
+		double cdpTime = cdp.getTime();
 
 		System.err.println("--Starting Greedy");
 		CubicGreedy cg = new CubicGreedy(c);
 		cg.run();
 		double greedy = cg.getResult().getObj();
-		long greedyTime = cg.getTime();
+		double greedyTime = cg.getTime();
 
 		System.err.println("--Starting Fill");
 		CubicFillUp cfu = new CubicFillUp(c);
 		cfu.run();
 		double fill = cfu.getResult().getObj();
-		long fillTime = cfu.getTime();
+		double fillTime = cfu.getTime();
 
 		System.err.println("--Starting Hybrid");
 		CubicGreedyFill cgf = new CubicGreedyFill(c);
 		cgf.run();
 		double hybrid = cgf.getResult().getObj();
-		long hybridTime = cgf.getTime();
+		double hybridTime = cgf.getTime();
 
 		String ret = cdpBest + "," + greedy + "," + fill + "," + hybrid + ",,," + cdpTime + "," + greedyTime + "," + fillTime + "," + hybridTime;
 		return ret;
@@ -328,8 +333,8 @@ public class CubicTest extends ProblemTest {
 	 */
 	public void timeIncumbent() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("tbIncumbent.csv");
-		pw.write("n,density,#,negCoef,incumbent,time\n");
+		pw = new PrintWriter(resFolder+"cubIncumbent.csv");
+		pw.write("n,density,#,negCoef,incumbent,time(min)\n");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -340,7 +345,7 @@ public class CubicTest extends ProblemTest {
 					System.out.println("--"+file1+"--");
 
 					@SuppressWarnings("unused")
-					Cubic c1 = new Cubic("problems/cubic/"+file1);
+					Cubic c1 = new Cubic(probFolder+file1);
 					long start = System.nanoTime();
 					KnapsackSol ks1 = (KnapsackSol)ProblemFactory.genInitSol();
 					long end = System.nanoTime();
@@ -359,7 +364,7 @@ public class CubicTest extends ProblemTest {
 					System.out.println("--"+file2+"--");
 
 					@SuppressWarnings("unused")
-					Cubic c2 = new Cubic("problems/cubic/"+file2);
+					Cubic c2 = new Cubic(probFolder+file2);
 					long start = System.nanoTime();
 					KnapsackSol ks2 = (KnapsackSol)ProblemFactory.genInitSol();
 					long end = System.nanoTime();

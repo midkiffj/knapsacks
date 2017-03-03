@@ -19,19 +19,24 @@ public class FractionalTest extends ProblemTest {
 	int[] probSizes = {100, 300, 1000};
 	int[] mSizes = {1, 3, 5};
 	int num = 5;
-	
+
 	// Method usage
 	boolean generate;
 	boolean runHeuristics;
 	boolean runMIP;
-	
+
+	// Folders
+	private static final String incuFolder = "incumbents/fractional/";
+	private static final String probFolder = "problems/fractional/";
+	private static final String resFolder = "results/fractional/";
+
 	public FractionalTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
 		runHeuristics = rh;
 		runMIP = mip;
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -41,16 +46,16 @@ public class FractionalTest extends ProblemTest {
 		if (generate) {
 			generate();
 		}
-		
+
 		if (runHeuristics) {
 			runHeuristics();
 		}
-		
+
 		if (runMIP) {
 			runMIP();
 		}
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -68,8 +73,8 @@ public class FractionalTest extends ProblemTest {
 					if (!fs1.getValid()) {
 						System.err.println("Invalid answer:" + file1);
 					}
-					f1.toFile("problems/fractional/"+file1);
-					fs1.writeSolution("incumbents/fractional/"+file1+"inc.txt");
+					f1.toFile(probFolder+file1);
+					fs1.writeSolution(incuFolder+file1+"inc.txt");
 
 					testObj.put(file1, f1.getObj(test));
 
@@ -77,24 +82,6 @@ public class FractionalTest extends ProblemTest {
 					if(f1t.getObj(test) != testObj.get(file1)) {
 						System.err.println(file1 + " incorrect");
 					}		
-
-					//				String file2 = n+"_true_"+i;
-					//				System.out.println(file2);
-					//				Fractional f2 = new Fractional(n, true, seed++);
-					//				FractionalSol fs2 = (FractionalSol)ProblemFactory.genInitSol();
-					//				
-					//				if (!fs2.getValid()) {
-					//					System.err.println("Invalid answer:" + file2);
-					//				}
-					//				f2.toFile("problems/fractional/"+file2);
-					//				fs2.writeSolution("incumbents/fractional/"+file2+"inc.txt");
-					//
-					//				testObj.put(file2, f2.getObj(test));
-					//
-					//				Fractional f2t = new Fractional("problems/fractional/"+file2);
-					//				if(f2t.getObj(test) != testObj.get(file2)) {
-					//					System.err.println(file2 + " incorrect");
-					//				}	
 				}
 			}
 		}
@@ -107,15 +94,15 @@ public class FractionalTest extends ProblemTest {
 	 */
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("fractionalResults.csv");
+		pw = new PrintWriter(resFolder+"fractionalHeuristics.csv");
 		pw.write("n,m,#,incumbent,GA,SA,ST,TS\n");
 		for (int n: probSizes) {
 			for (int m: mSizes) {
 				for (int i = 0; i < num; i++) {
 					String file1 = n+"_"+m+"_false_"+i;
 					@SuppressWarnings("unused")
-					Fractional f1 = new Fractional("problems/fractional/"+file1);
-					FractionalSol fs1 = new FractionalSol("incumbents/fractional/"+file1+"inc.txt");
+					Fractional f1 = new Fractional(probFolder+file1);
+					FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
 					double incumbent1 = fs1.getObj();
 
 					TestLogger.setFile("fractional/"+file1);
@@ -143,7 +130,7 @@ public class FractionalTest extends ProblemTest {
 	 */
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("fractionalMIP.csv");
+		pw = new PrintWriter(resFolder+"fractionalMIP.csv");
 		pw.write("n,m,#,incumbent,MIP\n");
 		for (int n: probSizes) {
 			for (int m: mSizes) {
@@ -151,8 +138,8 @@ public class FractionalTest extends ProblemTest {
 					String file1 = n+"_"+m+"_false_"+i;
 					System.out.println("--"+file1+"--");
 					@SuppressWarnings("unused")
-					Fractional f = new Fractional("problems/fractional/"+file1);
-					FractionalSol fs = new FractionalSol("incumbents/fractional/"+file1+"inc.txt");
+					Fractional f = new Fractional(probFolder+file1);
+					FractionalSol fs = new FractionalSol(incuFolder+file1+"inc.txt");
 					double incumbent1 = fs.getObj();
 
 					String[] args = {file1};

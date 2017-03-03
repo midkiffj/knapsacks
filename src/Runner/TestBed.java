@@ -17,7 +17,7 @@ public class TestBed {
 	
 	// Select problem(s) to run
 	private static boolean c = false;
-	private static boolean cm = true;
+	private static boolean cm = false;
 	private static boolean mp = false;
 	private static boolean f = false;
 
@@ -50,7 +50,7 @@ public class TestBed {
 	 */
 	private static void mainCubic() {
 		boolean g = false;
-		boolean rh = true;
+		boolean rh = false;
 		boolean mip = false;
 		boolean log = false;
 		boolean inc = false;
@@ -78,7 +78,7 @@ public class TestBed {
 	 */
 	private static void mainCubicMult() {
 		boolean g = false;
-		boolean rh = true;
+		boolean rh = false;
 		boolean mip = false;
 		boolean log = false;
 		boolean constr = false;
@@ -94,7 +94,7 @@ public class TestBed {
 	}
 
 	/*
-	 * Run the cubic multiple knapsack test bed
+	 * Run the maximum probability test bed
 	 * - g: generate the test bed
 	 * - rh: run the metaheuristics
 	 * - mip: run the MIP formulation

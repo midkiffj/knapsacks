@@ -7,11 +7,9 @@ import Constructive.CubicMultFillUp;
 import Constructive.CubicMultGreedy;
 import Constructive.CubicMultGreedyFill;
 import ExactMethods.CubicMult_Forrester;
-import Problems.Cubic;
 import Problems.CubicMult;
 import Problems.ProblemFactory;
 import Solutions.CubicMultSol;
-import Solutions.CubicSol;
 
 /**
  * Cubic Multiple Knapsack test bed runner
@@ -25,19 +23,24 @@ public class CubicMultTest extends ProblemTest {
 	private double[] densities = {0.25, 0.5, 0.75, 1};
 	private int[] probSizes = {10, 20, 30};
 	private int K = 10;
-	
+
 	// Method usage
 	boolean generate;
 	boolean runHeuristics;
 	boolean runMIP;
-	
+
+	// Folders
+	private static final String incuFolder = "incumbents/cm/";
+	private static final String probFolder = "problems/cm/";
+	private static final String resFolder = "results/cm/";
+
 	public CubicMultTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
 		runHeuristics = rh;
 		runMIP = mip;
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -47,16 +50,16 @@ public class CubicMultTest extends ProblemTest {
 		if (generate) {
 			generate();
 		}
-		
+
 		if (runHeuristics) {
 			runHeuristics();
 		}
-		
+
 		if (runMIP) {
 			runMIP();
 		}
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -75,8 +78,8 @@ public class CubicMultTest extends ProblemTest {
 						CubicMult cm1 = new CubicMult(n,m,false,seed,density);
 						CubicMultSol cms1 = (CubicMultSol)ProblemFactory.genInitSol();
 						String file1 = n+"_"+m+"_"+density+"_false_"+k;
-						cm1.toFile("problems/cm/"+file1);
-						cms1.writeSolution("incumbents/cm/"+file1+"inc.txt");
+						cm1.toFile(probFolder+file1);
+						cms1.writeSolution(incuFolder+file1+"inc.txt");
 
 						testObj.put(file1, cm1.getObj(test));
 
@@ -84,8 +87,8 @@ public class CubicMultTest extends ProblemTest {
 						CubicMult cm2 = new CubicMult(n,m,true,seed,density);
 						CubicMultSol cms2 = (CubicMultSol)ProblemFactory.genInitSol();
 						String file2 = n+"_"+m+"_"+density+"_true_"+k;
-						cm2.toFile("problems/cm/"+file2);
-						cms2.writeSolution("incumbents/cm/"+file2+"inc.txt");
+						cm2.toFile(probFolder+file2);
+						cms2.writeSolution(incuFolder+file2+"inc.txt");
 
 						testObj.put(file2, cm2.getObj(test));
 					}
@@ -109,14 +112,14 @@ public class CubicMultTest extends ProblemTest {
 
 						String file1 = n+"_"+m+"_"+density+"_false_"+k;
 						System.out.println(file1);
-						CubicMult cm1 = new CubicMult("problems/cm/"+file1);
+						CubicMult cm1 = new CubicMult(probFolder+file1);
 						if(cm1.getObj(test) != testObj.get(file1)) {
 							System.err.println(file1 + " incorrect");
 						}
 
 						String file2 = n+"_"+m+"_"+density+"_true_"+k;
 						System.out.println(file2);
-						CubicMult cm2 = new CubicMult("problems/cm/"+file2);
+						CubicMult cm2 = new CubicMult(probFolder+file2);
 						if(cm2.getObj(test) != testObj.get(file2)) {
 							System.err.println(file2 + " incorrect");
 						}
@@ -125,7 +128,7 @@ public class CubicMultTest extends ProblemTest {
 			}
 		}
 	}
-	
+
 	@Override
 	/*
 	 * (non-Javadoc)
@@ -133,7 +136,7 @@ public class CubicMultTest extends ProblemTest {
 	 */
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("cubMultResults.csv");
+		pw = new PrintWriter(resFolder+"cubMultHeuristics.csv");
 		pw.write("n,m,density,#,negCoef,incumbent,GA,SA,ST,TS\n");
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
@@ -145,8 +148,8 @@ public class CubicMultTest extends ProblemTest {
 						TestLogger.setFile("cm/"+file1);
 						System.out.println("--"+file1+"--");
 						@SuppressWarnings("unused")
-						CubicMult c1 = new CubicMult("problems/cm/"+file1);
-						CubicMultSol cs1 = new CubicMultSol("incumbents/cm/"+file1+"inc.txt");
+						CubicMult c1 = new CubicMult(probFolder+file1);
+						CubicMultSol cs1 = new CubicMultSol(incuFolder+file1+"inc.txt");
 						double incumbent1 = cs1.getObj();
 
 						String result1;
@@ -165,8 +168,8 @@ public class CubicMultTest extends ProblemTest {
 						TestLogger.setFile("cm/"+file2);
 						System.out.println("--"+file2+"--");
 						@SuppressWarnings("unused")
-						CubicMult c2 = new CubicMult("problems/cm/"+file2);
-						CubicMultSol cs2 = new CubicMultSol("incumbents/cm/"+file2+"inc.txt");
+						CubicMult c2 = new CubicMult(probFolder+file2);
+						CubicMultSol cs2 = new CubicMultSol(incuFolder+file2+"inc.txt");
 						double incumbent2 = cs2.getObj();
 
 						String result2;
@@ -192,7 +195,7 @@ public class CubicMultTest extends ProblemTest {
 	 */
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("cubMultResultsMIP.csv");
+		pw = new PrintWriter(resFolder+"cubMultMIP.csv");
 		pw.write("n,m,density,#,negCoef,incumbent,MIP\n");
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
@@ -203,8 +206,8 @@ public class CubicMultTest extends ProblemTest {
 						String file1 = n+"_"+m+"_"+density+"_false_"+k;
 						System.out.println("--"+file1+"--");
 						@SuppressWarnings("unused")
-						CubicMult c1 = new CubicMult("problems/cm/"+file1);
-						CubicMultSol cs1 = new CubicMultSol("incumbents/cm/"+file1+"inc.txt");
+						CubicMult c1 = new CubicMult(probFolder+file1);
+						CubicMultSol cs1 = new CubicMultSol(incuFolder+file1+"inc.txt");
 						double incumbent1 = cs1.getObj();
 
 						String[] args1 = {file1};
@@ -222,8 +225,8 @@ public class CubicMultTest extends ProblemTest {
 						String file2 = n+"_"+m+"_"+density+"_true_"+k;
 						System.out.println("--"+file2+"--");
 						@SuppressWarnings("unused")
-						CubicMult c2 = new CubicMult("problems/cm/"+file2);
-						CubicMultSol cs2 = new CubicMultSol("incumbents/cm/"+file2+"inc.txt");
+						CubicMult c2 = new CubicMult(probFolder+file2);
+						CubicMultSol cs2 = new CubicMultSol(incuFolder+file2+"inc.txt");
 						double incumbent2 = cs2.getObj();
 
 						String[] args2 = {file2};
@@ -242,16 +245,16 @@ public class CubicMultTest extends ProblemTest {
 		}
 		pw.close();
 	}
-	
-	
+
+
 	/*
 	 * Run and time the test bed on the 4 cubic constructive heuristics
 	 */
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter("cubMultResultsConst.csv");
-		pw.write("n,m,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times:,DP,Greedy,Fill,Hybrid\n");
-		
+		pw = new PrintWriter(resFolder+"cubMultConst.csv");
+		pw.write("n,m,density,#,negCoef,incumbent,Greedy,Fill,Hybrid,,Times(min):,Greedy,Fill,Hybrid\n");
+
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
 				double density = densities[i];
@@ -260,9 +263,8 @@ public class CubicMultTest extends ProblemTest {
 					for (int k = 0; k < K; k++) {
 						String file1 = n+"_"+m+"_"+density+"_false_"+k;
 						System.out.println("--"+file1+"--");
-						@SuppressWarnings("unused")
-						CubicMult c1 = new CubicMult("problems/cm/"+file1);
-						CubicMultSol cs1 = new CubicMultSol("incumbents/cm/"+file1+"inc.txt");
+						CubicMult c1 = new CubicMult(probFolder+file1);
+						CubicMultSol cs1 = new CubicMultSol(incuFolder+file1+"inc.txt");
 						double incumbent1 = cs1.getObj();
 
 						String result1;
@@ -277,9 +279,8 @@ public class CubicMultTest extends ProblemTest {
 					for (int k = 0; k < K; k++) {
 						String file2 = n+"_"+m+"_"+density+"_true_"+k;
 						System.out.println("--"+file2+"--");
-						@SuppressWarnings("unused")
-						CubicMult c2 = new CubicMult("problems/cm/"+file2);
-						CubicMultSol cs2 = new CubicMultSol("incumbents/cm/"+file2+"inc.txt");
+						CubicMult c2 = new CubicMult(probFolder+file2);
+						CubicMultSol cs2 = new CubicMultSol(incuFolder+file2+"inc.txt");
 						double incumbent2 = cs2.getObj();
 
 						String result2;
@@ -296,39 +297,31 @@ public class CubicMultTest extends ProblemTest {
 		}
 		pw.close();
 	}
-	
+
 	/*
 	 * Runs the cubic problem with all constructive heuristics
 	 * - Returns a comma-delimited string of results
 	 */
 	private static String runConst(CubicMult cm) {
-//		System.err.println("--Starting DP");
-//		CubicDP cdp = new CubicDP(cm);
-//		cdp.run();
-//		double cdpBest = cdp.getResult().getObj();
-//		long cdpTime = cdp.getTime();
-		double cdpBest = -1;
-		long cdpTime = -1;
-
 		System.err.println("--Starting Greedy");
 		CubicMultGreedy cg = new CubicMultGreedy(cm);
 		cg.run();
 		double greedy = cg.getResult().getObj();
-		long greedyTime = cg.getTime();
+		double greedyTime = cg.getTime();
 
 		System.err.println("--Starting Fill");
 		CubicMultFillUp cfu = new CubicMultFillUp(cm);
 		cfu.run();
 		double fill = cfu.getResult().getObj();
-		long fillTime = cfu.getTime();
+		double fillTime = cfu.getTime();
 
 		System.err.println("--Starting Hybrid");
 		CubicMultGreedyFill cgf = new CubicMultGreedyFill(cm);
 		cgf.run();
 		double hybrid = cgf.getResult().getObj();
-		long hybridTime = cgf.getTime();
+		double hybridTime = cgf.getTime();
 
-		String ret = cdpBest + "," + greedy + "," + fill + "," + hybrid + ",,," + cdpTime + "," + greedyTime + "," + fillTime + "," + hybridTime;
+		String ret =  greedy + "," + fill + "," + hybrid + ",,," + greedyTime + "," + fillTime + "," + hybridTime;
 		return ret;
 	}
 
