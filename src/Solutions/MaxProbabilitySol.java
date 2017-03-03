@@ -270,7 +270,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 		if (getRSize() == 0) {
 			return null;
 		}
-		if (rnd.nextDouble() < 0.4) {
+		if (rnd.nextDouble() < 0.6) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
 			ProblemSol ratioSwap = ratioMutate(iteration, tabuList);
@@ -410,9 +410,6 @@ public class MaxProbabilitySol extends KnapsackSol {
 			}
 		} else {
 			newMP = genMutate2(newMP, removeAttempts);
-			if (removeAttempts < n-1) {
-				removeAttempts++;
-			}
 		}
 		return newMP;
 	}

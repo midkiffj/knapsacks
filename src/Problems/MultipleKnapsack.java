@@ -1,7 +1,11 @@
 package Problems;
 
-import java.util.ArrayList;
-
+/**
+ * Multiple Knapsack abstract class for accessors
+ *  (used in MultKnapsackSol)
+ *  
+ * @author midkiffj
+ */
 public abstract class MultipleKnapsack extends Problem {
 
 	public MultipleKnapsack() {

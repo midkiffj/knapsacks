@@ -227,7 +227,7 @@ public class CubicMultSol extends MultKnapsackSol {
 		if (getRSize() == 0) {
 			return null;
 		}
-		if (rnd.nextDouble() < 0.4) {
+		if (rnd.nextDouble() < 0.6) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
 			CubicMultSol ratioSwap = ratioMutate(iteration, tabuList);

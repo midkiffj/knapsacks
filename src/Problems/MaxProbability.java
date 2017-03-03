@@ -4,22 +4,29 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
 import ExactMethods.Knapsack_Frac;
-import Solutions.MaxProbabilitySol;
 
+/**
+ * Max Probability Knapsack Problem (MPP)
+ * - Problem generation
+ * - Problem coefficient accessors
+ * - Solution objective calculation
+ * - File I/O
+ * 
+ * @author midkiffj
+ */
 public class MaxProbability extends Knapsack {
 
-	// Setup vars
+	// Setup values
 	private int n;
 	private Random rnd;
 	private int seed;
 	private boolean negCoef;
 
-	// Coefficient vars
+	// Coefficients
 	private double t;
 	private int b;
 	private int[] a;
@@ -29,37 +36,34 @@ public class MaxProbability extends Knapsack {
 	// Obj values
 	private double num;
 	private double den;
+
 	// MP vars
 	private int P;
 	private int K;
+
+	// Mutation values
 	private double[] tau;
 	private double[] ratio;
-	// Umax vars
-	private boolean[] uMaxXVals;
 
-
+	/**
+	 * Setup a MPP from the specified file
+	 * 
+	 * @param filename
+	 */
 	public MaxProbability(String filename) {
 		super();
 		readFromFile(filename);
 	}
 
-	public MaxProbability(int n, boolean negCoef) {
-		this(n,negCoef,1234);
-	}
-
-	public MaxProbability(int n, boolean negCoef, int seed) {
-		super();
-		this.n = n;
-		this.negCoef = negCoef;
-		this.rnd = new Random(seed);
-		this.seed = seed;
-		int[] possibleK = {65, 75, 85, 95};
-		int[] possibleP = {5, 10, 30, 50, 75};
-		this.K = possibleK[rnd.nextInt(4)];
-		this.P = possibleP[rnd.nextInt(5)];
-		setup();
-	}
-
+	/**
+	 * Setup a MPP with the given values
+	 * 
+	 * @param n - number of items
+	 * @param negCoef - allow negative coefficients
+	 * @param seed - rnd seed
+	 * @param K - probability for picking profit (t)
+	 * @param P - probability for picking capacity (b)
+	 */
 	public MaxProbability(int n, boolean negCoef, int seed, int K, int P) {
 		super();
 		this.n = n;
@@ -71,40 +75,53 @@ public class MaxProbability extends Knapsack {
 		setup();
 	}
 
+	/**
+	 * Setup a MPP problem as specified in A. Billionnet (2004)
+	 */
 	private void setup() {
+		// Initialize arrays
 		a = new int[n];
 		u = new int[n];
 		s = new int[n];
 		int totalA = 0;
 		tau = new double[n];
 		ratio = new double[n];
+		// Generate coefficients
 		for (int i = 0; i < n; i++) {
 			a[i] = rnd.nextInt(100) + 1;
 			u[i] = rnd.nextInt(100) + 1;
 			s[i] = rnd.nextInt(10000) + 1;
 			totalA += a[i];
+			// Update potential contribution
 			tau[i] = (double)(u[i]*1000) / s[i];
 			ratio[i] = tau[i] / a[i];
 		}
+		// b = P% of totalA
 		b = (int) Math.floor(0.01*P*totalA);
+		// Solve max{u*x : Ax <= b, x binary}
 		Knapsack_Frac k = new Knapsack_Frac(a,b,u,true);
 		long umax = k.getBestObj();
+		// t = K% of umax
 		t = 0.01*K*umax;
-
-		uMaxXVals = k.getXVals();
-		MaxProbabilitySol mps = new MaxProbabilitySol(uMaxXVals);
-		System.out.println("Umax Obj: " + mps.getObj());
-		System.out.println("Umax Validity: " + mps.getValid());
 	}
 
 	@Override
+	/**
+	 * Generate a solution by improving the solution vector x=max{u*x : Ax <= b}
+	 * Fill the provided lists with the solution.
+	 * 
+	 * @param x - items in the solution
+	 * @param r - items outside of the solution
+	 */
 	public void genInit(ArrayList<Integer> x, ArrayList<Integer> r) {
+		// Clear lists
 		r.clear();
 		x.clear();
 		int totalAx = 0;
 		int totalUx = 0;
+		// Solve for max{u*x : Ax <= b, x free}
 		Knapsack_Frac k = new Knapsack_Frac(a,b,u,false);
-		uMaxXVals = k.getXVals();
+		boolean[] uMaxXVals = k.getXVals();
 		for (int i = 0; i < n; i++) {
 			if (uMaxXVals[i]) {
 				x.add(i);
@@ -114,6 +131,7 @@ public class MaxProbability extends Knapsack {
 				r.add(i);
 			}
 		}
+		// Update objective
 		double curObj = getObj(x);
 
 		// Check for Swaps and shifts
@@ -122,12 +140,15 @@ public class MaxProbability extends Knapsack {
 			int maxI = -1;
 			int maxJ = -1;
 			double maxChange = 0;
+			// Check all swaps
 			for(Integer xi: x) {
 				for(Integer xj: r) {
 					// Check for knapsack feasibility
 					if (a[xj]-a[xi] <= b - totalAx && u[xj]-u[xi] >= t - totalUx) {
+						// Calculate new objective
 						double newObj = swapObj(xi, xj, x, curObj);
 						double change = newObj - curObj;
+						// Update best swap
 						if (change > maxChange) {
 							maxI = xi;
 							maxJ = xj;
@@ -136,19 +157,19 @@ public class MaxProbability extends Knapsack {
 					}
 				}
 			}
-			double[] add = tryAdd(totalAx,x,r);
-			double[] sub = trySub(totalUx,x,true);
-			double addObj = add[1];
-			double subObj = sub[1];
-			if (addObj-curObj > maxChange) {
-				int addI = (int)add[0];
+			double[] add = tryAdd(totalAx,r,curObj);
+			double[] sub = trySub(totalUx,x,curObj);
+			double addChange = add[0];
+			double subChange = sub[0];
+			if (addChange > maxChange) {
+				int addI = (int)add[1];
 				x.add(addI);
 				r.remove(Integer.valueOf(addI));
 				curObj = getObj(x);
 				totalAx = totalAx + a[addI];
 				totalUx = totalUx + u[addI];
-			} else if (subObj-curObj > maxChange) {
-				int subI = (int)sub[0];
+			} else if (subChange > maxChange) {
+				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
 				curObj = getObj(x);
@@ -168,72 +189,63 @@ public class MaxProbability extends Knapsack {
 				}
 			}
 		}
-
-		System.out.println("Generated Incumbent: " + curObj);
-		Collections.sort(x);
-		System.out.println(x.toString());
 	}
 
-	private double[] trySub(int totalU, ArrayList<Integer> x, boolean improvingOnly) {
-		double[] fail = {-1,-1};
-		if (x.size() <= 1) {
-			return fail;
-		}
-
-		double minRatio = Double.MAX_VALUE;
+	/**
+	 * Find the variable that most improves the objective when removed
+	 *
+	 * @param x - items in the solution
+	 * @param curObj - the current objective to improve upon
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
+	private double[] trySub(int totalU, ArrayList<Integer> x, double curObj) {
+		double maxChange = 0;
 		int minI = -1;
+		// Check all removals
 		for (Integer i: x) {
 			if (totalU - u[i] >= t) {
-				double ratio = this.getRatio(i);
-				if (ratio < minRatio) {
-					minRatio = ratio;
+				// Calculate the change in objective
+				double newObj = subObj(i, num, den);
+				double change = newObj - curObj;
+				// Update best change
+				if (change < maxChange) {
+					maxChange = change;
 					minI = i;
 				}
 			}
 		}
-
-		if (minI == -1) {
-			return fail;
-		}
-		double change = subObj(minI, num, den);
-		if (!improvingOnly || change > (num*num)/den) {
-			double[] success = {minI, change};
-			return success;
-		} else {
-			return fail;
-		}
+		// Return the best improving removal
+		double[] success = {maxChange, minI};
+		return success;
 	}
 
-	private double[] tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r) {
-		double[] fail = {-1,-1};
-		if (r.size() < 1) {
-			return fail;
-		}
-
+	/**
+	 * Find the variable that most improves the objective when added
+	 *
+	 * @param totalA - current weight of knapsack
+	 * @param r - items outside solution
+	 * @param curObj - the current objective to improve upon
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
+	private double[] tryAdd(int totalA, ArrayList<Integer> r, double curObj) {
+		double maxChange = 0;
 		int maxI = -1;
-		int b = this.getB();
-		double maxRatio = -1*Double.MAX_VALUE;
+		// Check all additions
 		for (Integer i: r) {
-			if (totalA + this.getA(i) <= b) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
+			if (totalA + a[i] <= b) {
+				// Calculate the change in objective
+				double newObj = addObj(i, num, den);
+				double change = newObj - curObj;
+				// Update best change
+				if (change > maxChange) {
+					maxChange = change;
 					maxI = i;
 				}
 			}
 		}
-
-
-		if (maxI == -1) {
-			return fail;
-		}
-		double change = addObj(maxI, num, den);
-		if (change > 0) {
-			double[] add = {maxI, change};
-			return add;
-		} else {
-			return fail;
-		}
+		// Return the best improving addition
+		double[] add = {maxChange, maxI};
+		return add;
 	}
 
 	@Override
@@ -306,16 +318,15 @@ public class MaxProbability extends Knapsack {
 			}
 			// Increment swaps
 			swaps++;
-			
+
 			// After a number of attempted swaps, try a shift
 			if (totalAx > b && swaps > 10) {
 				// Attempt a substitution: 
 				//	sub = {index, change in objective}
-				double[] sub = trySub(totalUx,x,false);
-				// If a variables can be removed
-				if (sub[0] != -1) {
+				int subI = trySub(totalUx,x);
+				// If a variable can be removed
+				if (subI != -1) {
 					// Remove variable from solution and update sums
-					int subI = (int) sub[0];
 					x.remove(Integer.valueOf(subI));
 					r.add(subI);
 					totalAx -= a[subI];
@@ -333,7 +344,41 @@ public class MaxProbability extends Knapsack {
 			}
 		}
 	}
+	
+	/**
+	 * Find the variable that most decreases the knapsack weight when removed
+	 *
+	 * @parm totalU - current profit
+	 * @param x - items in the solution
+	 * @return item to remove from the solution
+	 */
+	private int trySub(int totalU, ArrayList<Integer> x) {
+		int maxA = -1;
+		int subI = -1;
+		// Check all removals
+		for (Integer i: x) {
+			if (totalU - u[i] >= t) {
+				// Update best weight
+				if (a[i] > maxA) {
+					maxA = a[i];
+					subI = i;
+				}
+			}
+		}
+		// Return the highest weight removal
+		return subI;
+	}
 
+	/**
+	 * Calculate the new objective if 
+	 * 	item i is removed and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param curX - current solution
+	 * @param oldObj - current objective
+	 * @return new objective value
+	 */
 	private double swapObj(int i, int j, ArrayList<Integer> x, double oldObj) {
 		ArrayList<Integer> newX = new ArrayList<Integer>(x);
 		newX.remove(Integer.valueOf(i));
@@ -341,6 +386,15 @@ public class MaxProbability extends Knapsack {
 		return getObj(newX, false);
 	}
 
+	/**
+	 * Calculate the objective if i is removed. 
+	 * 	Calculation done without changes to num/den.
+	 * 
+	 * @param i - item to be removed
+	 * @param num - current numerator value
+	 * @param den - current denominator value
+	 * @return the new objective
+	 */
 	private double subObj(int i, double num,
 			double den) {
 		num -= u[i];
@@ -348,6 +402,15 @@ public class MaxProbability extends Knapsack {
 		return (num*num)/den;
 	}
 
+	/**
+	 * Calculate the objective if i is added. 
+	 * 	Calculation done without changes to num/den.
+	 * 
+	 * @param i - item to be added
+	 * @param num - current numerator value
+	 * @param den - current denominator value
+	 * @return the new objective
+	 */
 	private double addObj(int i, double num,
 			double den) {
 		num += u[i];
@@ -356,14 +419,26 @@ public class MaxProbability extends Knapsack {
 	}
 
 	@Override
+	/**
+	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
+	 */
 	public double getObj(ArrayList<Integer> x) {
 		return getObj(x,true);
 	}
 
+	/**
+	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
+	 * @param setNumDen - update the values of fields num/den
+	 */
 	public double getObj(ArrayList<Integer> x, boolean setNumDen) {
 		if (x.isEmpty()) {
 			return 0;
 		}
+		// Update class num/den
 		if (setNumDen) {
 			num = -1*t;
 			den = 0;
@@ -374,7 +449,9 @@ public class MaxProbability extends Knapsack {
 			}
 
 			return (num*num)/den;
-		} else {
+		} 
+		// Use local scope num/den
+		else {
 			double num = -1*t;
 			double den = 0;
 
@@ -398,11 +475,11 @@ public class MaxProbability extends Knapsack {
 	public int getN() {
 		return n;
 	}
-	
+
 	public int getB() {
 		return b;
 	}
-	
+
 	public double getT() {
 		return t;
 	}
@@ -423,15 +500,22 @@ public class MaxProbability extends Knapsack {
 		return ratio[i];
 	}
 
+	/**
+	 * Setup a Max Probability from the given file. 
+	 * It is assumed the file was generated with the toFile() method.
+	 * 
+	 * @param filename to be read
+	 */
 	public void readFromFile(String filename) {
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));
-
+			// Setup values
 			n = scr.nextInt();
 			seed = scr.nextInt();
 			rnd = new Random(seed);
 			negCoef = scr.nextBoolean();
+			// Coefficients
 			b = scr.nextInt();
 			t = scr.nextDouble();
 			scr.nextLine();
@@ -440,17 +524,15 @@ public class MaxProbability extends Knapsack {
 			u = readArr(scr);
 			s = readArr(scr);
 
-			uMaxXVals = new boolean[n];
-			for (int i = 0; i < n; i++) {
-				uMaxXVals[i] = scr.nextBoolean();
-			}
-
 		} catch (FileNotFoundException e) {
 			System.err.println("Error finding file: " + filename);
 		}
 		calcTauRatio();
 	}
 
+	/**
+	 * Sub-method used to calculate the mutation values.
+	 */
 	private void calcTauRatio() {
 		tau = new double[n];
 		ratio = new double[n];
@@ -460,6 +542,12 @@ public class MaxProbability extends Knapsack {
 		}
 	}
 
+	/**
+	 * Read in an int array of coefficients
+	 * 
+	 * @param scr - Scanner to read form
+	 * @return 
+	 */
 	private int[] readArr(Scanner scr) {
 		String line = scr.nextLine().trim();
 		String[] data = line.split(" ");
@@ -470,21 +558,24 @@ public class MaxProbability extends Knapsack {
 		return ret;
 	}
 
+	/**
+	 * Write the problem to the specified file.
+	 * 
+	 * @param filename - to write to
+	 */
 	public void toFile(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
+			// Setup values
 			pw.write(n + "\n");
 			pw.write(seed + "\n");
 			pw.write(negCoef + "\n");
+			// Coefficients
 			pw.write(b + "\n");
 			pw.write(t + "\n");
 			writeArr(pw, a);
 			writeArr(pw, u);
 			writeArr(pw, s);
-			for (int i = 0; i < n-1; i++) {
-				pw.write(uMaxXVals[i] + " ");
-			}
-			pw.write(uMaxXVals[n-1] + "\n");
 
 			pw.close();
 		} catch (FileNotFoundException e) {
@@ -492,28 +583,17 @@ public class MaxProbability extends Knapsack {
 			System.err.println(e.getMessage());
 		}
 	}
-
+	
+	/**
+	 * Write the given coefficient array with the writer
+	 * 
+	 * @param pw - writer to use
+	 * @param arr - array to write
+	 */
 	private void writeArr(PrintWriter pw, int[] arr) {
 		for (int i = 0; i < arr.length-1; i++) {
 			pw.write(arr[i] + " ");
 		}
 		pw.write(arr[arr.length-1] + "\n");
-	}
-
-	public static void main(String[] args) {
-		int[] probSizes = {10, 20, 30, 50, 100, 200};
-		for (int p = 0; p < probSizes.length; p++) {
-			int n = probSizes[p];
-			for (int i = 0; i < 10; i++) {
-				MaxProbability mp = new MaxProbability(n,false,p+n+i);
-				MaxProbabilitySol mps = new MaxProbabilitySol();
-				System.err.println(mps.getX().toString());
-				System.err.println(mps.getObj());
-				System.err.println(mps.getValid());
-				if (!mps.getValid()) {
-					System.err.println("@@@@@@@@@@@@@@@");
-				}
-			}
-		}
 	}
 }

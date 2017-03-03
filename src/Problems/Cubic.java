@@ -4,46 +4,56 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
-import Runner.TestLogger;
-
-
+/**
+ * Cubic Knapsack Problem
+ * - Problem generation
+ * - Problem coefficient accessors
+ * - Solution objective calculation
+ * - File I/O
+ * 
+ * @author midkiffj
+ */
 public class Cubic extends Knapsack {
-	// Cubic setup vars
+	
+	// Cubic problem
 	private int n;
 	private Random rnd;
 	private int seed;
 	private boolean negCoef;
 	private double density;
 
-	// Coefficient vars
+	// Coefficients
 	private int[] a;
 	private int b;
 	private int[] ci;
 	private int[][] cij;
 	private int[][][] dijk;
 
-
-	// Cubic manipulation vars
+	// Cubic Mutation (ratio)
 	private int[] tau;
 	private double[] ratio;
 
+	/**
+	 * Constructor to read from file
+	 * 
+	 * @param filename - to read
+	 */
 	public Cubic(String filename) {
 		super();
 		readFromFile(filename);
 	}
 
-	public Cubic(int n, boolean negCoef) {
-		this(n,negCoef,1234,1);
-	}
-
-	public Cubic(int n, boolean negCoef, int seed) {
-		this(n,negCoef,seed,1);
-	}
-
+	/**
+	 * Constructor to initialize problem setup
+	 * 
+	 * @param n - number of items
+	 * @param negCoef - allow negative coefficeints
+	 * @param seed - rnd seed
+	 * @param density - probability of non-zero coefficients
+	 */
 	public Cubic(int n, boolean negCoef, int seed, double density) {
 		super();
 		this.n = n;
@@ -70,8 +80,12 @@ public class Cubic extends Knapsack {
 		ratio = new double[n];
 
 		// Fill matrices with randomized coefficients
-		// a : [1,50]
-		// c : [-100,100]; cij = cji; cii = 0
+		// a 	: [1,50]
+		// ci   : negcoef ? [-100,100] : [0,100]
+		// cij  : negcoef ? [-100,100] : [0,100]
+		// dijk : negcoef ? [-100,100] : [0,100]
+		// 
+		// Note: Left-Upper triangular matrix stored
 		for(i = 0; i < n; i++){
 			if (i < n-1) {
 				cij[i] = new int[n-i];
@@ -83,8 +97,11 @@ public class Cubic extends Knapsack {
 				ci[i] = rnd.nextInt(101);
 			}
 			
+			// Update total weight
 			a[i] = rnd.nextInt(50)+1;
 			totalA += a[i];
+			
+			// Update tau (item contribution)
 			tau[i] += ci[i];
 			for (j = i+1; j < n; j++){
 				dijk[i][j-i] = new int[n-j];
@@ -97,6 +114,7 @@ public class Cubic extends Knapsack {
 				} else {
 					cij[i][j-i] = 0;
 				}
+				// Update tau (item contribution)
 				tau[i] += cij[i][j-i];
 				tau[j] += cij[i][j-i];
 				for(k = j+1; k < n; k++) {
@@ -109,6 +127,7 @@ public class Cubic extends Knapsack {
 					} else {
 						dijk[i][j-i][k-j] = 0;
 					}
+					// Update tau (item contribution)
 					tau[i] += dijk[i][j-i][k-j];
 					tau[j] += dijk[i][j-i][k-j];
 					tau[k] += dijk[i][j-i][k-j];
@@ -116,6 +135,8 @@ public class Cubic extends Knapsack {
 			}
 		}
 
+		// Calculate ratio for each item
+		// (potential/weight)
 		for (i = 0; i < n; i++) {
 			ratio[i] = (double)(tau[i])/a[i];
 		}
@@ -125,23 +146,33 @@ public class Cubic extends Knapsack {
 	}
 
 	/**
-	 * Randomly generate a solution to the cubic
+	 * Randomly generate a solution to the cubic and fill the given lists.
+	 * 
+	 * @param x - variables in solution
+	 * @param r - variables not in solution
 	 */
 	public void genRndInit(ArrayList<Integer> x, ArrayList<Integer> r) {
+		// Reset lists
 		r.clear();
 		x.clear();
+		
+		// Remove all items from solution
 		int totalAx = 0;
 		int i = 0;
 		for (int j = 0; j < n; j++) {
 			r.add(j);
 		}
+		
+		// Randomly add items until knapsack full, the next item cannot be added, 
+		//	all items added, or 30% random stop
 		boolean done = false;
 		while (totalAx <= b && !done && !r.isEmpty()) {
 			int num = rnd.nextInt(r.size());
 			i = r.get(num);
+			// Add item if it fits
 			if (totalAx + a[i] <= b) {
 				x.add(i);
-				r.remove(Integer.valueOf(i));
+				r.remove(num);
 				totalAx += a[i];
 			} else {
 				done = true;
@@ -157,10 +188,16 @@ public class Cubic extends Knapsack {
 	 * Generate a solution by adding x's until knapsack full
 	 * and update the current objective value. 
 	 * Don't use any indexes in the provided list.
+	 * Fill the given lists with the solution.
+	 * 
+	 * @param x - items in the solution
+	 * @param r - items not in the solution
 	 */
 	public void genInit(ArrayList<Integer> x, ArrayList<Integer> r) {
+		// Clear solution lists
 		r.clear();
 		x.clear();
+		// Start with all items outside the solution
 		int totalAx = 0;
 		int i = 0;
 		for (int j = 0; j < n; j++) {
@@ -168,6 +205,7 @@ public class Cubic extends Knapsack {
 		}
 		boolean[] inX = new boolean[n];
 		boolean done = false;
+		// Add the maximum ratio item that fits in the knapsack until no item can be added
 		while (totalAx <= b && !done) {
 			double maxRatio = -1*Double.MAX_VALUE;
 			i = -1;
@@ -192,7 +230,11 @@ public class Cubic extends Knapsack {
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
+		if (n > 200) {
+			swapping = false;
+		}
 		while (swapping) {
+			// Find the best swap
 			int maxI = -1;
 			int maxJ = -1;
 			double maxChange = 0;
@@ -210,26 +252,35 @@ public class Cubic extends Knapsack {
 					}
 				}
 			}
-			double[] add = tryAdd(x,r, curObj, totalAx);
-			double[] sub = trySub(x,r, curObj, totalAx);
+			// Determine the best shift
+			double[] add = tryAdd(x, r, curObj, totalAx);
+			double[] sub = trySub(x, curObj, totalAx);
 			double addChange = add[0];
 			double subChange = sub[0];
+			// If an addition is better than a swap, do the addition
 			if (addChange > maxChange) {
 				int addI = (int)add[1];
 				x.add(addI);
 				r.remove(Integer.valueOf(addI));
 				curObj = curObj + add[0];
 				totalAx = totalAx + a[addI];
-			} else if (subChange > maxChange) {
+			} 
+			// If a removal is better than a swap, do the removal
+			else if (subChange > maxChange) {
 				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
 				curObj = curObj + sub[0];
 				totalAx = totalAx - a[subI];
-			} else {
+			} 
+			// Else,
+			else {
+				// If no swaps exist, stop
 				if (maxI == -1 && maxJ == -1) {
 					swapping = false;
-				} else {
+				} 
+				// Otherwise, perform the swap
+				else {
 					x.add(maxJ);
 					r.remove(Integer.valueOf(maxJ));
 					x.remove(Integer.valueOf(maxI));
@@ -239,14 +290,12 @@ public class Cubic extends Knapsack {
 				}
 			}
 		}
-		
-		System.out.println("Generated Incumbent: " + curObj);
-		Collections.sort(x);
-		System.out.println(x.toString());
 	}
 
 	/**
 	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
 	 */
 	public double getObj(ArrayList<Integer> x) {
 		int i,j,k;
@@ -266,17 +315,30 @@ public class Cubic extends Knapsack {
 		return curObj;
 	}
 	
+	/**
+	 * Calculate the objective of curX 
+	 * 	if item i is removed and item j is added
+	 * 
+	 * @param i - item to be removed
+	 * @param j - item to be added
+	 * @param curX - current solution
+	 * @param oldObj - current solution objective value
+	 * @return the new objective if i and j swapped
+	 */
 	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
+		// Calculate change in ci's
 		oldObj = oldObj - this.getCi(i);
 		oldObj = oldObj + this.getCi(j);
 		for (int k = 0; k < curX.size(); k++) {
 			int xk = curX.get(k);
 			if (xk != i) {
+				// Calculate change in Cij's
 				oldObj = oldObj - this.getCij(i,xk);
 				oldObj = oldObj + this.getCij(j,xk);
 				for (int l = k+1; l < curX.size(); l++) {
 					int xl = curX.get(l);
 					if (xl != i) {
+						// Calculate change in Dijk's
 						oldObj = oldObj - this.getDijk(i,xk,xl);
 						oldObj = oldObj + this.getDijk(j,xk,xl);
 					}
@@ -286,12 +348,23 @@ public class Cubic extends Knapsack {
 		return oldObj;
 	}
 
-	// Try to add a variable to the solution
+	/**
+	 * Find the variable that most improves the objective when added
+	 *
+	 * @param curX - items in solution
+	 * @param r - items outside solution
+	 * @param curObj - current objective
+	 * @param totalA - current weight of knapsack
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
 	private double[] tryAdd(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
 		double maxChange = 0;
 		int maxI = -1;
+		// For each item
 		for(Integer i: r) {
+			// Check knapsack feasibility
 			if (totalA + a[i] <= b) {
+				// Calculate change in objective
 				double obj = curObj + this.getCi(i);
 				for (int j = 0; j < curX.size(); j++) {
 					int xj = curX.get(j);
@@ -301,6 +374,7 @@ public class Cubic extends Knapsack {
 						obj += this.getDijk(i,xj,xk);
 					}
 				}
+				// Update best change found
 				double change = obj - curObj;
 				if (change > maxChange) {
 					maxChange = change;
@@ -308,14 +382,25 @@ public class Cubic extends Knapsack {
 				}
 			}
 		}
+		// Return the best change found
 		double[] result = {maxChange, maxI};
 		return result;
 	}
 
-	private double[] trySub(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
+	/**
+	 * Find the variable that most improves the objective when removed
+	 *
+	 * @param curX - items in solution
+	 * @param curObj - current objective
+	 * @param totalA - current weight of knapsack
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
+	private double[] trySub(ArrayList<Integer> curX, double curObj, int totalA) {
 		double maxChange = 0;
 		int maxI = -1;
+		// For each item,
 		for(Integer i: curX) {
+			// Calculate the new objective
 			double obj = curObj - this.getCi(i);
 			for (int j = 0; j < curX.size(); j++) {
 				int xj = curX.get(j);
@@ -325,12 +410,14 @@ public class Cubic extends Knapsack {
 					obj -= this.getDijk(i,xj,xk);
 				}
 			}
+			// Update the best change in objective
 			double change = obj - curObj;
 			if (change > maxChange) {
 				maxChange = change;
 				maxI = i;
 			}
 		}
+		// Return the best change in objective
 		double[] result = {maxChange, maxI};
 		return result;
 	}
@@ -390,11 +477,18 @@ public class Cubic extends Knapsack {
 		return ratio[i];
 	}
 
+	/**
+	 * Setup a Cubic from the given file. 
+	 * It is assumed the file was generated with the toFile() method.
+	 * 
+	 * @param filename to be read
+	 */
 	public void readFromFile(String filename) {
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));
 
+			// Read setup variables
 			n = scr.nextInt();
 			seed = scr.nextInt();
 			rnd = new Random(seed);
@@ -403,6 +497,7 @@ public class Cubic extends Knapsack {
 			density = scr.nextDouble();
 			scr.nextLine();
 
+			// Read Coefficient matrices
 			a = readArr(scr);
 
 			ci = readArr(scr);
@@ -420,6 +515,7 @@ public class Cubic extends Knapsack {
 				}
 			}
 
+			// Read mutation (ratio) values
 			tau = readArr(scr);
 
 			ratio = new double[n];
@@ -431,6 +527,12 @@ public class Cubic extends Knapsack {
 		}
 	}
 
+	/**
+	 * Read in an int array of coefficients
+	 * 
+	 * @param scr - Scanner to read form
+	 * @return 
+	 */
 	private int[] readArr(Scanner scr) {
 		String line = scr.nextLine().trim();
 		String[] data = line.split(" ");
@@ -441,14 +543,21 @@ public class Cubic extends Knapsack {
 		return ret;
 	}
 	
+	/**
+	 * Write the problem to the specified file.
+	 * 
+	 * @param filename - to write to
+	 */
 	public void toFile(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
+			// Write setup vars
 			pw.write(n + "\n");
 			pw.write(seed + "\n");
 			pw.write(b + "\n");
 			pw.write(negCoef + "\n");
 			pw.write(density + "\n");
+			// Write coefficient matrices
 			writeArr(pw, a);
 			writeArr(pw, ci);
 			for (int i = 0; i < cij.length; i++) {
@@ -459,6 +568,7 @@ public class Cubic extends Knapsack {
 					writeArr(pw, dijk[i][j]);
 				}
 			}
+			// Write mutation (ratio) values
 			writeArr(pw, tau);
 			for (int i = 0; i < n-1; i++) {
 				pw.write(ratio[i] + " ");
@@ -471,6 +581,12 @@ public class Cubic extends Knapsack {
 		}
 	}
 
+	/**
+	 * Write the given coefficient array with the writer
+	 * 
+	 * @param pw - writer to use
+	 * @param arr - array to write
+	 */
 	private void writeArr(PrintWriter pw, int[] arr) {
 		for (int i = 0; i < arr.length-1; i++) {
 			pw.write(arr[i] + " ");

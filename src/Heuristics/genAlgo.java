@@ -92,9 +92,9 @@ public class genAlgo extends Metaheuristic{
 	 */
 	private void updatePopulation() {
 		ArrayList<ProblemSol> newPop = new ArrayList<ProblemSol>();
-		// 1-elitist strategy
+		// 2-elitist strategy
 		int elitist = 0;
-		for (int i = population.size()-1; i >= 0 && elitist < 1; i--) {
+		for (int i = population.size()-1; i >= 0 && elitist < 2; i--) {
 			if (population.get(i).getValid()) {
 				newPop.add(population.get(i));
 				elitist++;
@@ -108,7 +108,7 @@ public class genAlgo extends Metaheuristic{
 			}
 		}
 		// Generate and add rest of population
-		for (int i = 0; i < population.size()-2; i++) {
+		for (int i = 0; i < population.size()-3; i++) {
 			boolean added = false;
 			int j = 0;
 			// Attempt to generate/add an individual
@@ -197,6 +197,9 @@ public class genAlgo extends Metaheuristic{
 			return ps3;
 		} else {
 			ProblemSol ps2 = ps1.genMutate(removeAttempts);
+			if (rnd.nextBoolean() && removeAttempts < n-1) {
+				removeAttempts++;
+			}
 			return ps2;
 		}
 	}

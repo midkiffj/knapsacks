@@ -38,7 +38,7 @@ public class simAnneal extends Metaheuristic {
 	public void run() {
 		// Temp and alpha value
 		double T = 0.3*current.getObj();
-		double a = 0.99;
+		double a = 0.98;
 
 		int expZero = 0;
 		long start = System.nanoTime();
@@ -104,7 +104,6 @@ public class simAnneal extends Metaheuristic {
 			if (expZero > 20) {
 				T = 0.3*best.getObj();
 				expZero = 0;
-				current = ProblemSol.copy(best);
 			}
 
 			// Print iteration info

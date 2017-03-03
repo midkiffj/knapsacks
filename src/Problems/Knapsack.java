@@ -1,7 +1,11 @@
 package Problems;
 
-import java.util.ArrayList;
-
+/**
+ * Knapsack abstract class to add a/b accessors
+ *  (used in KnapsackSol)
+ * 
+ * @author midkiffj
+ */
 public abstract class Knapsack extends Problem {
 	
 	public Knapsack() {

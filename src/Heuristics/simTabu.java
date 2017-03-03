@@ -34,11 +34,11 @@ public class simTabu extends Metaheuristic {
 	 * Run simulated annealing with tabu search when heuristic gets stuck
 	 */
 	public void run() {
-		int stuck = 0;
+		int bestNotUpdated = 0;
 
 		// Temperature/Alpha values
 		double T = 0.3*current.getObj();
-		double a = 0.99;
+		double a = 0.98;
 		TestLogger.logger.info(""+current.getValid());
 
 		long start = System.nanoTime();
@@ -46,7 +46,7 @@ public class simTabu extends Metaheuristic {
 		// Track time/iterations
 		for (int iteration = 0; iteration < maxIter && (end-start) < time; iteration++) {
 			// If stuck, try tabu search on best solution
-			if (stuck > n*2) {
+			if (bestNotUpdated > n*2) {
 				TestLogger.logger.info("Starting Tabu Search");
 				tabuSearch ts = new tabuSearch(best, n, time - (end-start));
 				ts.run();
@@ -59,7 +59,7 @@ public class simTabu extends Metaheuristic {
 				}
 				TestLogger.logger.info("Returning to Sim Anneal");
 				T = 0.3*current.getObj();
-				stuck = 0;
+				bestNotUpdated = 0;
 			}
 
 			// Occasionally, check for a shift
@@ -105,9 +105,9 @@ public class simTabu extends Metaheuristic {
 			if (current.compareTo(best) > 0) {
 				best = ProblemSol.copy(current);
 				TestLogger.logger.info("Best updated (SIM) at iteration " + iteration + " to " + current.getObj());
-				stuck = 0;
+				bestNotUpdated = 0;
 			} else {
-				stuck++;
+				bestNotUpdated++;
 			}
 
 			// Update Temperature

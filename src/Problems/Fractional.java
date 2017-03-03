@@ -4,23 +4,28 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
-import Solutions.FractionalSol;
-
-
+/**
+ * Fractional Knapsack Problem
+ * - Problem generation
+ * - Problem coefficient accessors
+ * - Solution objective calculation
+ * - File I/O
+ * 
+ * @author midkiffj
+ */
 public class Fractional extends Knapsack {
 
-	// Setup vars
+	// Setup
 	private int n;
+	private int m;
 	private Random rnd;
 	private int seed;
 	private boolean negCoef;
 
-	// Coefficient vars
-	private int m;
+	// Coefficients
 	private int b;
 	private int[] a;
 	private int[][] c;
@@ -31,20 +36,30 @@ public class Fractional extends Knapsack {
 	// Obj values
 	private long[] num;
 	private long[] den;
-	// Manipulation
+
+	// Mutation values
 	private double[] tau;
 	private double[] ratio;
 
 
+	/**
+	 * Read the problem from the specified file
+	 * 
+	 * @param filename - file to read
+	 */
 	public Fractional(String filename) {
 		super();
 		readFromFile(filename);
 	}
 
-	public Fractional(int n, boolean negCoef) {
-		this(n,1,negCoef,1234);
-	}
-
+	/**
+	 * Setup a fractional with the specifications
+	 * 
+	 * @param n - number of items
+	 * @param m - number of fractions
+	 * @param negCoef - allow negative coefficients
+	 * @param seed - rnd seed
+	 */
 	public Fractional(int n, int m, boolean negCoef, int seed) {
 		super();
 		this.n = n;
@@ -55,7 +70,11 @@ public class Fractional extends Knapsack {
 		setup();
 	}
 
+	/**
+	 * Intialize the objective and constraint coefficients
+	 */
 	private void setup() {
+		// Initialize all arrays
 		a = new int[n];
 		c = new int[m][n];
 		d = new int[m][n];
@@ -63,24 +82,28 @@ public class Fractional extends Knapsack {
 		denConst = new int[m];
 		tau = new double[n];
 		ratio = new double[n];
+		
+		// For each fraction,
 		for (int i = 0; i < m; i++) {
+			// Generate numerator and denominator coefficients
 			numConst[i] = rnd.nextInt(10) + 1;
 			denConst[i] = rnd.nextInt(10) + 1;
 			int totalC = numConst[i];
 			int totalD = denConst[i];
+			// Enforce that sum(cij) != 0 and sum(dij) != 0
 			boolean sat = false;
 			while (!sat) {
 				for (int j = 0; j < n; j++) {
-						c[i][j] = rnd.nextInt(10)+1;
-						d[i][j] = rnd.nextInt(10)+1;
-						if (negCoef) {
-							if (rnd.nextBoolean()) {
-								c[i][j] = c[i][j]*-1;
-							}
-							if (rnd.nextBoolean()) {
-								d[i][j] = d[i][j]*-1;
-							}
+					c[i][j] = rnd.nextInt(10)+1;
+					d[i][j] = rnd.nextInt(10)+1;
+					if (negCoef) {
+						if (rnd.nextBoolean()) {
+							c[i][j] = c[i][j]*-1;
 						}
+						if (rnd.nextBoolean()) {
+							d[i][j] = d[i][j]*-1;
+						}
+					}
 					totalC += c[i][j];
 					totalD += d[i][j];
 				}
@@ -91,8 +114,9 @@ public class Fractional extends Knapsack {
 					totalD = denConst[i];
 				}
 			}
-			
+
 		}
+		// Initialize weights and potential contribution to calculate ratios
 		for (int i = 0; i < n; i++) {
 			a[i] = rnd.nextInt(9) + 1;
 			for (int j = 0; j < m; j++) {
@@ -100,11 +124,21 @@ public class Fractional extends Knapsack {
 			}
 			ratio[i] = tau[i] / a[i];
 		}
+		// Static b
 		b = 100;
 	}
 
 	@Override
+	/**
+	 * Generate a solution by adding x's until knapsack full
+	 * and update the current objective value. 
+	 * Fill the provided lists with the solution.
+	 * 
+	 * @param x - items in the solution
+	 * @param r - items outside of the solution
+	 */
 	public void genInit(ArrayList<Integer> x, ArrayList<Integer> r) {
+		// Clear the solution lists
 		r.clear();
 		x.clear();
 		int totalAx = 0;
@@ -112,6 +146,7 @@ public class Fractional extends Knapsack {
 		for (int j = 0; j < n; j++) {
 			r.add(j);
 		}
+		// Add Max-ratio items until none can be added
 		boolean[] inX = new boolean[n];
 		boolean done = false;
 		while (totalAx <= b && !done) {
@@ -134,19 +169,21 @@ public class Fractional extends Knapsack {
 			}
 		}
 
+		// Update objective
 		double curObj = getObj(x);
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
-		int swaps = 0;
 		while (swapping) {
 			int maxI = -1;
 			int maxJ = -1;
 			double maxChange = 0;
+			// Check all swaps
 			for(Integer xi: x) {
 				for(Integer xj: r) {
 					// Check for knapsack feasibility
 					if (a[xj]-a[xi] <= b - totalAx) {
+						// Calculate new objective
 						double newObj = swapObj(xi, xj, x, curObj);
 						double change = newObj - curObj;
 						if (change > maxChange) {
@@ -157,23 +194,31 @@ public class Fractional extends Knapsack {
 					}
 				}
 			}
-			double[] add = tryAdd(totalAx,r);
-			double[] sub = trySub(x);
-			double addObj = add[1];
-			double subObj = sub[1];
-			if (addObj-curObj > maxChange) {
-				int addI = (int)add[0];
+			// Get most improving shifts
+			double[] add = tryAdd(totalAx,r,curObj);
+			double[] sub = trySub(x,curObj);
+			double addChange = add[0];
+			double subChange = sub[0];
+			
+			// If addition is better than swap
+			if (addChange > maxChange) {
+				int addI = (int)add[1];
 				x.add(addI);
 				r.remove(Integer.valueOf(addI));
 				curObj = getObj(x);
 				totalAx = totalAx + a[addI];
-			} else if (addObj-curObj > maxChange) {
-				int subI = (int)sub[0];
+			}
+			// Else if removal is better than swap
+			else if (subChange > maxChange) {
+				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
 				curObj = getObj(x);
 				totalAx = totalAx - a[subI];
-			} else {
+			} 
+			// Else, perform the swap
+			else {
+				// If no improving swap exists, stop
 				if (maxI == -1 && maxJ == -1) {
 					swapping = false;
 				} else {
@@ -186,88 +231,134 @@ public class Fractional extends Knapsack {
 				}
 			}
 		}
-
-		System.out.println("Generated Incumbent: " + curObj);
-		Collections.sort(x);
-		System.out.println(x.toString());
 	}
-	
+
+	/**
+	 * Calculate the new objective if 
+	 * 	item i is removed and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param curX - current solution
+	 * @param oldObj - current objective
+	 * @return new objective value
+	 */
 	private double swapObj(int i, int j, ArrayList<Integer> x, double oldObj) {
 		ArrayList<Integer> newX = new ArrayList<Integer>(x);
 		newX.remove(Integer.valueOf(i));
 		newX.add(j);
 		return getObj(newX, false);
 	}
+	
+	/**
+	 * Calculate the objective if i is removed. 
+	 * 	Calculation done without changes to num/den.
+	 * 
+	 * @param i - item to be removed
+	 * @param num - current numerator values
+	 * @param den - current denominator values
+	 * @return the new objective
+	 */
+	private double subObj(int i, long[] num, long[] den) {
+		double obj = 0;
+		// For each fraction,
+		for (int j = 0; j < m; j++) {
+			// Check for a zero in the denominator
+			if (den[j]-d[j][i] == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			// Otherwise, update the objective
+			obj += (double)(num[j]-c[j][i])/(den[j]-d[j][i]);
+		}
+		return obj;
+	}
 
-	private double[] trySub(ArrayList<Integer> x) {
-		double[] fail = {-1,-1};
-		if (x.size() <= 1) {
-			return fail;
+	/**
+	 * Calculate the objective if i is added. 
+	 * 	Calculation done without changes to num/den.
+	 * 
+	 * @param i - item to be added
+	 * @param num - current numerator values
+	 * @param den - current denominator values
+	 * @return the new objective
+	 */
+	private double addObj(int i, long[] num, long[] den) {
+		double obj = 0;
+		// For each fraction,
+		for (int j = 0; j < m; j++) {
+			// Check for a zero in the denominator
+			if (den[j]+d[j][i] == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			// Otherwise, update the objective
+			obj += (double)(num[j]+c[j][i])/(den[j]+d[j][i]);
 		}
 
-		double minRatio = Double.MAX_VALUE;
+		return obj;
+	}
+	
+	/**
+	 * Find the variable that most improves the objective when removed
+	 *
+	 * @param x - items in the solution
+	 * @param curObj - the current objective to improve upon
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
+	private double[] trySub(ArrayList<Integer> x, double curObj) {
+		double maxChange = 0;
 		int minI = -1;
+		// Check all removals
 		for (Integer i: x) {
-			double ratio = this.getRatio(i);
-			if (ratio < minRatio) {
-				minRatio = ratio;
+			// Calculate the change in objective
+			double newObj = subObj(i, num, den);
+			double change = newObj - curObj;
+			// Update best change
+			if (change < maxChange) {
+				maxChange = change;
 				minI = i;
 			}
 		}
-
-		if (minI == -1) {
-			return fail;
-		}
-		double change = subObj(minI, num, den);
-		double curObj = 0;
-		for (int j = 0; j < m; j++) {
-			curObj += (double)(num[j])/den[j];
-		}
-		if (change > curObj) {
-			double[] success = {minI, change};
-			return success;
-		} else {
-			return fail;
-		}
+		// Return the best improving removal
+		double[] success = {maxChange, minI};
+		return success;
 	}
 
-	private double[] tryAdd(int totalA, ArrayList<Integer> r) {
-		double[] fail = {-1,-1};
-		if (r.size() < 1) {
-			return fail;
-		}
-
-		int b = this.getB();
-		double maxRatio = -1*Double.MAX_VALUE;
+	/**
+	 * Find the variable that most improves the objective when added
+	 *
+	 * @param totalA - current weight of knapsack
+	 * @param r - items outside solution
+	 * @param curObj - the current objective to improve upon
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
+	private double[] tryAdd(int totalA, ArrayList<Integer> r, double curObj) {
+		double maxChange = 0;
 		int maxI = -1;
+		// Check all additions
 		for (Integer i: r) {
-			if (totalA + this.getA(i) <= b) {
-				double ratio = this.getRatio(i);
-				if (ratio > maxRatio) {
-					maxRatio = ratio;
+			if (totalA + a[i] <= b) {
+				// Calculate the change in objective
+				double newObj = addObj(i, num, den);
+				double change = newObj - curObj;
+				// Update best change
+				if (change > maxChange) {
+					maxChange = change;
 					maxI = i;
 				}
 			}
 		}
-
-
-		if (maxI == -1) {
-			return fail;
-		}
-		double change = addObj(maxI, num, den);
-		double curObj = 0;
-		for (int j = 0; j < m; j++) {
-			curObj += (double)(num[j])/den[j];
-		}
-		if (change > curObj) {
-			double[] add = {maxI, change};
-			return add;
-		} else {
-			return fail;
-		}
+		// Return the best improving addition
+		double[] add = {maxChange, maxI};
+		return add;
 	}
 
 	@Override
+	/**
+	 * Fill lists x and r with a randomly generated solution to the CMKP
+	 * 
+	 * @param x - items in the solution
+	 * @param r - items outside of the solution
+	 */
 	public void genRndInit(ArrayList<Integer> x, ArrayList<Integer> r) {
 		r.clear();
 		x.clear();
@@ -293,47 +384,33 @@ public class Fractional extends Knapsack {
 		}
 	}
 
-	private double subObj(int i, long[] num, long[] den) {
-		double obj = 0;
-		for (int j = 0; j < m; j++) {
-			if (den[j]-d[j][i] == 0) {
-				return -1*Double.MAX_VALUE;
-			}
-			obj += (double)(num[j]-c[j][i])/(den[j]-d[j][i]);
-		}
-		
-		return obj;
-	}
-
-	private double addObj(int i, long[] num, long[] den) {
-		double obj = 0;
-		for (int j = 0; j < m; j++) {
-			if (den[j]+d[j][i] == 0) {
-				return -1*Double.MAX_VALUE;
-			}
-			obj += (double)(num[j]+c[j][i])/(den[j]+d[j][i]);
-		}
-		
-		return obj;
-	}
-
 	@Override
+	/**
+	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
+	 */
 	public double getObj(ArrayList<Integer> x) {
 		return getObj(x,true);
 	}
 
+	/**
+	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
+	 * @param setNumDen - update the values of fields num/den
+	 */
 	public double getObj(ArrayList<Integer> x, boolean setNumDen) {
-		if (x.isEmpty()) {
-			return 0;
-		}
+		// Update class num/den arrays
 		if (setNumDen) {
-			double newObj = 0;
 			num = new long[m];
 			den = new long[m];
+			double newObj = 0;
+			// For each fraction,
 			for (int i = 0; i < m; i++) {
+				// Calculate the value of the numerator and denominator
 				num[i] += numConst[i];
 				den[i] += denConst[i];
-
 				for (int j: x) {
 					num[i] += c[i][j];
 					den[i] += d[i][j];
@@ -341,6 +418,7 @@ public class Fractional extends Knapsack {
 				if (den[i] == 0) {
 					return -1*Double.MAX_VALUE;
 				}
+				// Update objective
 				newObj += (double)(num[i])/den[i];
 			}
 			return newObj;
@@ -348,7 +426,9 @@ public class Fractional extends Knapsack {
 			long[] num = new long[m];
 			long[] den = new long[m];
 			double newObj = 0;
+			// For each fraction,
 			for (int i = 0; i < m; i++) {
+				// Calculate the value of the numerator and denominator
 				num[i] += numConst[i];
 				den[i] += denConst[i];
 
@@ -359,6 +439,7 @@ public class Fractional extends Knapsack {
 				if (den[i] == 0) {
 					return -1*Double.MAX_VALUE;
 				}
+				// Update objective
 				newObj += (double)(num[i])/den[i];
 			}
 			return newObj;
@@ -373,35 +454,11 @@ public class Fractional extends Knapsack {
 		return den;
 	}
 
-	public long[] swapDen(int i, int j, long[] den) {
-		long[] newDen = new long[den.length];
-		for (int k = 0; k < m; k++) {
-			newDen[k] = den[k] + d[k][j] - d[k][i];
-		}
-		return newDen;
-	}
-
-	public long[] subDen(int i, long[] den) {
-		long[] newDen = new long[den.length];
-		for (int k = 0; k < m; k++) {
-			newDen[k] = den[k] - d[k][i];
-		}
-		return newDen;
-	}
-
-	public long[] addDen(int i, long[] den) {
-		long[] newDen = new long[den.length];
-		for (int k = 0; k < m; k++) {
-			newDen[k] = den[k] + d[k][i];
-		}
-		return newDen;
-	}
-
 	@Override
 	public int getN() {
 		return n;
 	}
-	
+
 	public int getM() {
 		return m;
 	}
@@ -421,11 +478,11 @@ public class Fractional extends Knapsack {
 	public int getD(int m, int i) {
 		return d[m][i];
 	}
-	
+
 	public int getNumConst(int i) {
 		return numConst[i];
 	}
-	
+
 	public int getDenConst(int i) {
 		return denConst[i];
 	}
@@ -434,16 +491,24 @@ public class Fractional extends Knapsack {
 		return ratio[i];
 	}
 
+	/**
+	 * Setup a Fractional from the given file. 
+	 * It is assumed the file was generated with the toFile() method.
+	 * 
+	 * @param filename to be read
+	 */
 	public void readFromFile(String filename) {
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));
-
+			// Setup values
 			n = scr.nextInt();
 			seed = scr.nextInt();
 			rnd = new Random(seed);
 			negCoef = scr.nextBoolean();
 			m = scr.nextInt();
+			
+			// Coefficients
 			b = scr.nextInt();
 			scr.nextLine();
 			a = readArr(scr);
@@ -464,6 +529,9 @@ public class Fractional extends Knapsack {
 		calcTauRatio();
 	}
 
+	/**
+	 * Sub-method used to calculate the mutation values.
+	 */
 	private void calcTauRatio() {
 		tau = new double[n];
 		ratio = new double[n];
@@ -475,6 +543,12 @@ public class Fractional extends Knapsack {
 		}
 	}
 
+	/**
+	 * Read in an int array of coefficients
+	 * 
+	 * @param scr - Scanner to read form
+	 * @return 
+	 */
 	private int[] readArr(Scanner scr) {
 		String line = scr.nextLine().trim();
 		String[] data = line.split(" ");
@@ -485,13 +559,21 @@ public class Fractional extends Knapsack {
 		return ret;
 	}
 
+	/**
+	 * Write the problem to the specified file.
+	 * 
+	 * @param filename - to write to
+	 */
 	public void toFile(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
+			// Setup values
 			pw.write(n + "\n");
 			pw.write(seed + "\n");
 			pw.write(negCoef + "\n");
 			pw.write(m + "\n");
+			
+			// Coefficients
 			pw.write(b + "\n");
 			writeArr(pw, a);
 			writeArr(pw,numConst);
@@ -502,7 +584,6 @@ public class Fractional extends Knapsack {
 			for (int i = 0; i < m; i++) {
 				writeArr(pw, d[i]);
 			}
-			
 
 			pw.close();
 		} catch (FileNotFoundException e) {
@@ -511,6 +592,12 @@ public class Fractional extends Knapsack {
 		}
 	}
 
+	/**
+	 * Write the given coefficient array with the writer
+	 * 
+	 * @param pw - writer to use
+	 * @param arr - array to write
+	 */
 	private void writeArr(PrintWriter pw, int[] arr) {
 		for (int i = 0; i < arr.length-1; i++) {
 			pw.write(arr[i] + " ");

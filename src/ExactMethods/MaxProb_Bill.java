@@ -28,13 +28,14 @@ public class MaxProb_Bill {
 	static double p1;
 
 	static double bestObj;
+	static String file;
 
 	/*
 	 * Setup Max Prob problem and MIP
 	 */
 	public static void main(String[] args) {
 		// Can take file as argument
-		String file = "1000_P5_K95_0";
+		file = "1000_P5_K95_0";
 		if (args.length == 1) {
 			file = args[0];
 		}
@@ -187,9 +188,13 @@ public class MaxProb_Bill {
 		cplex.exportModel("maxProbBill.lp");
 
 		// Solve and print solution
-		cplex.setParam(IloCplex.DoubleParam.TiLim, 300);
+		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
 		cplex.solve();
 
+		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
+			System.err.println(file + " Timeout");
+		}
+		
 		try {
 			bestObj = cplex.getObjValue();
 			System.out.println(bestObj);

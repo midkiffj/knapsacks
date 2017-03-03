@@ -4,15 +4,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
-import Runner.TestLogger;
-
-
+/**
+ * Cubic Multiple Knapsack Problem (CMKP)
+ * - Problem generation
+ * - Problem coefficient accessors
+ * - Solution objective calculation
+ * - File I/O
+ * 
+ * @author midkiffj
+ */
 public class CubicMult extends MultipleKnapsack {
-	// Cubic setup vars
+
+	// CMKP Problem
 	private int n;
 	private int m;
 	private Random rnd;
@@ -20,35 +26,36 @@ public class CubicMult extends MultipleKnapsack {
 	private boolean negCoef;
 	private double density;
 
-	// Coefficient vars
+	// Coefficients
 	private int[][] a;
 	private int[] b;
 	private int[] ci;
 	private int[][] cij;
 	private int[][][] dijk;
 
-
-	// Cubic manipulation vars
+	// Mutation values
 	private int[] tau;
 	private double[] ratio;
 
+	/**
+	 * Initialize a problem from the file
+	 * @param filename
+	 */
 	public CubicMult(String filename) {
 		super();
 		readFromFile(filename);
 	}
 
-	public CubicMult(int n, boolean negCoef) {
-		this(n,negCoef,1234,1);
-	}
-
-	public CubicMult(int n, boolean negCoef, int seed) {
-		this(n,negCoef,seed,1);
-	}
-
-	public CubicMult(int n, boolean negCoef, int seed, double density) {
-		this(n,1,negCoef,seed,density);
-	}
-
+	/**
+	 * 
+	 * Setup a problem with the specificiations
+	 * 
+	 * @param n - number of items
+	 * @param m - number of knapsacks
+	 * @param negCoef - allow negative coefficients
+	 * @param seed - rnd seed
+	 * @param density - probability of non-zero coefficients
+	 */
 	public CubicMult(int n, int m, boolean negCoef, int seed, double density) {
 		super();
 		this.n = n;
@@ -76,8 +83,12 @@ public class CubicMult extends MultipleKnapsack {
 		ratio = new double[n];
 
 		// Fill matrices with randomized coefficients
-		// a : [1,50]
-		// c : [-100,100]; cij = cji; cii = 0
+		// a 	: [1,50]
+		// ci   : negcoef ? [-100,100] : [0,100]
+		// cij  : negcoef ? [-100,100] : [0,100]
+		// dijk : negcoef ? [-100,100] : [0,100]
+		// 
+		// Note: Left-Upper triangular matrix stored
 		for(i = 0; i < n; i++){
 			if (i < n-1) {
 				cij[i] = new int[n-i];
@@ -89,11 +100,12 @@ public class CubicMult extends MultipleKnapsack {
 				ci[i] = rnd.nextInt(101);
 			}
 
+			// Update weights
 			for (j = 0; j < m; j++) {
 				a[j][i] = rnd.nextInt(50)+1;
 				totalA[j] += a[j][i];
 			}
-
+			// Update item potential contribution
 			tau[i] += ci[i];
 			for (j = i+1; j < n; j++){
 				dijk[i][j-i] = new int[n-j];
@@ -106,7 +118,7 @@ public class CubicMult extends MultipleKnapsack {
 				} else {
 					cij[i][j-i] = 0;
 				}
-				//				cij[j][i] = cij[i][j];
+				// Update item potential contribution
 				tau[i] += cij[i][j-i];
 				tau[j] += cij[i][j-i];
 				for(k = j+1; k < n; k++) {
@@ -119,18 +131,14 @@ public class CubicMult extends MultipleKnapsack {
 					} else {
 						dijk[i][j-i][k-j] = 0;
 					}
-					//					dijk[i][k][j] = dijk[i][j][k];
-					//					dijk[j][k][i] = dijk[i][j][k];
-					//					dijk[j][i][k] = dijk[i][j][k];
-					//					dijk[k][i][j] = dijk[i][j][k];
-					//					dijk[k][j][i] = dijk[i][j][k];
+					// Update item potential contribution
 					tau[i] += dijk[i][j-i][k-j];
 					tau[j] += dijk[i][j-i][k-j];
 					tau[k] += dijk[i][j-i][k-j];
 				}
 			}
 		}
-
+		// Calculate ratio for each item as the average of the knapsack ratios
 		for (i = 0; i < n; i++) {
 			double sumRatios = 0;
 			for (j = 0; j < m; j++) {
@@ -147,23 +155,33 @@ public class CubicMult extends MultipleKnapsack {
 	}
 
 	/**
-	 * Randomly generate a solution to the cubic
+	 * Fill lists x and r with a randomly generated solution to the CMKP
+	 * 
+	 * @param x - items in the solution
+	 * @param r - items outside of the solution
 	 */
 	public void genRndInit(ArrayList<Integer> x, ArrayList<Integer> r) {
+		// Reset lists
 		r.clear();
 		x.clear();
+
+		// Remove all items from solution
 		int[] totalAx = new int[m];
 		int i = 0;
 		for (int j = 0; j < n; j++) {
 			r.add(j);
 		}
+
+		// Randomly add items until knapsacks full, the next item cannot be added, 
+		//	all items added, or 30% random stop
 		boolean done = false;
 		while (totalAValid(totalAx) && !done && !r.isEmpty()) {
 			int num = rnd.nextInt(r.size());
 			i = r.get(num);
+			// Add item if it fits
 			if (addTotalA(totalAx,i)) {
 				x.add(i);
-				r.remove(Integer.valueOf(i));
+				r.remove(num);
 				addA(i,totalAx);
 			} else {
 				done = true;
@@ -177,9 +195,13 @@ public class CubicMult extends MultipleKnapsack {
 	/**
 	 * Generate a solution by adding x's until knapsack full
 	 * and update the current objective value. 
-	 * Don't use any indexes in the provided list.
+	 * Fill the provided lists with the solution.
+	 * 
+	 * @param x - items in the solution
+	 * @param r - items outside of the solution
 	 */
 	public void genInit(ArrayList<Integer> x, ArrayList<Integer> r) {
+		// Clear Solution
 		r.clear();
 		x.clear();
 		int[] totalAx = new int[m];
@@ -187,6 +209,7 @@ public class CubicMult extends MultipleKnapsack {
 		for (int j = 0; j < n; j++) {
 			r.add(j);
 		}
+		// Add maximum ratio items until none can be added
 		boolean[] inX = new boolean[n];
 		boolean done = false;
 		while (totalAValid(totalAx) && !done) {
@@ -209,11 +232,13 @@ public class CubicMult extends MultipleKnapsack {
 			}
 		}
 
+		// Update objective
 		double curObj = getObj(x);
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
 		while (swapping) {
+			// Check all swaps
 			int maxI = -1;
 			int maxJ = -1;
 			double maxChange = 0;
@@ -231,23 +256,30 @@ public class CubicMult extends MultipleKnapsack {
 					}
 				}
 			}
-			double[] add = tryAdd(x,r, curObj, totalAx);
-			double[] sub = trySub(x,r, curObj, totalAx);
+			// Check for an improving add or removal
+			double[] add = tryAdd(x, r, curObj, totalAx);
+			double[] sub = trySub(x, curObj, totalAx);
 			double addChange = add[0];
 			double subChange = sub[0];
+			// If addition is better than swap,
 			if (addChange > maxChange) {
 				int addI = (int)add[1];
 				x.add(addI);
 				r.remove(Integer.valueOf(addI));
 				curObj = curObj + add[0];
 				addA(addI,totalAx);
-			} else if (subChange > maxChange) {
+			} 
+			// Else if, removal is better than swap
+			else if (subChange > maxChange) {
 				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
 				curObj = curObj + sub[0];
 				removeA(subI,totalAx);
-			} else {
+			} 
+			// Else, attempt the swap
+			else {
+				// If no improving swap exists, stop
 				if (maxI == -1 && maxJ == -1) {
 					swapping = false;
 				} else {
@@ -261,18 +293,26 @@ public class CubicMult extends MultipleKnapsack {
 				}
 			}
 		}
-
-		System.out.println("Generated Incumbent: " + curObj);
-		Collections.sort(x);
-		System.out.println(x.toString());
 	}
-
-	// Try to add a variable to the solution
+ 
+	
+	/**
+	 * Find the variable that most improves the objective when added
+	 *
+	 * @param curX - items in solution
+	 * @param r - items outside solution
+	 * @param curObj - current objective
+	 * @param totalA - current weight of knapsack
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
 	private double[] tryAdd(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int[] totalA) {
 		double maxChange = 0;
 		int maxI = -1;
+		// Check all items
 		for(Integer i: r) {
+			// If knapsack feasible,
 			if (addTotalA(totalA,i)) {
+				// Calculate change in objective
 				double obj = curObj + this.getCi(i);
 				for (int j = 0; j < curX.size(); j++) {
 					int xj = curX.get(j);
@@ -282,6 +322,7 @@ public class CubicMult extends MultipleKnapsack {
 						obj += this.getDijk(i,xj,xk);
 					}
 				}
+				// Update the best change in objective
 				double change = obj - curObj;
 				if (change > maxChange) {
 					maxChange = change;
@@ -289,14 +330,26 @@ public class CubicMult extends MultipleKnapsack {
 				}
 			}
 		}
+		// Return the best change
 		double[] result = {maxChange, maxI};
 		return result;
 	}
 
-	private double[] trySub(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int[] totalA) {
+
+	/**
+	 * Find the variable that most improves the objective when removed
+	 *
+	 * @param curX - items in solution
+	 * @param curObj - current objective
+	 * @param totalA - current weight of knapsack
+	 * @return {change in objective,item to add} or {0,-1} if no improving shift found
+	 */
+	private double[] trySub(ArrayList<Integer> curX, double curObj, int[] totalA) {
 		double maxChange = 0;
 		int maxI = -1;
+		// Check all removals
 		for(Integer i: curX) {
+			// Calculate the new objective
 			double obj = curObj - this.getCi(i);
 			for (int j = 0; j < curX.size(); j++) {
 				int xj = curX.get(j);
@@ -306,16 +359,24 @@ public class CubicMult extends MultipleKnapsack {
 					obj -= this.getDijk(i,xj,xk);
 				}
 			}
+			// Update the best change in objective found
 			double change = obj - curObj;
 			if (change > maxChange) {
 				maxChange = change;
 				maxI = i;
 			}
 		}
+		// Return the best change (or {0,-1})
 		double[] result = {maxChange, maxI};
 		return result;
 	}
 
+	
+	/*
+	 * Private implementations of multiple knapsack interaction 
+	 * 	for use in generating solutions.
+	 */
+	
 	private void addA(int i, int[] totalA) {
 		for (int j = 0; j < m; j++) {
 			totalA[j] += a[j][i];
@@ -355,8 +416,16 @@ public class CubicMult extends MultipleKnapsack {
 		return true;
 	}
 
-
-
+	/**
+	 * Calculate the new objective if 
+	 * 	item i is removed and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param curX - current solution
+	 * @param oldObj - current objective
+	 * @return new objective value
+	 */
 	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj - this.getCi(i);
 		oldObj = oldObj + this.getCi(j);
@@ -379,6 +448,8 @@ public class CubicMult extends MultipleKnapsack {
 
 	/**
 	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
 	 */
 	public double getObj(ArrayList<Integer> x) {
 		int i,j,k;
@@ -397,9 +468,6 @@ public class CubicMult extends MultipleKnapsack {
 		} 
 		return curObj;
 	}
-
-
-
 
 	public int getN() {
 		return n;
@@ -460,11 +528,18 @@ public class CubicMult extends MultipleKnapsack {
 		return ratio[i];
 	}
 
+	/**
+	 * Setup a CMKP from the given file. 
+	 * It is assumed the file was generated with the toFile() method.
+	 * 
+	 * @param filename to be read
+	 */
 	public void readFromFile(String filename) {
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));
 
+			// Setup specifications
 			n = scr.nextInt();
 			m = scr.nextInt();
 			seed = scr.nextInt();
@@ -475,6 +550,7 @@ public class CubicMult extends MultipleKnapsack {
 			density = scr.nextDouble();
 			scr.nextLine();
 
+			// Coefficients
 			a = new int[m][];
 			for (int i = 0; i < m; i++) {
 				a[i] = readArr(scr);
@@ -495,8 +571,8 @@ public class CubicMult extends MultipleKnapsack {
 				}
 			}
 
+			// Mutation values
 			tau = readArr(scr);
-
 			ratio = new double[n];
 			for (int i = 0; i < n; i++) {
 				ratio[i] = scr.nextDouble();
@@ -506,6 +582,12 @@ public class CubicMult extends MultipleKnapsack {
 		}
 	}
 
+	/**
+	 * Read in an int array of coefficients
+	 * 
+	 * @param scr - Scanner to read form
+	 * @return 
+	 */
 	private int[] readArr(Scanner scr) {
 		String line = scr.nextLine().trim();
 		String[] data = line.split(" ");
@@ -516,15 +598,23 @@ public class CubicMult extends MultipleKnapsack {
 		return ret;
 	}
 
+	/**
+	 * Write the problem to the specified file.
+	 * 
+	 * @param filename - to write to
+	 */
 	public void toFile(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
+			// Setup values
 			pw.write(n + "\n");
 			pw.write(m + "\n");
 			pw.write(seed + "\n");
 			writeArr(pw, b);
 			pw.write(negCoef + "\n");
 			pw.write(density + "\n");
+			
+			// Coefficients
 			for (int i = 0; i < m; i++) {
 				writeArr(pw, a[i]);
 			}
@@ -537,6 +627,8 @@ public class CubicMult extends MultipleKnapsack {
 					writeArr(pw, dijk[i][j]);
 				}
 			}
+			
+			// Mutation values
 			writeArr(pw, tau);
 			for (int i = 0; i < n-1; i++) {
 				pw.write(ratio[i] + " ");
@@ -549,14 +641,16 @@ public class CubicMult extends MultipleKnapsack {
 		}
 	}
 
+	/**
+	 * Write the given coefficient array with the writer
+	 * 
+	 * @param pw - writer to use
+	 * @param arr - array to write
+	 */
 	private void writeArr(PrintWriter pw, int[] arr) {
 		for (int i = 0; i < arr.length-1; i++) {
 			pw.write(arr[i] + " ");
 		}
 		pw.write(arr[arr.length-1] + "\n");
 	}
-
-	public static void main(String[] args) {
-	}
-
 }

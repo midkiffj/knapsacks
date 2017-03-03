@@ -154,7 +154,7 @@ public class UnconstrainedSol extends ProblemSol {
 
 	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
 		if (r.size() > 0) {
-			if (rnd.nextDouble() < 0.4) {
+			if (rnd.nextDouble() < 0.6) {
 				return maxMinSwap(iteration, tabuList);
 			} else {
 				ProblemSol tauSwap = tauMutate(iteration, tabuList);
@@ -379,21 +379,81 @@ public class UnconstrainedSol extends ProblemSol {
 
 	// Try to add a variable to the solution
 	private int tryAdd() {
-		int index = u.tryAdd(-1, x, r, false);
+		int index = tryAdd(-1, x, r, false);
 		if (index != -1) {
 			addI(index);
-			this.obj = u.addObj(index, x, obj);
+			this.obj = addObj(index, x, obj);
 		}
 		return index;
 	}
 
 	private int trySub() {
-		int index = u.trySub(x, false);
+		int index = trySub(x, false);
 		if (index != -1) {
 			removeI(index);
-			this.obj = u.subObj(index, x, obj);
+			this.obj = subObj(index, x, obj);
 		}
 		return index;
+	}
+	
+	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
+		double obj = u.getObj(x);
+		int index = -1;
+		for (int i: x) {
+			double newObj = subObj(i,x,obj);
+			if (newObj > obj) {
+				obj = newObj;
+				index = i;
+			}
+		}
+		return index;
+	}
+	
+	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
+		double obj = u.getObj(x);
+		int index = -1;
+		for (int i: r) {
+			double newObj = addObj(i,x,obj);
+			if (newObj > obj) {
+				obj = newObj;
+				index = i;
+			}
+		}
+		return index;
+	}
+	
+	public double subObj(int i, ArrayList<Integer> curX, double oldObj) {
+		oldObj = oldObj - u.getCi(i);
+		for (int k = 0; k < curX.size(); k++) {
+			int xk = curX.get(k);
+			if (xk != i) {
+				oldObj = oldObj - u.getCij(i,xk);
+				for (int l = k+1; l < curX.size(); l++) {
+					int xl = curX.get(l);
+					if (xl != i) {
+						oldObj = oldObj - u.getDijk(i,xk,xl);
+					}
+				}
+			}
+		}
+		return oldObj;
+	}
+	
+	public double addObj(int i, ArrayList<Integer> curX, double oldObj) {
+		oldObj = oldObj + u.getCi(i);
+		for (int k = 0; k < curX.size(); k++) {
+			int xk = curX.get(k);
+			if (xk != i) {
+				oldObj = oldObj + u.getCij(i,xk);
+				for (int l = k+1; l < curX.size(); l++) {
+					int xl = curX.get(l);
+					if (xl != i) {
+						oldObj = oldObj + u.getDijk(i,xk,xl);
+					}
+				}
+			}
+		}
+		return oldObj;
 	}
 
 	@Override

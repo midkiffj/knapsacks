@@ -118,7 +118,7 @@ public class CubicSol extends KnapsackSol {
 		if (getRSize() == 0) {
 			return null;
 		}
-		if (rnd.nextDouble() < 0.4) {
+		if (rnd.nextDouble() < 0.6) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
 			CubicSol ratioSwap = ratioMutate(iteration, tabuList);
@@ -478,7 +478,7 @@ public class CubicSol extends KnapsackSol {
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = true;
-		while (c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < n) {
+		while (c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < getXSize()) {
 			if (changeI) {
 				ki++;
 				i = minRatio(ki);
@@ -486,7 +486,7 @@ public class CubicSol extends KnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == n-1) {
+			if (kj == getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -506,7 +506,7 @@ public class CubicSol extends KnapsackSol {
 			nTObj = newObj;
 		} else {
 			boolean newMin = false;
-			while (tabuList[i][j] >= iteration && c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < n) {
+			while (tabuList[i][j] >= iteration && c.getA(j) - c.getA(i) > getB() - getTotalA() && ki < getXSize()) {
 				if (newMin) {
 					ki++;
 					i = minRatio(ki);
@@ -514,9 +514,17 @@ public class CubicSol extends KnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == n) {
+				if (kj == getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
+				}
+				if (c.getA(j) - c.getA(i) <= getB() - getTotalA()) {
+					newObj = swapObj(i, j);
+					if (newObj > bObj) {
+						bi = i;
+						bj = j;
+						bObj = newObj;
+					}
 				}
 			}
 			if (tabuList[i][j] < iteration) {

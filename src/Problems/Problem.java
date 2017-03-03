@@ -2,8 +2,11 @@ package Problems;
 
 import java.util.ArrayList;
 
-/*
+/**
+ * Problem super class.
+ * - Sets the problem in the problem factory
  * 
+ * @author midkiffj
  */
 public abstract class Problem {
 

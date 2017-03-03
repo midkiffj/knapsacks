@@ -4,43 +4,52 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
-import Runner.TestLogger;
-
-
+/**
+ * Unconstrained Cubic Problem
+ * - Problem generation
+ * - Problem coefficient accessors
+ * - Solution objective calculation
+ * - File I/O
+ * 
+ * @author midkiffj
+ */
 public class Unconstrained extends Problem {
-	// Unconstrained setup vars
+	// Setup
 	private int n;
 	private Random rnd;
 	private int seed;
 	private boolean negCoef;
 	private double density;
 
-	// Coefficient vars
+	// Coefficients
 	private int c;
 	private int[] ci;
 	private int[][] cij;
 	private int[][][] dijk;
 	
-	// Unconstrained mutation vars
+	// Mutations
 	private int[] tau;
 
+	/**
+	 * Setup an Unconstrained problem from the given file
+	 * @param filename
+	 */
 	public Unconstrained(String filename) {
 		super();
 		readFromFile(filename);
 	}
 
-	public Unconstrained(int n, boolean negCoef) {
-		this(n,negCoef,1234,1);
-	}
-
-	public Unconstrained(int n, boolean negCoef, int seed) {
-		this(n,negCoef,seed,1);
-	}
-
+	/**
+	 * Setup an Unconstrained with the given values
+	 * 
+	 * @param n - number of items
+	 * @param negCoef - allow negative coefficients
+	 * @param seed - rnd seed
+	 * @param density - probability of non-zero coefficients
+	 */
 	public Unconstrained(int n, boolean negCoef, int seed, double density) {
 		super();
 		this.n = n;
@@ -51,6 +60,13 @@ public class Unconstrained extends Problem {
 		setup();
 	}
 	
+	/**
+	 * Initialize an Unconstrained problem with the following coefficient values.
+	 * @param c
+	 * @param ci
+	 * @param cij
+	 * @param dijk
+	 */
 	public Unconstrained(int c, int[] ci, int[][] cij, int[][][] dijk) {
 		super();
 		this.n = ci.length;
@@ -65,6 +81,9 @@ public class Unconstrained extends Problem {
 		calcTau();
 	}
 	
+	/**
+	 * Calculate an each item's potential contribution
+	 */
 	private void calcTau() {
 		this.tau = new int[n];
 		int i,j,k;
@@ -85,9 +104,6 @@ public class Unconstrained extends Problem {
 	/**
 	 * Initialize the objective and knapsack constraint coefficients
 	 */
-	/**
-	 * Initialize the objective and knapsack constraint coefficients
-	 */
 	private void setup() {
 		int i,j,k;
 
@@ -98,8 +114,12 @@ public class Unconstrained extends Problem {
 		tau = new int[n];
 
 		// Fill matrices with randomized coefficients
-		// a : [1,50]
-		// c : [-100,100]; cij = cji; cii = 0
+		// a 	: [1,50]
+		// ci   : negcoef ? [-100,100] : [0,100]
+		// cij  : negcoef ? [-100,100] : [0,100]
+		// dijk : negcoef ? [-100,100] : [0,100]
+		// 
+		// Note: Left-Upper triangular matrix stored
 		for(i = 0; i < n; i++){
 			if (i < n-1) {
 				cij[i] = new int[n-i];
@@ -111,7 +131,7 @@ public class Unconstrained extends Problem {
 				ci[i] = rnd.nextInt(101);
 			}
 			
-			//			cij[i][i] = 0;
+			// Update tau (item contribution)
 			tau[i] += ci[i];
 			for (j = i+1; j < n; j++){
 				dijk[i][j-i] = new int[n-j];
@@ -124,7 +144,7 @@ public class Unconstrained extends Problem {
 				} else {
 					cij[i][j-i] = 0;
 				}
-				//				cij[j][i] = cij[i][j];
+				// Update tau (item contribution)
 				tau[i] += cij[i][j-i];
 				tau[j] += cij[i][j-i];
 				for(k = j+1; k < n; k++) {
@@ -137,6 +157,7 @@ public class Unconstrained extends Problem {
 					} else {
 						dijk[i][j-i][k-j] = 0;
 					}
+					// Update tau (item contribution)
 					tau[i] += dijk[i][j-i][k-j];
 					tau[j] += dijk[i][j-i][k-j];
 					tau[k] += dijk[i][j-i][k-j];
@@ -171,6 +192,8 @@ public class Unconstrained extends Problem {
 
 	/**
 	 * Calculate the objective value with the given x values.
+	 * 
+	 * @param x - solution list
 	 */
 	public double getObj(ArrayList<Integer> x) {
 		int i,j,k;
@@ -189,84 +212,17 @@ public class Unconstrained extends Problem {
 		} 
 		return curObj;
 	}
-
 	
-	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
-		double obj = getObj(x);
-		int index = -1;
-		for (int i: x) {
-			double newObj = subObj(i,x,obj);
-			if (newObj > obj) {
-				obj = newObj;
-				index = i;
-			}
-		}
-		return index;
-	}
-	
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
-		double obj = getObj(x);
-		int index = -1;
-		for (int i: r) {
-			double newObj = addObj(i,x,obj);
-			if (newObj > obj) {
-				obj = newObj;
-				index = i;
-			}
-		}
-		return index;
-	}
-	
-	public double subObj(int i, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj - this.getCi(i);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj - this.getCij(i,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj - this.getDijk(i,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
-	
-	public double addObj(int i, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj + this.getCi(i);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj + this.getCij(i,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj + this.getDijk(i,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
-	
-	public int removeA(int i, int totalA) {
-		return -1;
-	}
-	
-	public int addA(int i, int totalA) {
-		return -1;
-	}
-	
-	public boolean checkValid(ArrayList<Integer> x) {
-		return true;
-	}
-	
-	public int calcTotalA(ArrayList<Integer> x) {
-		return -1;
-	}
-	
+	/**
+	 * Calculate the objective of curX 
+	 * 	if item i is removed and item j is added
+	 * 
+	 * @param i - item to be removed
+	 * @param j - item to be added
+	 * @param curX - current solution
+	 * @param oldObj - current solution objective value
+	 * @return the new objective if i and j swapped
+	 */
 	public double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj - this.getCi(i);
 		oldObj = oldObj + this.getCi(j);
@@ -285,17 +241,6 @@ public class Unconstrained extends Problem {
 			}
 		}
 		return oldObj;
-	}
-
-	// Try to add a variable to the solution
-	private double[] tryAdd(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
-		// TODO
-		return null;
-	}
-
-	private double[] trySub(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
-		// TODO
-		return null;
 	}
 
 	public int getN() {
@@ -349,16 +294,24 @@ public class Unconstrained extends Problem {
 		return tau[i];
 	}
 
+	/**
+	 * Setup an Unconstrained from the given file. 
+	 * It is assumed the file was generated with the toFile() method.
+	 * 
+	 * @param filename to be read
+	 */
 	public void readFromFile(String filename) {
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));
-
+			// Setup values
 			n = scr.nextInt();
 			seed = scr.nextInt();
 			rnd = new Random(seed);
 			negCoef = scr.nextBoolean();
 			density = scr.nextDouble();
+			
+			// Coefficients
 			c = scr.nextInt();
 			scr.nextLine();
 
@@ -381,6 +334,12 @@ public class Unconstrained extends Problem {
 		}
 	}
 
+	/**
+	 * Read in an int array of coefficients
+	 * 
+	 * @param scr - Scanner to read form
+	 * @return 
+	 */
 	private int[] readArr(Scanner scr) {
 		String line = scr.nextLine().trim();
 		String[] data = line.split(" ");
@@ -391,13 +350,21 @@ public class Unconstrained extends Problem {
 		return ret;
 	}
 	
+	/**
+	 * Write the problem to the specified file.
+	 * 
+	 * @param filename - to write to
+	 */
 	public void toFile(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
+			// Setup values
 			pw.write(n + "\n");
 			pw.write(seed + "\n");
 			pw.write(negCoef + "\n");
 			pw.write(density + "\n");
+			
+			// Coefficients
 			pw.write(c + "\n");
 			writeArr(pw, ci);
 			for (int i = 0; i < cij.length; i++) {
@@ -415,14 +382,16 @@ public class Unconstrained extends Problem {
 		}
 	}
 
+	/**
+	 * Write the given coefficient array with the writer
+	 * 
+	 * @param pw - writer to use
+	 * @param arr - array to write
+	 */
 	private void writeArr(PrintWriter pw, int[] arr) {
 		for (int i = 0; i < arr.length-1; i++) {
 			pw.write(arr[i] + " ");
 		}
 		pw.write(arr[arr.length-1] + "\n");
 	}
-	
-	public static void main(String[] args) {
-	}
-
 }

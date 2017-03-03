@@ -117,7 +117,10 @@ public class tabuSearch extends Metaheuristic {
 						stuck++;
 						if (stuck > tabuDuration) {
 							current.shift();
+							stuck = 0;
 						}
+					} else {
+						stuck = 0;
 					}
 				}
 			}

@@ -22,7 +22,7 @@ public class CubicTest extends ProblemTest {
 	
 	// Test Bed specification
 	private double[] densities = {0.25, 0.5, 0.75, 1};
-	private int[] probSizes = {10, 20, 30, 50, 100, 200};
+	private int[] probSizes = {10, 20, 30, 50, 100, 200, 500, 1000};
 	private int K = 10;
 	
 	// Method usage
@@ -138,13 +138,11 @@ public class CubicTest extends ProblemTest {
 					@SuppressWarnings("unused")
 					Cubic c1 = new Cubic("problems/cubic/"+file1);
 					CubicSol cs1 = new CubicSol("incumbents/cubic/"+file1+"inc.txt");
-					cs1.setHealing(true);
 					double incumbent1 = cs1.getObj();
 
 					String result1;
-					
-						HeuristicRunner hr1 = new HeuristicRunner(cs1);
-						result1 = hr1.getResults();
+					HeuristicRunner hr1 = new HeuristicRunner(cs1);
+					result1 = hr1.getResults();
 					
 
 					if (k == 0) {
@@ -160,13 +158,11 @@ public class CubicTest extends ProblemTest {
 					@SuppressWarnings("unused")
 					Cubic c2 = new Cubic("problems/cubic/"+file2);
 					CubicSol cs2 = new CubicSol("incumbents/cubic/"+file2+"inc.txt");
-					cs2.setHealing(true);
 					double incumbent2 = cs2.getObj();
 
 					String result2;
-					
-						HeuristicRunner hr2 = new HeuristicRunner(cs2);
-						result2 = hr2.getResults();
+					HeuristicRunner hr2 = new HeuristicRunner(cs2);
+					result2 = hr2.getResults();
 					
 
 					if (k == 0) {
@@ -259,7 +255,6 @@ public class CubicTest extends ProblemTest {
 					System.out.println("--"+file1+"--");
 					Cubic c1 = new Cubic("problems/cubic/"+file1);
 					CubicSol cs1 = new CubicSol("incumbents/cubic/"+file1+"inc.txt");
-					cs1.setHealing(true);
 					double incumbent1 = cs1.getObj();
 
 					String result1;
@@ -278,7 +273,6 @@ public class CubicTest extends ProblemTest {
 					System.out.println("--"+file2+"--");
 					Cubic c2 = new Cubic("problems/cubic/"+file2);
 					CubicSol cs2 = new CubicSol("incumbents/cubic/"+file2+"inc.txt");
-					cs2.setHealing(true);
 					double incumbent2 = cs2.getObj();
 
 					String result2;

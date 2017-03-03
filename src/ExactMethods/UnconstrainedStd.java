@@ -29,7 +29,7 @@ public class UnconstrainedStd {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		u = new Unconstrained(5,true);
+		u = new Unconstrained(5,true,1234,.75);
 		try {
 			cplex = new IloCplex();
 			addModel();
