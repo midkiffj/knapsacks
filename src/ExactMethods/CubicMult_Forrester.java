@@ -27,6 +27,7 @@ public class CubicMult_Forrester {
 	static int[] Ui;
 
 	static long bestObj;
+	static boolean timeout;
 	static String file;
 
 	/*
@@ -54,6 +55,10 @@ public class CubicMult_Forrester {
 
 	public static long getBestObj() {
 		return bestObj;
+	}
+	
+	public static boolean getTimeout() {
+		return timeout;
 	}
 
 	/*
@@ -196,10 +201,11 @@ public class CubicMult_Forrester {
 		seedMIP(x);
 
 		// Solve Model with time limit for bigger problems
-		cplex.setParam(IloCplex.DoubleParam.TiLim, 1200);
+		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
 		cplex.solve();
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
+			timeout = true;
 		}
 		double IPOptimal = cplex.getObjValue();
 		bestObj = (long) IPOptimal;

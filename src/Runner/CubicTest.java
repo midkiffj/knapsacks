@@ -77,6 +77,7 @@ public class CubicTest extends ProblemTest {
 					Cubic c1 = new Cubic(n,false,seed,density);
 					KnapsackSol ks1 = (KnapsackSol)ProblemFactory.genInitSol();
 					String file1 = n+"_"+density+"_false_"+k;
+					System.out.println("--"+file1+"--");
 					c1.toFile(probFolder+file1);
 					ks1.writeSolution(incuFolder+file1+"inc.txt");
 
@@ -86,6 +87,7 @@ public class CubicTest extends ProblemTest {
 					Cubic c2 = new Cubic(n,true,seed,density);
 					KnapsackSol ks2 = (KnapsackSol)ProblemFactory.genInitSol();
 					String file2 = n+"_"+density+"_true_"+k;
+					System.out.println("--"+file2+"--");
 					c2.toFile(probFolder+file2);
 					ks2.writeSolution(incuFolder+file2+"inc.txt");
 
@@ -188,7 +190,7 @@ public class CubicTest extends ProblemTest {
 	 */
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw = new PrintWriter(resFolder+"cubMIP" + probSizes.length + ".csv");
-		pw.write("n,density,#,negCoef,incumbent,MIP\n");
+		pw.write("n,density,#,negCoef,incumbent,MIP,timeout\n");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -202,17 +204,21 @@ public class CubicTest extends ProblemTest {
 					String[] args1 = {file1};
 
 					long result1;
-					if (n >= 100) {
-						result1 = -1;
-					} else {
+//					if (n >= 100) {
+//						result1 = -1;
+//					} else {
 						Cubic_Forrester.main(args1);
 						result1 = Cubic_Forrester.getBestObj();
-					}
+						String timeout1 = "";
+						if (Cubic_Forrester.getTimeout()) {
+							timeout1 = "*";
+						}
+//					}
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+cs1.getObj()+","+result1+"\n");
+						pw.write(n+","+density+","+k+",false,"+cs1.getObj()+","+result1+","+timeout1+"\n");
 					} else {
-						pw.write(",,"+k+",false,"+cs1.getObj()+","+result1+"\n");
+						pw.write(",,"+k+",false,"+cs1.getObj()+","+result1+timeout1+"\n");
 					}
 				}
 				for (int k = 0; k < 10; k++) {
@@ -224,17 +230,21 @@ public class CubicTest extends ProblemTest {
 					String[] args2 = {file2};
 
 					long result2;
-					if (n >= 50) {
-						result2 = -1;
-					} else {
+//					if (n >= 50) {
+//						result2 = -1;
+//					} else {
 						Cubic_Forrester.main(args2);
 						result2 = Cubic_Forrester.getBestObj();
-					}
+						String timeout2 = "";
+						if (Cubic_Forrester.getTimeout()) {
+							timeout2 = "*";
+						}
+//					}
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",true,"+cs2.getObj()+","+result2+"\n");
+						pw.write(n+","+density+","+k+",true,"+cs2.getObj()+","+result2+timeout2+"\n");
 					} else {
-						pw.write(",,"+k+",true,"+cs2.getObj()+","+result2+"\n");
+						pw.write(",,"+k+",true,"+cs2.getObj()+","+result2+timeout2+"\n");
 					}
 				}
 			}
@@ -375,6 +385,65 @@ public class CubicTest extends ProblemTest {
 						pw.write(n+","+density+","+k+",false,"+incumbent2+","+duration2+"\n");
 					} else {
 						pw.write(",,"+k+",false,"+incumbent2+","+duration2+"\n");
+					}
+				}
+			}
+		}
+		pw.close();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see Runner.ProblemTest#runHeuristics()
+	 */
+	public void runHealHeuristics() throws FileNotFoundException {
+		PrintWriter pw;
+		pw = new PrintWriter(resFolder+"cubHealHeuristics.csv");
+		pw.write("n,density,#,negCoef,incumbent,GA,SA,ST,TS\n");
+		for (int i = 0; i < densities.length; i++) {
+			double density = densities[i];
+			for (int j = 0; j < probSizes.length; j++) {
+				int n = probSizes[j];
+				for (int k = 0; k < 10; k++) {
+					String file1 = n+"_"+density+"_false_"+k;
+					TestLogger.setFile("cubic/"+file1);
+					System.out.println("--"+file1+"--");
+					@SuppressWarnings("unused")
+					Cubic c1 = new Cubic(probFolder+file1);
+					CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
+					cs1.setHealing(true);
+					double incumbent1 = cs1.getObj();
+
+					String result1;
+					HeuristicRunner hr1 = new HeuristicRunner(cs1);
+					result1 = hr1.getResults();
+					
+
+					if (k == 0) {
+						pw.write(n+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+					} else {
+						pw.write(",,"+k+",false,"+incumbent1+","+result1+"\n");
+					}
+				}
+				for (int k = 0; k < 10; k++) {
+					String file2 = n+"_"+density+"_true_"+k;
+					TestLogger.setFile("cubic/"+file2);
+					System.out.println("--"+file2+"--");
+					@SuppressWarnings("unused")
+					Cubic c2 = new Cubic(probFolder+file2);
+					CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
+					cs2.setHealing(true);
+					double incumbent2 = cs2.getObj();
+
+					String result2;
+					HeuristicRunner hr2 = new HeuristicRunner(cs2);
+					result2 = hr2.getResults();
+					
+
+					if (k == 0) {
+						pw.write(n+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+					} else {
+						pw.write(",,"+k+",true,"+incumbent2+","+result2+"\n");
 					}
 				}
 			}

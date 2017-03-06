@@ -19,7 +19,6 @@ public abstract class KnapsackSol extends ProblemSol {
 		}
 		setObj(k.getObj(getX()));
 		calcTotalA();
-		updateValid();
 		updateB();
 	}
 	
@@ -30,7 +29,6 @@ public abstract class KnapsackSol extends ProblemSol {
 		for (Integer i : getX()) {
 			setXVals(i,true);
 		}
-		updateValid();
 		updateB();
 	}
 	
@@ -44,7 +42,6 @@ public abstract class KnapsackSol extends ProblemSol {
 		}
 		setObj(ks.getObj());
 		totalA = ks.getTotalA();
-		updateValid();
 		updateB();
 	}
 
@@ -65,7 +62,6 @@ public abstract class KnapsackSol extends ProblemSol {
 		setR(r);
 		setObj(k.getObj(x));
 		calcTotalA();
-		updateValid();
 		updateB();
 	}
 
@@ -79,7 +75,6 @@ public abstract class KnapsackSol extends ProblemSol {
 		}
 		setObj(k.getObj(x));
 		calcTotalA();
-		updateValid();
 		updateB();
 	}
 
@@ -93,7 +88,6 @@ public abstract class KnapsackSol extends ProblemSol {
 		}
 		setObj(obj);
 		this.totalA = totalA;
-		updateValid();
 		updateB();
 	}
 	

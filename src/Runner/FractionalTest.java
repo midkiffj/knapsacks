@@ -2,7 +2,6 @@ package Runner;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-
 import ExactMethods.Fractional_Borrero;
 import Problems.Fractional;
 import Problems.ProblemFactory;
@@ -138,19 +137,23 @@ public class FractionalTest extends ProblemTest {
 					String file1 = n+"_"+m+"_false_"+i;
 					System.out.println("--"+file1+"--");
 					@SuppressWarnings("unused")
-					Fractional f = new Fractional(probFolder+file1);
-					FractionalSol fs = new FractionalSol(incuFolder+file1+"inc.txt");
-					double incumbent1 = fs.getObj();
+					Fractional f1 = new Fractional(probFolder+file1);
+					FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
+					double incumbent1 = fs1.getObj();
 
 					String[] args = {file1};
 					Fractional_Borrero.main(args);
 
 					double result1 = Fractional_Borrero.getBestObj();
+					String timeout1 = "";
+					if (Fractional_Borrero.getTimeout()) {
+						timeout1 = "*";
+					}
 
 					if (i == 0) {
-						pw.write(n+","+m+","+i+","+incumbent1+","+result1+"\n");
+						pw.write(n+","+m+","+i+","+incumbent1+","+result1+","+timeout1+"\n");
 					} else {
-						pw.write(",,"+i+","+incumbent1+","+result1+"\n");
+						pw.write(",,"+i+","+incumbent1+","+result1+","+timeout1+"\n");
 					}
 				}
 			}

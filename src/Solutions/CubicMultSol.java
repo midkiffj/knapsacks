@@ -16,31 +16,37 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol() {
 		super();
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	public CubicMultSol(String filename) {
 		super(filename);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	public CubicMultSol(CubicMultSol cs) {
 		super((MultKnapsackSol)cs);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	public CubicMultSol(boolean[] xVals) {
 		super(xVals);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int[] totalA) {
 		super(x,r,obj,totalA);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 	
 	public void updateValid() {
@@ -503,7 +509,7 @@ public class CubicMultSol extends MultKnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == getRSize()-1) {
+			if (kj >= getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -531,7 +537,7 @@ public class CubicMultSol extends MultKnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == getRSize()-1) {
+				if (kj >= getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
 				}
@@ -811,6 +817,7 @@ public class CubicMultSol extends MultKnapsackSol {
 				pw.write(totalA[i] + " ");
 			}
 			pw.write("\n");
+			Collections.sort(getX());
 			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}

@@ -20,6 +20,7 @@ public class Fractional_Borrero {
 	private static Fractional f;
 	private static IloCplex cplex;
 	private static double bestObj;
+	private static boolean timeout;
 
 	// Cplex vars
 	static IloNumVar[] x;
@@ -33,6 +34,7 @@ public class Fractional_Borrero {
 	static int[] A;
 	static int[] B;
 	static int[] pb;
+
 
 	/*
 	 * Run the given file with the two models
@@ -209,6 +211,10 @@ public class Fractional_Borrero {
 		return bestObj;
 	}
 
+	public static boolean getTimeout() {
+		return timeout;
+	}
+
 	/*
 	 * Add model R4 and solve
 	 */
@@ -310,9 +316,16 @@ public class Fractional_Borrero {
 			cplex.addLe(yi,bestObj);
 		}
 
+		// Solve solution
+		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
 		cplex.solve();
 
-		
+		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
+			System.err.println(file + " Timeout");
+			timeout = true;
+		}
+
+
 		// Pretty Print solution
 		double[] xvals = new double[n];
 		ArrayList<Integer> solX = new ArrayList<Integer>();

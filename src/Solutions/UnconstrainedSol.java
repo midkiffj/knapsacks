@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 import Problems.Unconstrained;
@@ -27,7 +28,6 @@ public class UnconstrainedSol extends ProblemSol {
 		xVals = new boolean[n];
 		obj = u.getObj(x);
 		valid = true;
-
 	}
 
 	public UnconstrainedSol(UnconstrainedSol us) {
@@ -261,7 +261,7 @@ public class UnconstrainedSol extends ProblemSol {
 				}
 				kj++;
 				j = minTau(kj);
-				if (kj == getRSize()-1) {
+				if (kj >= getRSize()-1) {
 					kj = -1;
 					newMax = !newMax;
 				}
@@ -501,6 +501,7 @@ public class UnconstrainedSol extends ProblemSol {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
 			pw.write(getObj() + "\n");
+			Collections.sort(getX());
 			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}
@@ -538,8 +539,7 @@ public class UnconstrainedSol extends ProblemSol {
 
 	@Override
 	public void updateValid() {
-		// TODO Auto-generated method stub
-		
+		return;
 	}
 
 }

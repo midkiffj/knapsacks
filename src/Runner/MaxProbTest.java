@@ -152,11 +152,15 @@ public class MaxProbTest extends ProblemTest {
 						MaxProb_Bill.main(args);
 
 						double result1 = MaxProb_Bill.getBestObj();
+						String timeout = "";
+						if (MaxProb_Bill.getTimeout()) {
+							timeout = "*";
+						}
 
 						if (k == 65) {
-							pw.write(n+","+i+","+p+","+k+","+incumbent1+","+result1+"\n");
+							pw.write(n+","+i+","+p+","+k+","+incumbent1+","+result1+","+timeout+"\n");
 						} else {
-							pw.write(",,,"+k+","+incumbent1+","+result1+"\n");
+							pw.write(",,,"+k+","+incumbent1+","+result1+","+timeout+"\n");
 						}
 					}
 				}

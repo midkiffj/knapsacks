@@ -9,40 +9,54 @@ import java.util.Scanner;
 
 import Problems.Cubic;
 
+/**
+ * Solution class for a Cubic Problem
+ * 
+ * @author midkiffj
+ */
 public class CubicSol extends KnapsackSol {
 
 	private static Cubic c;
-	
+
+	/**
+	 * 
+	 */
 	public CubicSol() {
 		super();
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	public CubicSol(String filename) {
 		super(filename);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	public CubicSol(CubicSol cs) {
 		super((KnapsackSol)cs);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	public CubicSol(boolean[] xVals) {
 		super(xVals);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
 		super(x,r,obj,totalA);
 		c = (Cubic)p;
+		updateValid();
 	}
-	
+
 	public void updateValid() {
 		calcTotalA();
 		if (getTotalA() <= c.getB()) {
@@ -74,7 +88,7 @@ public class CubicSol extends KnapsackSol {
 		removeI(i);
 		updateValid();
 	}
-	
+
 	// Shift a variable in or out of the current solution
 	public int shift() {
 		if (getRSize() == 0) {
@@ -317,7 +331,7 @@ public class CubicSol extends KnapsackSol {
 		}
 		return oldObj;
 	}
-	
+
 	public double swapObj(int i, int j) {
 		return swapObj(i,j,getX(),getObj());
 	}
@@ -486,7 +500,7 @@ public class CubicSol extends KnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == getRSize()-1) {
+			if (kj >= getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -514,7 +528,7 @@ public class CubicSol extends KnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == getRSize()-1) {
+				if (kj >= getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
 				}
@@ -748,8 +762,8 @@ public class CubicSol extends KnapsackSol {
 
 	@Override
 	public void healSol() {
-		//		healSolImproving();
-		healSolRatio();
+		healSolImproving();
+		//		healSolRatio();
 	}
 
 	// most improving
@@ -790,6 +804,7 @@ public class CubicSol extends KnapsackSol {
 			PrintWriter pw = new PrintWriter(filename);
 			pw.write(getObj() + "\n");
 			pw.write(getTotalA() + "\n");
+			Collections.sort(getX());
 			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}

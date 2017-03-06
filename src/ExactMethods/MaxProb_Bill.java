@@ -28,6 +28,7 @@ public class MaxProb_Bill {
 	static double p1;
 
 	static double bestObj;
+	static boolean timeout;
 	static String file;
 
 	/*
@@ -193,6 +194,7 @@ public class MaxProb_Bill {
 
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
+			timeout = true;
 		}
 		
 		try {
@@ -249,4 +251,7 @@ public class MaxProb_Bill {
 		return bestObj;
 	}
 
+	public static boolean getTimeout() {
+		return timeout;
+	}
 }

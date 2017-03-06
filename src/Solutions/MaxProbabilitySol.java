@@ -30,6 +30,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 	public MaxProbabilitySol(String filename) {
 		super(filename);
 		mp = (MaxProbability)p;
+		updateValid();
 	}
 
 	public MaxProbabilitySol(MaxProbabilitySol mps) {
@@ -626,7 +627,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == getRSize()-1) {
+			if (kj >= getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -654,7 +655,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == getRSize()-1) {
+				if (kj >= getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
 				}
@@ -940,6 +941,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 			pw.write(den + "\n");
 			pw.write(getTotalA() + "\n");
 			pw.write(totalU + "\n");
+			Collections.sort(getX());
 			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}

@@ -22,11 +22,13 @@ public class FractionalSol extends KnapsackSol {
 		setNum(f.getNum());
 		setDen(f.getDen());
 		calcTotalA();
+		updateValid();
 	}
 
 	public FractionalSol(String filename) {
 		super(filename);
 		f = (Fractional)p;
+		updateValid();
 	}
 
 	public FractionalSol(FractionalSol fs) {
@@ -34,6 +36,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(fs.getNum());
 		setDen(fs.getDen());
+		updateValid();
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, long[] num, long[] den) {
@@ -41,6 +44,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(num);
 		setDen(num);
+		updateValid();
 	}
 
 	public FractionalSol(boolean[] newXVals) {
@@ -48,6 +52,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
+		updateValid();
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r) {
@@ -55,6 +60,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
+		updateValid();
 	}
 
 	public void updateValid() {
@@ -558,7 +564,7 @@ public class FractionalSol extends KnapsackSol {
 			}
 			kj++;
 			j = maxRatio(kj);
-			if (kj == getRSize()-1) {
+			if (kj >= getRSize()-1) {
 				kj = -1;
 				changeI = !changeI;
 			}
@@ -586,7 +592,7 @@ public class FractionalSol extends KnapsackSol {
 				}
 				kj++;
 				j = maxRatio(kj);
-				if (kj == getRSize()-1) {
+				if (kj >= getRSize()-1) {
 					kj = -1;
 					newMin = !newMin;
 				}
@@ -862,7 +868,7 @@ public class FractionalSol extends KnapsackSol {
 				pw.write(den[i] + " ");
 			}
 			pw.write("\n");
-
+			Collections.sort(getX());
 			for (Integer i: getX()) {
 				pw.write(i + " ");
 			}
