@@ -39,6 +39,11 @@ public class UnconstrainedStd {
 		}
 	}
 	
+	/**
+	 * Second 'main' method used to run the given problem
+	 * 
+	 * @param newU - Unconstrained problem to solve
+	 */
 	public static void run(Unconstrained newU) {
 		u = newU;
 		try {
@@ -50,8 +55,10 @@ public class UnconstrainedStd {
 		}
 	}
 
-	/*
+	/**
 	 * Add standard linearization model to cplex
+	 * 
+	 * @throws IloException
 	 */
 	private static void addModel() throws IloException {
 		int i,j,k;
@@ -136,7 +143,7 @@ public class UnconstrainedStd {
 		System.exit(0);
 	}
 
-	/*
+	/**
 	 * Print the solution x values
 	 */
 	private static void prettyPrintInOrder() {

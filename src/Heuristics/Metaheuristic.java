@@ -21,9 +21,11 @@ public abstract class Metaheuristic {
 	public Random rnd = RndGen.getRnd();
 	public int n;
 	
-	/*
+	/**
 	 * Create from given problem solution
 	 *  best = current = initial
+	 *  
+	 * @param initial solution to store as current/best
 	 */
 	public Metaheuristic(ProblemSol initial) {
 		current = ProblemSol.copy(initial);

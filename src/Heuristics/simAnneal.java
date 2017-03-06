@@ -14,8 +14,12 @@ public class simAnneal extends Metaheuristic {
 	private long time;
 	private int shiftTabu;
 
-	/*
+	/**
 	 * Setup with initial solution and iteration/time parameters
+	 * 
+	 * @param ps - initial solution
+	 * @param maxIter - optional parameter for number of iterations. Default: 1mil
+	 * @param time - optional time parameter for heuristic runtime. Default: 5min
 	 */
 	public simAnneal(ProblemSol ps, int maxIter, long time) {
 		super(ps);
@@ -32,7 +36,7 @@ public class simAnneal extends Metaheuristic {
 		}
 	}
 
-	/*
+	/**
 	 * Run simulated annealing on the solution
 	 */
 	public void run() {

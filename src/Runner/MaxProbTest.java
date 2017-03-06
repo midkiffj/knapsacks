@@ -34,6 +34,14 @@ public class MaxProbTest extends ProblemTest {
 	private static final String probFolder = "problems/mp/";
 	private static final String resFolder = "results/mp/";
 
+	/**
+	 * Setup options for testing
+	 * 
+	 * @param gen - (T) generate problems
+	 * @param rh - (T) run heuristics
+	 * @param mip - (T) run MIP exact method
+	 * @param useLog - (T) log testing
+	 */
 	public MaxProbTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
@@ -42,7 +50,7 @@ public class MaxProbTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#run()
 	 */
@@ -61,7 +69,7 @@ public class MaxProbTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#generate()
 	 */
@@ -93,7 +101,7 @@ public class MaxProbTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runHeuristics()
 	 */
@@ -129,7 +137,7 @@ public class MaxProbTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runMIP()
 	 */
@@ -169,8 +177,10 @@ public class MaxProbTest extends ProblemTest {
 		pw.close();
 	}
 
-	/*
+	/**
 	 * Run the genetic algorithm on the test bed
+	 * 
+	 * @throws FileNotFoundException
 	 */
 	public void runMaxProbGA() throws FileNotFoundException {
 		PrintWriter pw;
@@ -205,8 +215,11 @@ public class MaxProbTest extends ProblemTest {
 		pw.close();
 	}
 
-	/*
+	/**
 	 * Runs a given heuristic and returns the best solution
+	 * 
+	 * @param m - metaheuristic to run
+	 * @return String containing best objective found
 	 */
 	private static String run(Metaheuristic m) {
 		long start = System.nanoTime();

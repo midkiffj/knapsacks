@@ -3,6 +3,7 @@ package ExactMethods;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import Solutions.ratioNode;
 import ilog.concert.IloException;
 import ilog.concert.IloNumExpr;
 import ilog.concert.IloNumVar;
@@ -12,8 +13,8 @@ import ilog.cplex.IloCplex;
 /**
  * Knapsack MIP used to solve smaller knapsack problems 
  * 	for constructive heuristics and genetic mutations
+ * 
  * @author midkiffj
- *
  */
 public class Knapsack_Frac {
 	private IloCplex cplex;
@@ -30,11 +31,13 @@ public class Knapsack_Frac {
 	private boolean[] xVals;
 	private boolean ran;
 	
-	// Initialize Knapsack
-	//  c - objective coefficients
-	//	a - weights
-	// 	b - knapsack capacity
-	//  useExact - (T) Use cplex or (F) use fractional approximation
+	/**
+	 *  Initialize Knapsack
+	 * @param a - weights
+	 * @param b - knapsack capacity
+	 * @param c - objective coefficients
+	 * @param useExact - (T) Use cplex or (F) use fractional approximation
+	 */
 	public Knapsack_Frac(int[] a,  int b, int[] c, boolean useExact) {
 		this.a = a;
 		this.b = b;
@@ -67,8 +70,10 @@ public class Knapsack_Frac {
 		return xVals;
 	}
 	
-	/*
+	/**
 	 * Set up and run the knapsack MIP
+	 * 
+	 * @throws IloException
 	 */
 	private void run() throws IloException {
 			if (useExact) {
@@ -78,6 +83,11 @@ public class Knapsack_Frac {
 			}
 	}
 	
+	/**
+	 * Add the knapsack to cplex and solve
+	 * 
+	 * @throws IloException
+	 */
 	private void runCplex() throws IloException {
 		int i;
 		int n = a.length;
@@ -114,6 +124,7 @@ public class Knapsack_Frac {
 		double IPOptimal = cplex.getObjValue();
 		bestObj = (long) IPOptimal;
 		
+		// Print the solution x values
 		double[] xvals = new double[n];
 		xVals = new boolean[n];
 		xvals = cplex.getValues(x);
@@ -131,7 +142,13 @@ public class Knapsack_Frac {
 		ran = true;
 	}
 	
+	/**
+	 * Solve the Knapsack by adding max ratio items 
+	 *  until a fraction of an item needs to be taken.
+	 * All items fully added are considered in the solution
+	 */
 	private void runFractional() {
+		// Calculate ratios for all items
 		ArrayList<ratioNode> ratios = new ArrayList<ratioNode>();
 		for (int i = 0; i < a.length; i++) {
 			ratioNode rn = new ratioNode(i,(double)(c[i])/a[i]);
@@ -144,6 +161,7 @@ public class Knapsack_Frac {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		xVals = new boolean[a.length];
 		int failedI = -1;
+		// Add max-ratio items until a fraction of an item has to be taken
 		for (int i = 0; i < ratios.size(); i++) {
 			int xi = ratios.get(ratios.size()-(i+1)).x;
 			if (totalA + a[xi] <= b) {
@@ -156,41 +174,10 @@ public class Knapsack_Frac {
 				i = ratios.size();
 			}
 		}
+		// Calculate objective using fraction of item objective
 		if (failedI != -1) {
 			int xi = ratios.get(ratios.size()-1-failedI).x;
 			bestObj += c[xi]*((double)(b-totalA)/a[xi]);
 		}
-	}
-	
-	private class ratioNode implements Comparable<ratioNode>{
-		int x;
-		double ratio;
-
-		public ratioNode(int x, double ratio) {
-			this.x = x;
-			this.ratio = ratio;
-		}
-
-		@Override
-		public int compareTo(ratioNode o) {
-			if (this.ratio - o.ratio > 0) {
-				return 1;
-			} else if (this.ratio - o.ratio < 0) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
-	}
-	
-	/*
-	 * Example knapsack problem
-	 */
-	public static void main(String[] args) {
-		int[] a = {10, 20, 15};
-		int b = 35;
-		int[] c = {8, 20, 10};
-		Knapsack_Frac k = new Knapsack_Frac(a,b,c,true);
-		System.out.println(k.getBestObj());
 	}
 }

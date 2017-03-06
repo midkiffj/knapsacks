@@ -6,6 +6,7 @@ import java.util.Collections;
 import Problems.Cubic;
 import Solutions.CubicSol;
 import Solutions.ProblemSol;
+import Solutions.ratioNode;
 
 /**
  * Greedy Heuristic to the Cubic Knapsack
@@ -18,8 +19,10 @@ public class CubicGreedy extends ConstHeuristic {
 
 	private Cubic c;
 	
-	/*
-	 *  Specify problem to solve
+	/**
+	 * Specify the problem to solve
+	 * 
+	 * @parm c Cubic problem
 	 */
 	public CubicGreedy(Cubic c) {
 		super();
@@ -30,10 +33,12 @@ public class CubicGreedy extends ConstHeuristic {
 		return greedyHeuristic2();
 	}
 	
-	/*
+	/**
 	 * Creates a solution by:
 	 * - Adding all items to the knapsack
 	 * - Removes an item with the minimum 'ratio' until Ax <= b
+	 * 
+	 * @return solution constructed
 	 */
 	private CubicSol greedyHeuristic2() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
@@ -60,11 +65,13 @@ public class CubicGreedy extends ConstHeuristic {
 		return new CubicSol(x,r);
 	}
 	
-	/*
+	/**
 	 * Compute an items ratio:
 	 * - Sum each item's current contribution to the objective
 	 * - Divide the contribution by the item's weight
 	 * Store the ratios in a list of ratioNodes
+	 * 
+	 * @param x - the list of items in the solution
 	 */
 	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
 		// List of ratios to return
@@ -95,9 +102,13 @@ public class CubicGreedy extends ConstHeuristic {
 		return ratio;
 	}
 	
-	/*
-	 *  Update the ratios by removing the specified item from the ratio calculation
+	/**
+	 * Update the ratios by removing the specified item from the ratio calculation
 	 *  for every other item
+	 *  
+	 * @param x - list of items in the solution
+	 * @param ratio - list of ratioNodes
+	 * @param j - item removed
 	 */
 	private void updateRatio(ArrayList<Integer> x, ArrayList<ratioNode> ratio, int j) {
 		// For each item left
@@ -119,30 +130,4 @@ public class CubicGreedy extends ConstHeuristic {
 		// Sort ratios
 		Collections.sort(ratio);
 	}
-	
-	/*
-	 *  Class used to store an items current objective contribution and ratio
-	 */
-	private class ratioNode implements Comparable<ratioNode>{
-		int x;
-		long objChange;
-		double ratio;
-
-		public ratioNode(int x, double ratio) {
-			this.x = x;
-			this.ratio = ratio;
-		}
-
-		@Override
-		public int compareTo(ratioNode o) {
-			if (this.ratio - o.ratio > 0) {
-				return 1;
-			} else if (this.ratio - o.ratio < 0) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
-	}
-
 }

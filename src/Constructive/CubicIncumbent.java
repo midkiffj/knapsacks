@@ -15,26 +15,43 @@ public class CubicIncumbent extends ConstHeuristic {
 
 	private Cubic c;
 	
+	/**
+	 * Specify the problem to solve
+	 * 
+	 * @param c
+	 */
 	public CubicIncumbent(Cubic c) {
 		this.c = c;
 	}
 
+	/**
+	 * Construct a solution to the problem
+	 * 
+	 * @param solution constructed
+	 */
 	protected ProblemSol construct() {
 		return genInit();
 	}
 	
-	/*
+	/**
 	 * Generate an initial incumbent solution by adding x's until knapsack full
 	 * and update the current objective value
+	 * 
+	 * @return solution generated
 	 */
 	public ProblemSol genInit() {
 		return genInit(new ArrayList<Integer>(),new ArrayList<Integer>(), new ArrayList<Integer>());
 	}
 
-	/*
+	/**
 	 * Generate a solution by adding x's until knapsack full
 	 * and update the current objective value. 
 	 * Don't use any indexes in the provided list (d).
+	 * 
+	 * @param d - items to ignore
+	 * @param x - solution list
+	 * @param r - list of items not in solution\
+	 * @return solution generated
 	 */
 	public ProblemSol genInit(ArrayList<Integer> d, ArrayList<Integer> x, ArrayList<Integer> r) {
 		r.clear();
@@ -97,7 +114,7 @@ public class CubicIncumbent extends ConstHeuristic {
 			}
 			// Determine shifts
 			double[] add = tryAdd(x,toUse, curObj, totalAx);
-			double[] sub = trySub(x,toUse, curObj, totalAx);
+			double[] sub = trySub(x, curObj, totalAx);
 			double addChange = add[0];
 			double subChange = sub[0];
 			
@@ -140,9 +157,15 @@ public class CubicIncumbent extends ConstHeuristic {
 		return new CubicSol(x,r,curObj,totalAx);
 	}
 	
-	/*
+	/**
 	 * Calculate the change in objective 
 	 *  if item i is removed and item j is added to the solution curX
+	 *  
+	 *  @param curX - current solution list
+	 *  @param oldObj - objective before swap
+	 *  @param i - item to remove
+	 *  @param j - item to add
+	 *  @return new objective after swap
 	 */
 	private double swapObj(ArrayList<Integer> curX, double oldObj, int i, int j) {
 		oldObj = oldObj - c.getCi(i);
@@ -164,8 +187,15 @@ public class CubicIncumbent extends ConstHeuristic {
 		return oldObj;
 	}
 
-	/*
+	/**
 	 * Try to add a variable to the solution, maintaining knapsack feasibility
+	 * 
+	 * @param curX - solution list
+	 * @param r - items outside solution
+	 * @param curObj - current objective
+	 * @param totalA - current solution knapsack weight
+	 * 
+	 * @return {change in objective, item to add} or {0,-1} if no improving addition found
 	 */
 	private double[] tryAdd(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
 		double maxChange = 0;
@@ -195,10 +225,17 @@ public class CubicIncumbent extends ConstHeuristic {
 		return result;
 	}
 
-	/*
+	/**
 	 * Try to remove a variable to the solution, maintaining knapsack feasibility
+	 * 
+	 * @param curX - solution list
+	 * @param r - items outside solution
+	 * @param curObj - current objective
+	 * @param totalA - current solution knapsack weight
+	 * 
+	 * @return {change in objective, item to remove} or {0,-1} if no improving removal found
 	 */
-	private double[] trySub(ArrayList<Integer> curX, ArrayList<Integer> r, double curObj, int totalA) {
+	private double[] trySub(ArrayList<Integer> curX, double curObj, int totalA) {
 		double maxChange = 0;
 		int maxI = -1;
 		// Check all possible removals

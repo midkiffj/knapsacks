@@ -18,6 +18,11 @@ import Solutions.*;
  */
 public class HeuristicTest {
 
+	/**
+	 * Setup a problem and test
+	 * 
+	 * @param args - not used
+	 */
 	public static void main(String[] args) {
 		// Set logger to use console
 		for(Handler h: TestLogger.logger.getHandlers()) {
@@ -39,12 +44,18 @@ public class HeuristicTest {
 		testAll(ps);
 	}
 
+	/**
+	 * Initialize a HeuristicRunner object with the given solution or
+	 * 	run a single heuristic
+	 * 
+	 * @param ps - solution to run
+	 */
 	private static void testAll(ProblemSol ps) {
 		// Set Healing
 		ps.setHealing(false);
 		System.out.println(ps.getValid());
 
-		// Run all heuristics
+		// Run all heuristics (toggle)
 		boolean runAll = true;
 
 		if (runAll) {

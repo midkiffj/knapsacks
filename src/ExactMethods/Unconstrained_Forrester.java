@@ -25,9 +25,10 @@ public class Unconstrained_Forrester {
 
 	static long bestObj;
 
-	/*
+	/**
 	 * Setup and run Unconstrained MIP
-	 * @param args
+	 * 
+	 * @param args - can take file name
 	 */
 	public static void main(String[] args) {
 		// Can get file as argument
@@ -52,8 +53,10 @@ public class Unconstrained_Forrester {
 		return bestObj;
 	}
 
-	/*
+	/**
 	 * Second 'main' method to run the given problem
+	 * 
+	 * @param Unconstrained problem to solve
 	 */
 	public static void run(Unconstrained newU) {
 		u = newU;
@@ -67,7 +70,7 @@ public class Unconstrained_Forrester {
 		}
 	}
 
-	/*
+	/**
 	 * Computer approximate bounds for forrester linearization
 	 */
 	private static void computeBounds() {
@@ -113,7 +116,7 @@ public class Unconstrained_Forrester {
 		}
 	}
 
-	/*
+	/**
 	 * Add Forrester Linearization model to cplex and run.
 	 * Pretty prints solution values at end.
 	 * 
@@ -211,7 +214,7 @@ public class Unconstrained_Forrester {
 		prettyPrintInOrder();
 	}
 
-	/*
+	/**
 	 * Print the solution x-values
 	 */
 	private static void prettyPrintInOrder() {

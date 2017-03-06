@@ -15,7 +15,6 @@ import java.util.Collections;
  * - Uses a 2-Tournament selection and 1-elitist strategy
  * 
  * @author midkiffj
- *
  */
 public class genAlgo extends Metaheuristic{
 
@@ -25,8 +24,12 @@ public class genAlgo extends Metaheuristic{
 	private int numGens;
 	private long time;
 
-	/*
+	/**
 	 * Setup the parameters and initial population
+	 * 
+	 * @param ps - initial solution
+	 * @param numGens - optional parameter for number of generations. Default: 500
+	 * @param time - optional time parameter for heuristic runtime. Default: 5min
 	 */
 	public genAlgo(ProblemSol ps, int numGens, long time) {
 		super(ps);
@@ -64,7 +67,7 @@ public class genAlgo extends Metaheuristic{
 		Collections.sort(population);
 	}
 
-	/*
+	/**
 	 * Tracks time and generations ran
 	 * - Stores the best solution generated
 	 */
@@ -85,7 +88,7 @@ public class genAlgo extends Metaheuristic{
 		}
 	}
 
-	/*
+	/**
 	 *  Update the population by 
 	 *  - generating new individuals 
 	 *  - adding non-duplicate solutions
@@ -131,10 +134,14 @@ public class genAlgo extends Metaheuristic{
 		removeAttempts = 0;
 	}
 
-	/*
+	/**
 	 * Attempt to add the new solution to the population
 	 * - Avoid duplicates
 	 * - Avoid too many invalid solutions (if allowed)
+	 * 
+	 * @param newPop - population to add solution to
+	 * @param ps - solution to add
+	 * @return (T) if solution added, (F) otherwise
 	 */ 
 	private boolean tryAdd(ArrayList<ProblemSol> newPop, ProblemSol ps) {
 		// Check for duplicate
@@ -162,8 +169,10 @@ public class genAlgo extends Metaheuristic{
 		}
 	}
 
-	/*
+	/**
 	 * Pretty Print generation
+	 * 
+	 * @param generation - current generation
 	 */
 	private void printPopulation(int generation) {
 		TestLogger.logger.info("Generation " + generation + ":");
@@ -185,8 +194,9 @@ public class genAlgo extends Metaheuristic{
 		TestLogger.logger.info("\n");
 	}
 
-	/*
+	/**
 	 * Generate an individual using a crossover or mutation
+	 * 
 	 * @return the generated individual
 	 */
 	private ProblemSol generateIndividual() {
@@ -204,8 +214,9 @@ public class genAlgo extends Metaheuristic{
 		}
 	}
 
-	/*
+	/**
 	 * Two-individual tournament selection
+	 * 
 	 * @return the 'better' knapsack solution
 	 */
 	private ProblemSol tournament() {

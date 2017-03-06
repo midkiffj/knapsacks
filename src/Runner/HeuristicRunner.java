@@ -15,6 +15,11 @@ public class HeuristicRunner {
 	
 	private String results;
 
+	/**
+	 * Run all heuristics an initial solution
+	 * 
+	 * @param ps - initial solution for heuristics
+	 */
 	public HeuristicRunner(ProblemSol ps) {
 		// Update logger for each heuristic and run
 		TestLogger.setLogger("GA");
@@ -49,8 +54,11 @@ public class HeuristicRunner {
 		return results;
 	}
 	
-	/*
+	/**
 	 * Runs a given heuristic and returns the best solution
+	 * 
+	 * @param m - metaheuristic to run
+	 * @result String containing best objective found
 	 */
 	private String run(Metaheuristic m) {
 		long start = System.nanoTime();

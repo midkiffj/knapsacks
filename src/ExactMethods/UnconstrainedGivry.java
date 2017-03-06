@@ -29,9 +29,10 @@ public class UnconstrainedGivry {
 
 	static boolean exportLPs = true;
 
-	/*
+	/**
 	 * Setup MIP and run
-	 * @param args
+	 * 
+	 * @param args - can take file name as argument
 	 */
 	public static void main(String[] args) {
 		u = new Unconstrained(5,true,1234,.75);
@@ -47,8 +48,11 @@ public class UnconstrainedGivry {
 		}
 	}
 
-	/*
+	/**
 	 * Add the givry formulation to cplex and solve
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws IloException
 	 */
 	public static void buildSAT() throws FileNotFoundException, IloException {
 		Scanner scr = new Scanner(new FileInputStream(file));
@@ -126,7 +130,7 @@ public class UnconstrainedGivry {
 		System.exit(0);
 	}
 
-	/*
+	/**
 	 * Print the solution x values
 	 */
 	private static void prettyPrintInOrder() {

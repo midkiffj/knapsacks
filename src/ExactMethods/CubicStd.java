@@ -10,8 +10,8 @@ import Problems.Cubic;
 
 /**
  * Run the Standard Linearization on a Cubic problem
+ * 
  * @author midkiffj
- *
  */
 public class CubicStd {
 	static int n;
@@ -25,9 +25,9 @@ public class CubicStd {
 	
 	static boolean exportLPs = true;
 
-	/*
+	/**
 	 * Setup and run MIP on a Cubic
-	 * @param args
+	 * @param args - can accept file name
 	 */
 	public static void main(String[] args) {
 		// Can get file as argument
@@ -45,8 +45,11 @@ public class CubicStd {
 		}
 	}
 	
-	/*
+	/**
 	 * Create an MIP start from the given solution
+	 * 
+	 * @param initX - solution list to seed to cplex
+	 * @throws IloException
 	 */
 	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
 		// New solution to be passed in to MIP.
@@ -61,7 +64,7 @@ public class CubicStd {
 		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
-	/*
+	/**
 	 * Add the model to cplex and solve
 	 */
 	private static void addModel() throws IloException {
@@ -157,8 +160,8 @@ public class CubicStd {
 		System.exit(0);
 	}
 
-	/*
-	 * Print the given xvals, wvals, and yvals
+	/**
+	 * Print the solution values for x, w, and y
 	 */
 	private static void prettyPrintInOrder() {
 		// Pretty Print solution once complete.

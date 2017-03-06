@@ -29,6 +29,14 @@ public class FractionalTest extends ProblemTest {
 	private static final String probFolder = "problems/fractional/";
 	private static final String resFolder = "results/fractional/";
 
+	/**
+	 * Setup options for testing
+	 * 
+	 * @param gen - (T) generate problems
+	 * @param rh - (T) run heuristics
+	 * @param mip - (T) run MIP exact method
+	 * @param useLog - (T) log testing
+	 */
 	public FractionalTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
@@ -37,7 +45,7 @@ public class FractionalTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#run()
 	 */
@@ -56,7 +64,7 @@ public class FractionalTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#generate()
 	 */
@@ -87,7 +95,7 @@ public class FractionalTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runHeuristics()
 	 */
@@ -123,7 +131,7 @@ public class FractionalTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runMIP()
 	 */

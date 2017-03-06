@@ -17,6 +17,9 @@ public abstract class ConstHeuristic {
 	// Time to complete the construction
 	private double timeTaken;
 	
+	/**
+	 * Initialize a heuristic, but do not run
+	 */
 	public ConstHeuristic() {
 		timeTaken = -1;
 	}
@@ -29,7 +32,9 @@ public abstract class ConstHeuristic {
 		return timeTaken;
 	}
 	
-	// Time and store the result of the construction heuristic
+	/**
+	 * Time and store the result of the construction heuristic
+	 */
 	public void run() {
 		long start = System.nanoTime();
 		result = construct();

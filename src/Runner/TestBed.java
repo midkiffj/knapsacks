@@ -55,6 +55,7 @@ public class TestBed {
 		boolean log = false;
 		boolean inc = false;
 		boolean constr = false;
+		boolean heal = false;
 		CubicTest ct = new CubicTest(g,rh,mip,log);
 		try {
 			ct.run();
@@ -63,6 +64,9 @@ public class TestBed {
 			}
 			if (constr) {
 				ct.runConstructive();
+			}
+			if (heal) {
+				ct.runHealHeuristics();
 			}
 		} catch (FileNotFoundException e) {
 			System.err.println("Error Running Cubic: " + e.getMessage());

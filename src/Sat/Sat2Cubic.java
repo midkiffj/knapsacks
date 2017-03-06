@@ -33,6 +33,13 @@ public class Sat2Cubic {
 	private static int[][] cij;
 	private static int[][][] dijk;
 
+	/**
+	 * Read in a DIMAC cnf format 3-SAT problem, 
+	 * 	translate it into an Unconstrained Cubic,
+	 * 	run it with an exact method, and test it with tabu search.
+	 * 
+	 * @param args - unused
+	 */
 	public static void main(String[] args) {
 		Scanner scr;
 		try {
@@ -107,7 +114,10 @@ public class Sat2Cubic {
 		}
 	}
 
-	// Pretty print used to debug known, smaller example
+	/**
+	 *  Pretty print coefficient values
+	 *  (used to debug known, smaller example)
+	 */
 	@SuppressWarnings("unused")
 	private static void prettyPrint() {
 		int n = ci.length;
@@ -141,7 +151,7 @@ public class Sat2Cubic {
 		}
 	}
 	
-	/*
+	/**
 	 * Translate a list of positive and negative variables 
 	 * 	into penalty function constraint coefficients
 	 * 
@@ -231,19 +241,26 @@ public class Sat2Cubic {
 		}
 	}
 	
-	/*
+	/**
 	 * Update functions used to change the coefficients of the cubic function
 	 * -- Used to keep i < j < k (upper triangular)
 	 * 
-	 * @param i,j,k the indexes of the coefficients to change
+	 * @param i - the index of the coefficient to change
 	 * @param change the value to increment the coefficients by
 	 */
-
 	public static void updateCi(int i, int change) {
 		i = i - 1;
 		ci[i] = ci[i] + change;
 	}
 
+	/**
+	 * Update functions used to change the coefficients of the cubic function
+	 * -- Used to keep i < j < k (upper triangular)
+	 * 
+	 * @param i - an index of the coefficients to change
+	 * @param j - an index of the coefficients to change
+	 * @param change the value to increment the coefficients by
+	 */
 	public static void updateCij(int i, int j, int change) {
 		i = i - 1;
 		j = j - 1;
@@ -256,6 +273,15 @@ public class Sat2Cubic {
 		}
 	}
 
+	/**
+	 * Update functions used to change the coefficients of the cubic function
+	 * -- Used to keep i < j < k (upper triangular)
+	 * 
+	 * @param i - an index of the coefficients to change
+	 * @param j - an index of the coefficients to change
+	 * @param k - an index of the coefficients to change
+	 * @param change the value to increment the coefficients by
+	 */
 	public static void updateDijk(int i, int j, int k, int change) {
 		i = i - 1;
 		j = j - 1;

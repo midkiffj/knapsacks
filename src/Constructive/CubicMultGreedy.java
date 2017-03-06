@@ -6,6 +6,7 @@ import java.util.Collections;
 import Problems.CubicMult;
 import Solutions.CubicMultSol;
 import Solutions.ProblemSol;
+import Solutions.ratioNode;
 
 /**
  * Greedy Heuristic to the Cubic Multiple Knapsack
@@ -18,22 +19,31 @@ public class CubicMultGreedy extends ConstHeuristic {
 
 	private CubicMult cm;
 	
-	/*
-	 *  Specify problem to solve
+	/**
+	 * Specify problem to solve
+	 * 
+	 * @param CubicMult problem
 	 */
 	public CubicMultGreedy(CubicMult cm) {
 		super();
 		this.cm = cm;
 	}
 
+	/**
+	 * Construct a solution to the problem
+	 * 
+	 * @return solution constructed
+	 */
 	protected ProblemSol construct() {
 		return greedyHeuristic();
 	}
 	
-	/*
+	/**
 	 * Creates a solution by:
 	 * - Adding all items to the solution
 	 * - Removes an item with the minimum 'ratio' until Ax <= b
+	 * 
+	 * @return solution constructed
 	 */
 	private CubicMultSol greedyHeuristic() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
@@ -58,11 +68,14 @@ public class CubicMultGreedy extends ConstHeuristic {
 		return new CubicMultSol(cms.getX(),cms.getR());
 	}
 	
-	/*
+	/**
 	 * Compute an items ratio:
 	 * - Sum each item's current contribution to the objective
 	 * - Divide the contribution by the item's weight
 	 * Store the ratios in a list of ratioNodes
+	 * 
+	 * @param x - solution list
+	 * @return list linking items to ratios/objective changes
 	 */
 	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
 		// List of ratios to return
@@ -125,30 +138,4 @@ public class CubicMultGreedy extends ConstHeuristic {
 		// Sort ratios
 		Collections.sort(ratio);
 	}
-	
-	/*
-	 *  Class used to store an items current objective contribution and ratio
-	 */
-	private class ratioNode implements Comparable<ratioNode>{
-		int x;
-		long objChange;
-		double ratio;
-
-		public ratioNode(int x, double ratio) {
-			this.x = x;
-			this.ratio = ratio;
-		}
-
-		@Override
-		public int compareTo(ratioNode o) {
-			if (this.ratio - o.ratio > 0) {
-				return 1;
-			} else if (this.ratio - o.ratio < 0) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
-	}
-
 }

@@ -34,6 +34,14 @@ public class CubicMultTest extends ProblemTest {
 	private static final String probFolder = "problems/cm/";
 	private static final String resFolder = "results/cm/";
 
+	/**
+	 * Setup options for testing
+	 * 
+	 * @param gen - (T) generate problems
+	 * @param rh - (T) run heuristics
+	 * @param mip - (T) run MIP exact method
+	 * @param useLog - (T) log testing
+	 */
 	public CubicMultTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
@@ -42,7 +50,7 @@ public class CubicMultTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#run()
 	 */
@@ -61,7 +69,7 @@ public class CubicMultTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#generate()
 	 */
@@ -98,7 +106,7 @@ public class CubicMultTest extends ProblemTest {
 		readCubMult();
 	}
 
-	/*
+	/**
 	 * Read in the test bed and test calculated objective value 
 	 * - Compare with previously found dummy solution
 	 */
@@ -130,7 +138,7 @@ public class CubicMultTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runHeuristics()
 	 */
@@ -189,7 +197,7 @@ public class CubicMultTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runMIP()
 	 */
@@ -255,8 +263,10 @@ public class CubicMultTest extends ProblemTest {
 	}
 
 
-	/*
+	/**
 	 * Run and time the test bed on the 4 cubic constructive heuristics
+	 * 
+	 * @throws FileNotFoundException
 	 */
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
@@ -306,9 +316,11 @@ public class CubicMultTest extends ProblemTest {
 		pw.close();
 	}
 
-	/*
+	/**
 	 * Runs the cubic problem with all constructive heuristics
 	 * - Returns a comma-delimited string of results
+	 * 
+	 * @param CubicMult problem for constructing solutions
 	 */
 	private static String runConst(CubicMult cm) {
 		System.err.println("--Starting Greedy");

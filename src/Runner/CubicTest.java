@@ -35,6 +35,14 @@ public class CubicTest extends ProblemTest {
 	private static final String probFolder = "problems/cubic/";
 	private static final String resFolder = "results/cubic/";
 	
+	/**
+	 * Setup options for testing
+	 * 
+	 * @param gen - (T) generate problems
+	 * @param rh - (T) run heuristics
+	 * @param mip - (T) run MIP exact method
+	 * @param useLog - (T) log testing
+	 */
 	public CubicTest(boolean gen, boolean rh, boolean mip, boolean useLog) {
 		super(useLog);
 		generate = gen;
@@ -43,7 +51,7 @@ public class CubicTest extends ProblemTest {
 	}
 	
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#run()
 	 */
@@ -62,7 +70,7 @@ public class CubicTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#generate()
 	 */
@@ -98,7 +106,7 @@ public class CubicTest extends ProblemTest {
 		readTestBed();
 	}
 	
-	/*
+	/**
 	 * Read in the test bed and test calculated objective value 
 	 * - Compare with previously found dummy solution
 	 */
@@ -126,7 +134,7 @@ public class CubicTest extends ProblemTest {
 	}
 
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runHeuristics()
 	 */
@@ -184,7 +192,7 @@ public class CubicTest extends ProblemTest {
 	}
 	
 	@Override
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runMIP()
 	 */
@@ -252,8 +260,10 @@ public class CubicTest extends ProblemTest {
 		pw.close();
 	}
 	
-	/*
+	/**
 	 * Run and time the test bed on the 4 cubic constructive heuristics
+	 * 
+	 * @throws FileNotFoundException
 	 */
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
@@ -305,9 +315,11 @@ public class CubicTest extends ProblemTest {
 		pw.close();
 	}
 	
-	/*
+	/**
 	 * Runs the cubic problem with all constructive heuristics
 	 * - Returns a comma-delimited string of results
+	 * 
+	 * @param Cubic problem to solve
 	 */
 	private static String runConst(Cubic c) {
 		System.err.println("--Starting DP");
@@ -338,8 +350,10 @@ public class CubicTest extends ProblemTest {
 		return ret;
 	}
 	
-	/*
+	/**
 	 * Run and time the incumbent heuristic on the test bed
+	 * 
+	 * @throws FileNotFoundException
 	 */
 	public void timeIncumbent() throws FileNotFoundException {
 		PrintWriter pw;
@@ -392,7 +406,7 @@ public class CubicTest extends ProblemTest {
 		pw.close();
 	}
 	
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runHeuristics()
 	 */

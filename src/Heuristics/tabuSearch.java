@@ -16,8 +16,12 @@ public class tabuSearch extends Metaheuristic {
 	private int maxIter;
 	private long time;
 
-	/*
+	/**
 	 * Setup initial solution and parameters
+	 * 
+	 * @param ps - initial solution
+	 * @param maxIter - optional parameter for number of iterations. Default: 1mil
+	 * @param time - optional time parameter for heuristic runtime. Default: 5min
 	 */
 	public tabuSearch(ProblemSol ps, int maxIter, long time) {
 		super(ps);
@@ -38,7 +42,7 @@ public class tabuSearch extends Metaheuristic {
 		}
 	}
 
-	/*
+	/**
 	 * Run tabu search with a best-swap diversification technique
 	 */
 	public void run() {
@@ -153,8 +157,10 @@ public class tabuSearch extends Metaheuristic {
 		}
 	}
 
-	/*
+	/**
 	 * Set swapping indexes i and j tabu
+	 * 
+	 * @param iteration of the swap
 	 */
 	private void makeSwapTabu(int iteration) {
 		int i = current.getX().get(current.getXSize()-1);

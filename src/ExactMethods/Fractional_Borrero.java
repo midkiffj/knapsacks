@@ -36,8 +36,10 @@ public class Fractional_Borrero {
 	static int[] pb;
 
 
-	/*
+	/**
 	 * Run the given file with the two models
+	 * 
+	 * @param args - can accept file name
 	 */
 	public static void main(String[] args) {
 		file = "100_1_false_0";
@@ -58,7 +60,7 @@ public class Fractional_Borrero {
 		}
 	}
 
-	/*
+	/**
 	 * Add model R1 and run with cplex
 	 */
 	private static void addModelR1() throws IloException {
@@ -156,8 +158,10 @@ public class Fractional_Borrero {
 		}
 	}
 
-	/*
+	/**
 	 * Update bounds (yU and yL)
+	 * 
+	 * @throws IloException
 	 */
 	private static void calcR1YBounds() throws IloException {
 		int n = f.getN();
@@ -215,8 +219,10 @@ public class Fractional_Borrero {
 		return timeout;
 	}
 
-	/*
+	/**
 	 * Add model R4 and solve
+	 * 
+	 * @throws IloException
 	 */
 	private static void addModelR4() throws IloException {
 		int n = f.getN();
@@ -349,7 +355,7 @@ public class Fractional_Borrero {
 		}
 	}
 
-	/*
+	/**
 	 * Update bounds (yU,yL)
 	 *  and constants (Ai,Bi,Pbi)
 	 */
@@ -384,14 +390,16 @@ public class Fractional_Borrero {
 		}
 	}
 
-	/*
+	/**
 	 * Log base 2 of the input number
 	 * 
 	 * Code taken from: 
 	 * http://stackoverflow.com/questions/3305059/how-do-you-calculate-log-base-2-in-java-for-integers
+	 * 
+	 * @param bits - number to take the log of
+	 * @return log_2(bits)
 	 */
-	public static int log2nlz( int bits )
-	{
+	public static int log2nlz( int bits ) {
 		if( bits == 0 )
 			return 0; // or throw exception
 		return 31 - Integer.numberOfLeadingZeros( bits );

@@ -30,9 +30,10 @@ public class Cubic_Forrester {
 	static boolean timeout;
 	static String file;
 
-	/*
+	/**
 	 * Setup and run a MIP on a specific cubic problem
-	 * @param args
+	 * 
+	 * @param args - can accept file name
 	 */
 	public static void main(String[] args) {
 		// Can get cubic problem as argument
@@ -61,7 +62,7 @@ public class Cubic_Forrester {
 		return timeout;
 	}
 
-	/*
+	/**
 	 * Compute approximate bounds for Adams-Forrester linearization
 	 * - Bounds are updated to reflect cubic upper-triangular matrix
 	 */
@@ -104,7 +105,7 @@ public class Cubic_Forrester {
 		}
 	}
 
-	/*
+	/**
 	 * Add MIP model to cplex and run.
 	 * Pretty prints solution values at end.
 	 * 
@@ -214,9 +215,10 @@ public class Cubic_Forrester {
 		prettyPrintInOrder();
 	}
 
-	/*
+	/**
 	 * Seed cplex with the given MIP solution
-	 * @param initX
+	 * 
+	 * @param initX - solution list to seed to cplex
 	 * @throws IloException
 	 */
 	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
@@ -232,8 +234,8 @@ public class Cubic_Forrester {
 		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
-	/*
-	 * Print the given xvals
+	/**
+	 * Print the solution x values from cplex
 	 */
 	private static void prettyPrintInOrder() {
 		// Pretty Print solution once complete.

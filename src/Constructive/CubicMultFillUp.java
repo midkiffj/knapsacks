@@ -19,20 +19,29 @@ public class CubicMultFillUp extends ConstHeuristic {
 	private CubicMult cm;
 	private Random rnd = RndGen.getRnd();
 
-	/*
-	 *  Specify problem to create solution
+	/**
+	 * Specify problem to create solution
+	 *  
+	 * @param CubicMult problem
 	 */
 	public CubicMultFillUp(CubicMult cm) {
 		super();
 		this.cm = cm;
 	}
 
+	/**
+	 * Construct a solution to the problem
+	 * 
+	 * @return solution constructed
+	 */
 	protected ProblemSol construct() {
 		return fillUpNExchange();
 	}
 
-	/*
-	 *  Create lists to store solution and call sub-method
+	/**
+	 * Create lists to store solution and call sub-method
+	 *  
+	 * @return solution constructed
 	 */
 	private CubicMultSol fillUpNExchange() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
@@ -44,9 +53,13 @@ public class CubicMultFillUp extends ConstHeuristic {
 		return fillUpNExchange(x,r);
 	}
 
-	/* 
+	/**
 	 * Complete bestImprovingSwaps or additions until no more items can be 
 	 *	either swapped or added
+	 *
+	 * @param x - solution list
+	 * @param r - list of items not in the solution
+	 * @return solution generated
 	 */
 	private CubicMultSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r) {
 		CubicMultSol current = new CubicMultSol(x,r);
@@ -83,8 +96,10 @@ public class CubicMultFillUp extends ConstHeuristic {
 		return current;
 	}
 	
-	/*
+	/**
 	 * Try to add a variable to the solution, maintaining knapsack feasibility
+	 * 
+	 * @param current solution to improve
 	 */
 	private void tryAdd(CubicMultSol current) {
 		double maxChange = 0;
@@ -117,8 +132,10 @@ public class CubicMultFillUp extends ConstHeuristic {
 		}
 	}
 
-	/*
+	/**
 	 *  Perform the best improving swap that keeps the knapsack feasible
+	 *  
+	 *  @param current solution to improve
 	 */
 	private void bestImprovingSwap(CubicMultSol current) {
 		// Store best swaps

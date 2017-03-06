@@ -3,8 +3,10 @@ package Heuristics;
 import Runner.TestLogger;
 import Solutions.ProblemSol;
 
-/*
+/**
  * Simulated Annealing with a Tabu Search diversification
+ * 
+ * @author midkiffj
  */
 public class simTabu extends Metaheuristic {
 
@@ -12,8 +14,12 @@ public class simTabu extends Metaheuristic {
 	private long time;
 	private int shiftTabu;
 
-	/*
+	/**
 	 * Initialize parameters and init solution
+	 * 
+	 * @param ps - initial solution
+	 * @param maxIter - optional parameter for number of iterations. Default: 1mil
+	 * @param time - optional time parameter for heuristic runtime. Default: 5min
 	 */
 	public simTabu(ProblemSol ps, int maxIter, long time) {
 		super(ps);
@@ -30,7 +36,7 @@ public class simTabu extends Metaheuristic {
 		}
 	}
 
-	/*
+	/**
 	 * Run simulated annealing with tabu search when heuristic gets stuck
 	 */
 	public void run() {

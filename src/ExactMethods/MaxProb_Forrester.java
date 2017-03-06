@@ -6,8 +6,8 @@ import ilog.cplex.*;
 
 /**
  * Run the Max Probability MIP of Forrester
- * @author midkiffj
  *
+ * @author midkiffj
  */
 public class MaxProb_Forrester {
 
@@ -25,8 +25,10 @@ public class MaxProb_Forrester {
 	
 	static boolean useSj = true;
 	
-	/*
+	/**
 	 * Setup Max Prob problem and run MIP
+	 * 
+	 * @param args - can take file name
 	 */
 	public static void main(String[] args) {
 		mp = new MaxProbability("problems/mp/P5_K65_0");
@@ -44,8 +46,10 @@ public class MaxProb_Forrester {
 		}
 	}
 
-	/*
+	/**
 	 * Setup second formulation of Forrester using s_j
+	 * 
+	 * @throws IloException
 	 */
 	private static void addModelSj() throws IloException {
 		// Calculate bounds
@@ -121,8 +125,10 @@ public class MaxProb_Forrester {
 		}
 	}
 
-	/*
+	/**
 	 * Setup first formulation using z_j
+	 * 
+	 * @throws IloException
 	 */
 	private static void addModelZj() throws IloException {
 		// Calculate bounds
@@ -200,8 +206,10 @@ public class MaxProb_Forrester {
 		}
 	}
 
-	/*
+	/**
 	 * Calculate constants and bounds for formulation
+	 * 
+	 * @throws IloException
 	 */
 	private static void calcPUpper() throws IloException {
 		int n = mp.getN();
@@ -258,8 +266,10 @@ public class MaxProb_Forrester {
 		pUpper = B2Const;
 	}
 
-	/*
+	/**
 	 * Find lower and upper bounds on z_j
+	 * 
+	 * @throws IloException
 	 */
 	private static void calcLU() throws IloException {
 		int n = mp.getN();

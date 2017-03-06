@@ -460,27 +460,6 @@ public class FractionalSol extends KnapsackSol {
 		return ratio;
 	}
 
-	private class ratioNode implements Comparable<ratioNode>{
-		int x;
-		double ratio;
-
-		public ratioNode(int x, double ratio) {
-			this.x = x;
-			this.ratio = ratio;
-		}
-
-		@Override
-		public int compareTo(ratioNode o) {
-			if (this.ratio - o.ratio > 0) {
-				return 1;
-			} else if (this.ratio - o.ratio < 0) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
-	}
-
 	private FractionalSol ratioMutate() {
 		FractionalSol result = null;
 		boolean found = false;

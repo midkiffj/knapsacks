@@ -3,7 +3,6 @@ package ExactMethods;
 import Problems.MaxProbability;
 import ilog.concert.*;
 import ilog.cplex.*;
-import ilog.cplex.IloCplex.UnknownObjectException;
 
 /**
  * Run the Max Probability MIP formulation of Billionnet
@@ -31,8 +30,10 @@ public class MaxProb_Bill {
 	static boolean timeout;
 	static String file;
 
-	/*
+	/**
 	 * Setup Max Prob problem and MIP
+	 * 
+	 * @param args - can take file name
 	 */
 	public static void main(String[] args) {
 		// Can take file as argument
@@ -51,8 +52,10 @@ public class MaxProb_Bill {
 		}
 	}
 
-	/*
+	/**
 	 * Calculate needed constants and upper bound on rho(p)
+	 * 
+	 * @throws IloException
 	 */
 	private static void calcPUpper() throws IloException {
 		int n = mp.getN();
@@ -110,6 +113,10 @@ public class MaxProb_Bill {
 		pUpper = B2;
 	}
 
+	/**
+	 * Add the MPP model of Billionnet(2004) to cplex
+	 * @throws IloException
+	 */
 	private static void addModel() throws IloException {
 		int n = mp.getN();
 
@@ -209,10 +216,12 @@ public class MaxProb_Bill {
 		}
 	}
 
-	/*
-	 * Pretty Print solution variables
+	/**
+	 * Pretty Print solution variables to x, y, z, W, W2, and p
+	 * 
+	 * @throws IloException
 	 */
-	static void printVars() throws UnknownObjectException, IloException {
+	static void printVars() throws IloException {
 		int n = mp.getN();
 
 		// Print x's

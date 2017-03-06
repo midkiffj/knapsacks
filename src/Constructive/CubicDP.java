@@ -19,19 +19,26 @@ public class CubicDP extends ConstHeuristic {
 	private Random rnd = RndGen.getRnd();
 	private Cubic c;
 
-	/*
+	/**
 	 * Specify the problem to solve
+	 * 
+	 * @parm c Cubic problem
 	 */
 	public CubicDP(Cubic c) {
 		this.c = c;
 		n = c.getN();
 	}
 
+	/**
+	 * Perform the construction of the solution
+	 * 
+	 * @return solution constructed
+	 */
 	protected ProblemSol construct() {
 		return dpHeuristic();
 	}
 
-	/*
+	/**
 	 * Generate an incumbent solution using DP
 	 * - Changes the algorithm to use a list instead of an array
 	 */
@@ -81,8 +88,8 @@ public class CubicDP extends ConstHeuristic {
 		return localSearch(new CubicSol(x,r));
 	}
 
-	/*
-	 *  Calculate the change in objective value 
+	/**
+	 * Calculate the change in objective value 
 	 *   by adding item k with the items in B.
 	 */
 	private long profit(int k, ArrayList<Integer> B) {
@@ -98,9 +105,11 @@ public class CubicDP extends ConstHeuristic {
 		return oldObj;
 	}
 
-	/*
-	 *  Complete best improving swaps (and a shift) 
+	/**
+	 * Complete best improving swaps (and a shift) 
 	 *   until the objective value is no longer improved
+	 *   
+	 * @param current the solution to improve
 	 */
 	private CubicSol localSearch(CubicSol current) {
 		double curObj = current.getObj();
@@ -127,8 +136,10 @@ public class CubicDP extends ConstHeuristic {
 		return current;
 	}
 
-	/*
-	 *  Perform the best improving swap that keeps the knapsack feasible
+	/**
+	 * Perform the best improving swap that keeps the knapsack feasible
+	 * 
+	 * @param current the solution to improve
 	 */
 	private void bestImprovingSwap(CubicSol current) {
 		// Occasionally perform a shift
