@@ -56,3 +56,9 @@ bin
 *.csv
 *.log
 *.lck
+
+# Problem definitions, solutions, and results
+problems
+incumbents
+logging
+results
