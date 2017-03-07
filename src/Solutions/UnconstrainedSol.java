@@ -13,100 +13,87 @@ public class UnconstrainedSol extends ProblemSol {
 
 	private Unconstrained u;
 
-	private ArrayList<Integer> x;
-	private ArrayList<Integer> r;
-	private boolean[] xVals;
-	private boolean valid;
-	private double obj;
-
 	public UnconstrainedSol() {
 		super();
 		u = (Unconstrained)p;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		u.genRndInit(x, r);
-		xVals = new boolean[n];
-		obj = u.getObj(x);
-		valid = true;
+		u.genRndInit(getX(), getR());
+		for (Integer i: getX()) {
+			setXVals(i,true);
+		}
+		setObj(u.getObj(getX()));
+		updateValid();
 	}
 
 	public UnconstrainedSol(UnconstrainedSol us) {
 		super();
 		u = (Unconstrained)p;
-		xVals = new boolean[p.getN()];
-		valid = us.getValid();
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
-		for (Integer i : us.getX()) {
-			x.add(i);
-			xVals[i] = true;
+		setX(us.getX());
+		setR(us.getR());
+		for (Integer i : getX()) {
+			setXVals(i,true);
 		}
-		for (Integer i : us.getR()) {
-			r.add(i);
-		}
-		obj = us.getObj();
+		setObj(us.getObj());
+		updateValid();
 	}
 
 	public UnconstrainedSol(boolean[] xVals) {
 		super();
 		u = (Unconstrained)p;
-
-		this.xVals = xVals;
-		x = new ArrayList<Integer>();
-		r = new ArrayList<Integer>();
+		ArrayList<Integer> x = new ArrayList<Integer>();
+		ArrayList<Integer> r = new ArrayList<Integer>();
 		for (int i = 0; i < xVals.length; i++) {
 			if (xVals[i]) {
 				x.add(i);
 			} else {
 				r.add(i);
 			}
+			setXVals(i,xVals[i]);
 		}
-		obj = p.getObj(x);
-		valid = true;
+		setX(x);
+		setR(r);
+		setObj(u.getObj(x));
+		updateValid();
 	}
 
 	public UnconstrainedSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super();
 		u = (Unconstrained)p;
-		xVals = new boolean[p.getN()];
-		this.x = x;
-		this.r = r;
+		setX(x);
+		setR(r);
 		for (Integer i: x) {
-			xVals[i] = true;
+			setXVals(i,true);
 		}
-		this.obj = p.getObj(x);
-		valid = true;
+		setObj(u.getObj(x));
+		updateValid();
 	}
 
 	public UnconstrainedSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj) {
 		super();
 		u = (Unconstrained)p;
 
-		xVals = new boolean[p.getN()];
-		this.x = x;
-		this.r = r;
+		setX(x);
+		setR(r);
 		for (Integer i: x) {
-			xVals[i] = true;
+			setXVals(i,true);
 		}
-		this.obj = obj;
-		valid = true;
-	}
-
-	@Override
-	public double getObj() {
-		return obj;
+		setObj(obj);
+		updateValid();
 	}
 
 	@Override
 	public void swap(int i, int j) {
-		this.obj = u.swapObj(i, j, x, obj);
+		setObj(u.swapObj(i, j, getX(), getObj()));
 		removeI(i);
 		addI(j);
+	}
+	
+	private double swapObj(int i, int j) {
+		return u.swapObj(i, j, getX(), getObj());
 	}
 
 	@Override
 	public ProblemSol bestMutate() {
-		if (r.size() > 0) {
+		if (getRSize() > 0) {
 			ProblemSol[] best = bestSwap(Integer.MAX_VALUE, new int[n][n]);
 			return best[0];
 		} else {
@@ -125,7 +112,7 @@ public class UnconstrainedSol extends ProblemSol {
 		double bObj = Integer.MAX_VALUE;
 		for(Integer i: getX()) {
 			for(Integer j: getR()) {
-				double newObj = u.swapObj(i, j, x, obj);
+				double newObj = u.swapObj(i, j, getX(), getObj());
 				if (newObj < nTObj && tabuList[i][j] < iteration) {
 					ni = i;
 					nj = j;
@@ -152,13 +139,12 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
-		if (r.size() > 0) {
+		if (getRSize() > 0) {
 			if (rnd.nextDouble() < 0.6) {
 				return maxMinSwap(iteration, tabuList);
 			} else {
-				ProblemSol tauSwap = tauMutate(iteration, tabuList);
-				ProblemSol[] result = {tauSwap, tauSwap};
-				return result;
+				ProblemSol[] tauSwap = tauMutate(iteration, tabuList);
+				return tauSwap;
 			}
 		} else {
 			return null;
@@ -166,7 +152,7 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	public ProblemSol mutate() {
-		if (r.size() > 0) {
+		if (getRSize() > 0) {
 			if (rnd.nextDouble() < 0.6) {
 				ProblemSol[] ret = maxMinSwap(1, new int[n][n]);
 				if (ret == null) {
@@ -184,7 +170,7 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
-		if (r.size() > 0) {
+		if (getRSize() > 0) {
 			return bestSwap(iteration, tabuList);
 		} else {
 			return null;
@@ -215,7 +201,7 @@ public class UnconstrainedSol extends ProblemSol {
 		double bestObj = Integer.MAX_VALUE;
 		int maxJ = -1;
 		for (Integer j: getR()) {
-			double newObj = u.swapObj(i, j, x, obj);
+			double newObj = u.swapObj(i, j, getX(), getObj());
 			if (newObj < bestObj) {
 				bestObj = newObj;
 				maxJ = j;
@@ -243,7 +229,7 @@ public class UnconstrainedSol extends ProblemSol {
 		int ki = 0;
 		int kj = 0;
 
-		double newObj = u.swapObj(i, j, x, obj);
+		double newObj = u.swapObj(i, j, getX(), getObj());
 		bi = i;
 		bj = j;
 		bObj = newObj;
@@ -253,7 +239,7 @@ public class UnconstrainedSol extends ProblemSol {
 			nTObj = newObj;
 		} else {
 			boolean newMax = false;
-			while (tabuList[i][j] >= iteration && ki < x.size()) {
+			while (tabuList[i][j] >= iteration && ki < getXSize()) {
 				if (newMax) {
 					ki++;
 					i = maxTau(ki);
@@ -265,7 +251,7 @@ public class UnconstrainedSol extends ProblemSol {
 					kj = -1;
 					newMax = !newMax;
 				}
-				newObj = u.swapObj(i, j, x, obj);
+				newObj = u.swapObj(i, j, getX(), getObj());
 				if (newObj < bObj) {
 					bi = i;
 					bj = j;
@@ -273,7 +259,7 @@ public class UnconstrainedSol extends ProblemSol {
 				}
 			}
 			if (tabuList[i][j] < iteration) {
-				newObj = u.swapObj(i, j, x, obj);
+				newObj = u.swapObj(i, j, getX(), getObj());
 				ni = i;
 				nj = j;
 				nTObj = newObj;
@@ -297,7 +283,14 @@ public class UnconstrainedSol extends ProblemSol {
 		return results;
 	}
 
-	private UnconstrainedSol tauMutate(int iteration, int[][] tabuList) {
+	private UnconstrainedSol[] tauMutate(int iteration, int[][] tabuList) {
+		// Store nontabu and best tabu swaps
+		int ni = -1;
+		int nj = -1;
+		int bi = -1;
+		int bj = -1;
+		double bObj = Integer.MIN_VALUE;
+
 		// Get index of min tau
 		int i = maxTau(0);
 
@@ -308,7 +301,7 @@ public class UnconstrainedSol extends ProblemSol {
 		int ki = 0;
 		int kj = 0;
 		boolean changeI = false;
-		while (tabuList[i][j] >= iteration && ki < x.size()) {
+		while (tabuList[i][j] >= iteration && ki < getXSize()) {
 			if (changeI) {
 				ki++;
 				i = maxTau(ki);
@@ -322,15 +315,26 @@ public class UnconstrainedSol extends ProblemSol {
 				kj = -1;
 				changeI = !changeI;
 			}
+			double newObj = swapObj(i, j);
+			if (newObj > bObj) {
+				bi = i;
+				bj = j;
+				bObj = newObj;
+			}
 		}
-
-		if (tabuList[i][j] >= iteration) {
-			return null;
+		ni = i;
+		nj = j;
+		// Compile and return data
+		UnconstrainedSol[] results = new UnconstrainedSol[2];
+		if (bi != -1 && bj != -1) {
+			results[0] = new UnconstrainedSol(this);
+			results[0].swap(bi, bj);
 		}
-		UnconstrainedSol result = new UnconstrainedSol(this);
-		result.swap(i,j);
-
-		return result;
+		if (ni != -1 && nj != -1 && tabuList[ni][nj] < iteration) {
+			results[1] = new UnconstrainedSol(this);
+			results[1].swap(ni, nj);
+		}
+		return results;
 	}
 
 	private int minTau(int k) {
@@ -384,23 +388,23 @@ public class UnconstrainedSol extends ProblemSol {
 
 	// Try to add a variable to the solution
 	private int tryAdd() {
-		int index = tryAdd(-1, x, r, false);
+		int index = tryAdd(-1, getX(), getR(), false);
 		if (index != -1) {
 			addI(index);
-			this.obj = addObj(index, x, obj);
+			setObj(addObj(index, getX(), getObj()));
 		}
 		return index;
 	}
 
 	private int trySub() {
-		int index = trySub(x, false);
+		int index = trySub(getX(), false);
 		if (index != -1) {
 			removeI(index);
-			this.obj = subObj(index, x, obj);
+			setObj(subObj(index, getX(), getObj()));
 		}
 		return index;
 	}
-	
+
 	public int trySub(ArrayList<Integer> x, boolean improveOnly) {
 		double obj = u.getObj(x);
 		int index = -1;
@@ -413,7 +417,7 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 		return index;
 	}
-	
+
 	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
 		double obj = u.getObj(x);
 		int index = -1;
@@ -426,7 +430,7 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 		return index;
 	}
-	
+
 	public double subObj(int i, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj - u.getCi(i);
 		for (int k = 0; k < curX.size(); k++) {
@@ -443,7 +447,7 @@ public class UnconstrainedSol extends ProblemSol {
 		}
 		return oldObj;
 	}
-	
+
 	public double addObj(int i, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj + u.getCi(i);
 		for (int k = 0; k < curX.size(); k++) {
@@ -496,7 +500,7 @@ public class UnconstrainedSol extends ProblemSol {
 		// Unneeded: There are no infeasible solutions to the Unconstrained Cubic.
 		return;
 	}
-	
+
 	public void writeSolution(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
@@ -510,9 +514,8 @@ public class UnconstrainedSol extends ProblemSol {
 			System.err.println("Error with Print Writer");
 		}
 	}
-	
+
 	public void readSolution(String filename) { 
-		u = (Unconstrained)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));
@@ -539,7 +542,7 @@ public class UnconstrainedSol extends ProblemSol {
 
 	@Override
 	public void updateValid() {
-		return;
+		setValid(true);
 	}
 
 }

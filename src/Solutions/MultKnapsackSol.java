@@ -29,7 +29,6 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		setObj(mk.getObj(getX()));
 		calcTotalA();
 		updateB();
-		updateValid();
 	}
 	
 	public MultKnapsackSol(String filename) {
@@ -40,7 +39,6 @@ public abstract class MultKnapsackSol extends ProblemSol {
 			setXVals(i,true);
 		}
 		updateB();
-		updateValid();
 	}
 	
 	public MultKnapsackSol(MultKnapsackSol mks) {
@@ -54,7 +52,6 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		setObj(mks.getObj());
 		setTotalA(mks.getTotalA());
 		updateB();
-		updateValid();
 	}
 
 	public MultKnapsackSol(boolean[] xVals) {
@@ -75,7 +72,6 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		setObj(mk.getObj(x));
 		calcTotalA();
 		updateB();
-		updateValid();
 	}
 
 	public MultKnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r) {
@@ -89,7 +85,6 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		setObj(mk.getObj(x));
 		calcTotalA();
 		updateB();
-		updateValid();
 	}
 
 	public MultKnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int[] totalA) {
@@ -103,7 +98,6 @@ public abstract class MultKnapsackSol extends ProblemSol {
 			setXVals(i,true);
 		}
 		updateB();
-		updateValid();
 	}
 	
 	private void updateB() {

@@ -92,11 +92,11 @@ public class MaxProbabilitySol extends KnapsackSol {
 	public void addU(int i) {
 		this.totalU += mp.getU(i);
 	}
-	
+
 	public void removeU(int i) {
 		this.totalU -= mp.getU(i);
 	}
-	
+
 	public double getNum() {
 		return num;
 	}
@@ -119,7 +119,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 
 	public double swapDen(int i, int j, double den) {
 		return den + mp.getS(j) - mp.getS(i);
-		
+
 	}
 
 	public double subDen(int i, double den) {
@@ -129,7 +129,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 	public double addDen(int i, double den) {
 		return den + mp.getS(i);
 	}
-	
+
 	@Override
 	public void swap(int i, int j) {
 		addA(j);
@@ -274,12 +274,8 @@ public class MaxProbabilitySol extends KnapsackSol {
 		if (rnd.nextDouble() < 0.6) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
-			ProblemSol ratioSwap = ratioMutate(iteration, tabuList);
-			if (ratioSwap == null) {
-				return null;
-			}
-			ProblemSol[] result = {ratioSwap, ratioSwap};
-			return result;
+			ProblemSol[] ratioSwap = ratioMutate(iteration, tabuList);
+			return ratioSwap;
 		}
 	}
 
@@ -672,7 +668,14 @@ public class MaxProbabilitySol extends KnapsackSol {
 		return results;
 	}
 
-	private MaxProbabilitySol ratioMutate(int iteration, int[][] tabuList) {
+	private MaxProbabilitySol[] ratioMutate(int iteration, int[][] tabuList) {
+		// Store nontabu and best tabu swaps
+		int ni = -1;
+		int nj = -1;
+		int bi = -1;
+		int bj = -1;
+		double bObj = Integer.MIN_VALUE;
+
 		// Get index of min ratio
 		int i = minRatio(0);
 
@@ -697,15 +700,28 @@ public class MaxProbabilitySol extends KnapsackSol {
 				kj = -1;
 				changeI = !changeI;
 			}
+			if (mp.getA(j) - mp.getA(i) <= getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
+				double newObj = swapObj(i, j);
+				if (newObj > bObj) {
+					bi = i;
+					bj = j;
+					bObj = newObj;
+				}
+			}
 		}
-
-		if (mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT() || tabuList[i][j] >= iteration) {
-			return null;
+		ni = i;
+		nj = j;
+		// Compile and return data
+		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
+		if (bi != -1 && bj != -1 && mp.getA(bj) - mp.getA(bi) <= getB() - getTotalA() && getTotalU() - mp.getU(bi) + mp.getU(bj) >= mp.getT()) {
+			results[0] = new MaxProbabilitySol(this);
+			results[0].swap(bi, bj);
 		}
-		MaxProbabilitySol result = new MaxProbabilitySol(this);
-		result.swap(i,j);
-
-		return result;
+		if (ni != -1 && nj != -1 && mp.getA(nj) - mp.getA(ni) <= getB() - getTotalA() && getTotalU() - mp.getU(ni) + mp.getU(nj) >= mp.getT() && tabuList[ni][nj] < iteration) {
+			results[1] = new MaxProbabilitySol(this);
+			results[1].swap(ni, nj);
+		}
+		return results;
 	}
 
 	private int minRatio(int k) {
@@ -931,7 +947,6 @@ public class MaxProbabilitySol extends KnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
-		mp = (MaxProbability)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

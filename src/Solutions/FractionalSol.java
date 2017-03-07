@@ -105,7 +105,7 @@ public class FractionalSol extends KnapsackSol {
 		removeI(i);
 		updateValid();
 	}
-	
+
 	private double updateObj(long[] num, long[] den) {
 		double newObj = 0;
 		for (int k = 0; k < f.getM(); k++) {
@@ -302,12 +302,8 @@ public class FractionalSol extends KnapsackSol {
 		if (rnd.nextDouble() < 0.6) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
-			ProblemSol ratioSwap = ratioMutate(iteration, tabuList);
-			if (ratioSwap == null) {
-				return null;
-			}
-			ProblemSol[] result = {ratioSwap, ratioSwap};
-			return result;
+			ProblemSol[] ratioSwap = ratioMutate(iteration, tabuList);
+			return ratioSwap;
 		}
 	}
 
@@ -609,7 +605,14 @@ public class FractionalSol extends KnapsackSol {
 		return results;
 	}
 
-	private FractionalSol ratioMutate(int iteration, int[][] tabuList) {
+	private FractionalSol[] ratioMutate(int iteration, int[][] tabuList) {
+		// Store nontabu and best tabu swaps
+		int ni = -1;
+		int nj = -1;
+		int bi = -1;
+		int bj = -1;
+		double bObj = Integer.MIN_VALUE;
+
 		// Get index of min ratio
 		int i = minRatio(0);
 
@@ -634,16 +637,28 @@ public class FractionalSol extends KnapsackSol {
 				kj = -1;
 				changeI = !changeI;
 			}
+			if (f.getA(j) - f.getA(i) <= getB() - getTotalA()) {
+				double newObj = swapObj(i, j);
+				if (newObj > bObj) {
+					bi = i;
+					bj = j;
+					bObj = newObj;
+				}
+			}
 		}
-
-		if (f.getA(j) - f.getA(i) > f.getB() - getTotalA() || tabuList[i][j] >= iteration) {
-			return null;
+		ni = i;
+		nj = j;
+		// Compile and return data
+		FractionalSol[] results = new FractionalSol[2];
+		if (bi != -1 && bj != -1 && f.getA(bj) - f.getA(bi) <= getB() - getTotalA()) {
+			results[0] = new FractionalSol(this);
+			results[0].swap(bi, bj);
 		}
-		double newObj = swapObj(i, j);
-		FractionalSol result = new FractionalSol(this);
-		result.swap(i, j);
-
-		return result;
+		if (ni != -1 && nj != -1 && f.getA(nj) - f.getA(ni) <= getB() - getTotalA() && tabuList[ni][nj] < iteration) {
+			results[1] = new FractionalSol(this);
+			results[1].swap(ni, nj);
+		}
+		return results;
 	}
 
 	private int minRatio(int k) {
@@ -858,7 +873,6 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
-		f = (Fractional)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

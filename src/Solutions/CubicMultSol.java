@@ -48,7 +48,7 @@ public class CubicMultSol extends MultKnapsackSol {
 		cm = (CubicMult)p;
 		updateValid();
 	}
-	
+
 	public void updateValid() {
 		calcTotalA();
 		int[] totalA = getTotalA();
@@ -72,7 +72,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public double swapObj(int i, int j) {
 		return swapObj(i,j,getX(),getObj());
 	}
-	
+
 	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj - cm.getCi(i);
 		oldObj = oldObj + cm.getCi(j);
@@ -140,7 +140,7 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 		return index;
 	}
-	
+
 	private int trySub(ArrayList<Integer> x, boolean improveOnly) {
 		if (x.size() <= 1) {
 			return -1;
@@ -236,12 +236,8 @@ public class CubicMultSol extends MultKnapsackSol {
 		if (rnd.nextDouble() < 0.6) {
 			return maxMinSwap(iteration, tabuList);
 		} else {
-			CubicMultSol ratioSwap = ratioMutate(iteration, tabuList);
-			if (ratioSwap == null) {
-				return null;
-			}
-			CubicMultSol[] result = {ratioSwap, ratioSwap};
-			return result;
+			CubicMultSol[] ratioSwap = ratioMutate(iteration, tabuList);
+			return ratioSwap;
 		}
 	}
 
@@ -333,7 +329,7 @@ public class CubicMultSol extends MultKnapsackSol {
 
 		return new CubicMultSol(newXVals);
 	}
-	
+
 	private void addA(int j, int[] totalA) {
 		for (int i = 0; i < m; i++) {
 			totalA[i] += cm.getA(i,j);
@@ -393,7 +389,7 @@ public class CubicMultSol extends MultKnapsackSol {
 		double obj = cm.getObj(x);
 		return new CubicMultSol(x,r,obj,newTotalA);
 	}
-	
+
 	private int[] calcTotalA(ArrayList<Integer> x) {
 		int[] totalA = new int[m];
 		for (Integer i: x) {
@@ -575,7 +571,14 @@ public class CubicMultSol extends MultKnapsackSol {
 		return results;
 	}
 
-	private CubicMultSol ratioMutate(int iteration, int[][] tabuList) {
+	private CubicMultSol[] ratioMutate(int iteration, int[][] tabuList) {
+		// Store nontabu and best tabu swaps
+		int ni = -1;
+		int nj = -1;
+		int bi = -1;
+		int bj = -1;
+		double bObj = Integer.MIN_VALUE;
+
 		// Get index of min ratio
 		int i = minRatio(0);
 
@@ -600,15 +603,29 @@ public class CubicMultSol extends MultKnapsackSol {
 				kj = -1;
 				changeI = !changeI;
 			}
+			if (swapTotalA(getTotalA(), i, j)) {
+				double newObj = swapObj(i, j);
+				if (newObj > bObj) {
+					bi = i;
+					bj = j;
+					bObj = newObj;
+				}
+			}
 		}
 
-		if (!swapTotalA(getTotalA(), i, j) || tabuList[i][j] >= iteration) {
-			return null;
+		ni = i;
+		nj = j;
+		// Compile and return data
+		CubicMultSol[] results = new CubicMultSol[2];
+		if (bi != -1 && bj != -1 && swapTotalA(getTotalA(),bi,bj)) {
+			results[0] = new CubicMultSol(this);
+			results[0].swap(bi, bj);
 		}
-		CubicMultSol result = new CubicMultSol(this);
-		result.swap(i, j);
-
-		return result;
+		if (ni != -1 && nj != -1 && swapTotalA(getTotalA(),ni,nj) && tabuList[ni][nj] < iteration) {
+			results[1] = new CubicMultSol(this);
+			results[1].swap(ni, nj);
+		}
+		return results;
 	}
 
 	private int minRatio(int k) {
@@ -807,7 +824,6 @@ public class CubicMultSol extends MultKnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
-		cm = (CubicMult)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

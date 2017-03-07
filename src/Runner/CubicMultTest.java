@@ -19,9 +19,9 @@ import Solutions.CubicMultSol;
 public class CubicMultTest extends ProblemTest {
 
 	// Test bed specifications
-	int[] knapsacks = {2,3,5};
+	int[] knapsacks = {2, 3, 5, 10};
 	private double[] densities = {0.25, 0.5, 0.75, 1};
-	private int[] probSizes = {10, 20, 30};
+	private int[] probSizes = {10, 20, 30, 50};
 	private int K = 10;
 
 	// Method usage
