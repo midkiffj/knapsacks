@@ -9,6 +9,13 @@ import java.util.Scanner;
 
 import Problems.Fractional;
 
+/**
+ * Solution class for a Fractional Problem
+ * - Mutates solution with swaps and shifts
+ * - File I/O for storing solutions
+ * 
+ * @author midkiffj
+ */
 public class FractionalSol extends KnapsackSol {
 
 	private static Fractional f;
@@ -16,21 +23,33 @@ public class FractionalSol extends KnapsackSol {
 	private long[] num;
 	private long[] den;
 
+	/**
+	 * Construct a solution by relying on the super class
+	 */
 	public FractionalSol() {
 		super();
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
-		calcTotalA();
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution from the given file
+	 * 
+	 * @param filename to read
+	 */
 	public FractionalSol(String filename) {
 		super(filename);
 		f = (Fractional)p;
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution that is equivalent to the solution passed in
+	 * 
+	 * @param fs the solution to copy
+	 */
 	public FractionalSol(FractionalSol fs) {
 		super((KnapsackSol)fs);
 		f = (Fractional)p;
@@ -39,6 +58,16 @@ public class FractionalSol extends KnapsackSol {
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists, objective, and knapsack weight
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 * @param obj - objective of the solution
+	 * @param totalA - weight of the solution
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 */
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, long[] num, long[] den) {
 		super(x,r,obj,totalA);
 		f = (Fractional)p;
@@ -47,6 +76,11 @@ public class FractionalSol extends KnapsackSol {
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given xVals
+	 * 
+	 * @param xVals (T) if item i is in the solutions
+	 */
 	public FractionalSol(boolean[] newXVals) {
 		super(newXVals);
 		f = (Fractional)p;
@@ -55,6 +89,12 @@ public class FractionalSol extends KnapsackSol {
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 */
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		f = (Fractional)p;
@@ -63,6 +103,9 @@ public class FractionalSol extends KnapsackSol {
 		updateValid();
 	}
 
+	/**
+	 * Update the validity of the solution
+	 */
 	public void updateValid() {
 		calcTotalA();
 		if (getTotalA() <= f.getB()) {
@@ -95,6 +138,15 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	@Override
+	/**
+	 * Perform a swap of items i and j,
+	 * 	- Remove i from the solution
+	 * 	- Add j to the solution
+	 * 	- Update objective and knapsack weight
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 */
 	public void swap(int i, int j) {
 		addA(j);
 		removeA(i);
@@ -106,6 +158,13 @@ public class FractionalSol extends KnapsackSol {
 		updateValid();
 	}
 
+	/**
+	 * Calculate the objective with the given numerator and denominator values
+	 * 
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
 	private double updateObj(long[] num, long[] den) {
 		double newObj = 0;
 		for (int k = 0; k < f.getM(); k++) {
@@ -117,7 +176,9 @@ public class FractionalSol extends KnapsackSol {
 		return newObj;
 	}
 
-	// Shift a variable in or out of the current solution
+	/**
+	 *  Shift a variable in or out of the current solution
+	 */
 	public int shift() {
 		if (getRSize() == 0) {
 			return trySub();
@@ -133,7 +194,11 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
-	// Try to add a variable to the solution
+	/**
+	 * Try to add a variable to the solution
+	 * 
+	 * @return the item added or -1 if none added
+	 */
 	private int tryAdd() {
 		int index = tryAdd(getTotalA(), getX(), getR(), false, num, den);
 		if (index != -1) {
@@ -147,6 +212,11 @@ public class FractionalSol extends KnapsackSol {
 		return index;
 	}
 
+	/**
+	 * Try to remove a variable from the solution
+	 * 
+	 * @return the item removed or -1 if none added
+	 */
 	private int trySub() {
 		int index = trySub(getX(), false, num, den);
 		if (index != -1) {
@@ -160,6 +230,18 @@ public class FractionalSol extends KnapsackSol {
 		return index;
 	}
 
+	/**
+	 * Try to add an item to the given solution
+	 * - Add the maxRatio item
+	 * 
+	 * @param totalA - current knapsack weight
+	 * @param x - solution list
+	 * @param r - list of items not in the solution
+	 * @param improveOnly - only remove an item if it improves the objective
+	 * @param num - current numerator values
+	 * @param den - current denominator values
+	 * @return the item to add or -1 if none to add
+	 */
 	private int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
 			boolean improveOnly, long[] num, long[] den) {
 		if (r.size() < 1) {
@@ -195,6 +277,16 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
+	/**
+	 * Try to remove an item from the given solution
+	 * - Remove the minRatio item
+	 * 
+	 * @param x - solution list
+	 * @param improveOnly - only remove an item if it improves the objective
+	 * @param num - current numerator values
+	 * @param den - current denominator values
+	 * @return the item to remove or -1 if none to remove
+	 */
 	private int trySub(ArrayList<Integer> x, boolean improveOnly, long[] num, long[] den) {
 		if (x.size() <= 1) {
 			return -1;
@@ -217,6 +309,14 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
+	/**
+	 * Calculate the objective if item i is removed from the solution
+	 * 
+	 * @param i - item to remove
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
 	private double subObj(int i, long[] num, long[] den) {
 		double obj = 0;
 		for (int j = 0; j < f.getM(); j++) {
@@ -229,6 +329,14 @@ public class FractionalSol extends KnapsackSol {
 		return obj;
 	}
 
+	/**
+	 * Calculate the objective if item i is added to the solution
+	 * 
+	 * @param i - item to add
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
 	private double addObj(int i, long[] num, long[] den) {
 		double obj = 0;
 		for (int j = 0; j < f.getM(); j++) {
@@ -241,12 +349,29 @@ public class FractionalSol extends KnapsackSol {
 		return obj;
 	}
 
+	/**
+	 * Calculate the objective if item i is removed from the solution 
+	 * 	and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return calculated objective
+	 */
 	private double swapObj(int i, int j) {
 		long[] num = swapNum(i, j, this.num);
 		long[] den = swapDen(i, j, this.den);
 		return updateObj(num,den);
 	}
 
+	/**
+	 * Calculate the numerator values if item i is removed 
+	 * 	and item j is added to the value.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param num - numerator value
+	 * @return calculated objective
+	 */
 	public long[] swapNum(int i, int j, long[] num) {
 		long[] newNum = new long[num.length];
 		for (int k = 0; k < f.getM(); k++) {
@@ -255,6 +380,13 @@ public class FractionalSol extends KnapsackSol {
 		return newNum;
 	}
 
+	/**
+	 * Calculate the numerator values if item i is removed
+	 * 
+	 * @param i - item to remove
+	 * @param num - numerator value
+	 * @return calculated objective
+	 */
 	public long[] subNum(int i, long[] num) {
 		long[] newNum = new long[num.length];
 		for (int k = 0; k < f.getM(); k++) {
@@ -263,6 +395,13 @@ public class FractionalSol extends KnapsackSol {
 		return newNum;
 	}
 
+	/**
+	 * Calculate the numerator values if item i is added
+	 * 
+	 * @param i - item to add
+	 * @param num - numerator value
+	 * @return calculated objective
+	 */
 	public long[] addNum(int i, long[] num) {
 		long[] newNum = new long[num.length];
 		for (int k = 0; k < f.getM(); k++) {
@@ -271,6 +410,15 @@ public class FractionalSol extends KnapsackSol {
 		return newNum;
 	}
 
+	/**
+	 * Calculate the denominator values if item i is removed 
+	 * 	and item j is added to the value.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
 	public long[] swapDen(int i, int j, long[] den) {
 		long[] newDen = new long[den.length];
 		for (int k = 0; k < f.getM(); k++) {
@@ -279,6 +427,13 @@ public class FractionalSol extends KnapsackSol {
 		return newDen;
 	}
 
+	/**
+	 * Calculate the denominator values if item i is removed 
+	 * 
+	 * @param i - item to remove
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
 	public long[] subDen(int i, long[] den) {
 		long[] newDen = new long[den.length];
 		for (int k = 0; k < f.getM(); k++) {
@@ -287,6 +442,13 @@ public class FractionalSol extends KnapsackSol {
 		return newDen;
 	}
 
+	/**
+	 * Calculate the denominator values if item i is added
+	 * 
+	 * @param i - item to add
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
 	public long[] addDen(int i, long[] den) {
 		long[] newDen = new long[den.length];
 		for (int k = 0; k < f.getM(); k++) {
@@ -295,6 +457,13 @@ public class FractionalSol extends KnapsackSol {
 		return newDen;
 	}
 
+	/**
+	 * Perform a mutation given the current iteration number and tabu list
+	 * 
+	 * @param iteration - current iteration
+	 * @param tabuList - current tabu list
+	 * @return {best tabu solution, best nontabu solution}
+	 */
 	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
@@ -307,6 +476,11 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
+	/**
+	 * Mutate the solution
+	 * 
+	 * @return mutated solution
+	 */
 	public ProblemSol mutate() {
 		if (getRSize() == 0) {
 			return null;
@@ -324,6 +498,11 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
+	/**
+	 * Perform the best mutation (swap) possible
+	 * 
+	 * @return mutated solution
+	 */
 	public ProblemSol bestMutate() {
 		if (getRSize() == 0) {
 			return null;
@@ -343,6 +522,13 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
+	/**
+	 * Perform the best mutation given the current iteration and tabu list
+	 * 
+	 * @param iteration - current iteration count
+	 * @param tabuList - current tabu list
+	 * @return {best tabu solution, best nontabu solution}
+	 */
 	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
@@ -350,6 +536,14 @@ public class FractionalSol extends KnapsackSol {
 		return bestSwap(iteration, tabuList);
 	}
 
+	/**
+	 * Perform a crossover mutation with the specified solution
+	 * - Keeps items in the solution that appear in both solutions
+	 * - Fills the solution with max-ratio items until full
+	 * 
+	 * @param ps2 - solution to combine
+	 * @return solution after crossover
+	 */
 	public ProblemSol crossover(ProblemSol ps2) {
 		FractionalSol mps2 = (FractionalSol)ps2;
 		boolean[] newXVals = new boolean[n];
@@ -390,6 +584,12 @@ public class FractionalSol extends KnapsackSol {
 		return new FractionalSol(newXVals);
 	}
 
+	/**
+	 * Perform a mutation for the genetic algorithm
+	 * 
+	 * @param removeAttempts - number of genMutate2 calls
+	 * @return mutated solution
+	 */
 	public ProblemSol genMutate(int removeAttempts) {
 		FractionalSol newMP = new FractionalSol(this);
 		if (rnd.nextDouble() < 0.5) {
@@ -407,6 +607,13 @@ public class FractionalSol extends KnapsackSol {
 		return newMP;
 	}
 
+	/**
+	 * Randomly remove a number of items from the solution
+	 * 
+	 * @param cs - the solution to mutate
+	 * @param removeAttempts - the number of items to remove (increases with each call)
+	 * @return mutated solution
+	 */
 	private FractionalSol genMutate2(FractionalSol mps, int removeAttempts) {
 		// Remove s items from the solution
 		ArrayList<Integer> x = new ArrayList<Integer>(mps.getX());
@@ -446,6 +653,13 @@ public class FractionalSol extends KnapsackSol {
 		return new FractionalSol(x,r,obj,newTotalA, f.getNum(), f.getDen());
 	}
 
+	/**
+	 * Create a list of ratioNodes for the given solution lists
+	 * 
+	 * @param x - solution list
+	 * @param r - list of items not i the solution
+	 * @return list of ratioNodes
+	 */
 	private ArrayList<ratioNode> computeRatios(ArrayList<Integer> x, ArrayList<Integer> r) {
 		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
 		for (Integer i: r) {
@@ -456,6 +670,13 @@ public class FractionalSol extends KnapsackSol {
 		return ratio;
 	}
 
+	/**
+	 * Perform a ratio mutation
+	 * - Find the minRatio item in the solution
+	 * - Swap it with a random item outside the solution
+	 * 
+	 * @return mutated solution
+	 */
 	private FractionalSol ratioMutate() {
 		FractionalSol result = null;
 		boolean found = false;
@@ -487,6 +708,12 @@ public class FractionalSol extends KnapsackSol {
 		return result;
 	}
 
+	/**
+	 * Perform the best ratio mutation by swapping the minimum ratio item 
+	 * 	with the item j in R that best improves the objective.
+	 * 
+	 * @return mutated solution
+	 */
 	private FractionalSol bestRatioMutate() {
 		FractionalSol result = null;
 		boolean found = false;
@@ -517,6 +744,14 @@ public class FractionalSol extends KnapsackSol {
 		return result;
 	}
 
+	/**
+	 * Perform a maxMin swap by swap the min ratio item from the solution
+	 * 	with the max ratio item outside the solution
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private FractionalSol[] maxMinSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -605,6 +840,14 @@ public class FractionalSol extends KnapsackSol {
 		return results;
 	}
 
+	/**
+	 * Perform a ratio mutate by swaping the min ratio item from the solution
+	 * 	with a random item outside the solution
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private FractionalSol[] ratioMutate(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -661,6 +904,12 @@ public class FractionalSol extends KnapsackSol {
 		return results;
 	}
 
+	/**
+	 * Determine the kth minimum ratio item currently in the solution
+	 * 
+	 * @param k - which minimum
+	 * @return item number
+	 */
 	private int minRatio(int k) {
 		// Find the minimum ratio in the solution
 		double minRatio = Double.MAX_VALUE;
@@ -679,6 +928,12 @@ public class FractionalSol extends KnapsackSol {
 		return minI;
 	}
 
+	/**
+	 * Determine the kth maximum ratio item currently outside the solution
+	 * 
+	 * @param k - which maximum
+	 * @return item number
+	 */
 	private int maxRatio(int k) {
 		// Find the maximum ratio not in the solution
 		double maxRatio = -1*Double.MAX_VALUE;
@@ -697,7 +952,13 @@ public class FractionalSol extends KnapsackSol {
 		return maxI;
 	}
 
-	// Find the best swap possible that keeps the knapsack feasible
+	/**
+	 * Find the best swap possible that keeps the knapsack feasible. 
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - current tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private FractionalSol[] bestSwap(int iteration, int[][] tabuList) {
 		int curTotalA = getTotalA();
 		// Store nontabu and best tabu swaps
@@ -738,7 +999,13 @@ public class FractionalSol extends KnapsackSol {
 		return results;
 	}
 
-	// Return the first improving swap that keeps the knapsack feasible
+	/**
+	 * Return the first improving swap that keeps the knapsack feasible
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - current tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private FractionalSol[] firstSwap(int iteration, int[][] tabuList) {
 		int curTotalA = getTotalA();
 		// Store nontabu and best tabu swaps
@@ -780,13 +1047,18 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	@Override
+	/**
+	 * Heal the solution if it is invalid
+	 */
 	public void healSol() {
-		System.err.println("Healing Unimplemented");
-		//	healSolImproving();
+		healSolImproving();
 		//	healSolRatio();
 	}
 
-	// most improving
+	/**
+	 * Heal the solution by removing the item that results in the best objective
+	 *  until the solution is valid.
+	 */
 	private void healSolImproving() {
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
@@ -811,10 +1083,10 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
-	//min ratio healing
+	/**
+	 * Heal the solution by removing minRatio items until valid
+	 */
 	private void healSolRatio() {
-		int totalA = this.getTotalA();
-		double obj = this.getObj();
 		while(!this.getValid()) {
 			int j = minRatio(0);
 			removeI(j);
@@ -826,6 +1098,12 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	@Override
+	/**
+	 * Comparison for solutions used in genetic algorithm
+	 * 
+	 * 1) Invalid < Valid
+	 * 2) Higher objective is better
+	 */
 	public int compareTo(ProblemSol o) 	{
 		if (o.getValid() && this.getValid() || !(o.getValid() || this.getValid())) {
 			double diff = this.getObj() - o.getObj();
@@ -846,8 +1124,10 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 
-	/*
-	 *  Write solution to the given file
+	/**
+	 * Write the solution to the given file
+	 * 
+	 * @param filename to write
 	 */
 	public void writeSolution(String filename) {
 		try {
@@ -873,6 +1153,11 @@ public class FractionalSol extends KnapsackSol {
 		}
 	}
 
+	/**
+	 * Read a solution from the given filename
+	 * 
+	 * @param filename to read
+	 */
 	public void readSolution(String filename) { 
 		f = (Fractional)p;
 		Scanner scr;

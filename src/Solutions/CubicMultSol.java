@@ -9,46 +9,88 @@ import java.util.Scanner;
 
 import Problems.CubicMult;
 
+/**
+ * Solution class for a Cubic Multiple Knapsack Problem
+ * - Mutates solution with swaps and shifts
+ * - File I/O for storing solutions
+ * 
+ * @author midkiffj
+ */
 public class CubicMultSol extends MultKnapsackSol {
 
 	private static CubicMult cm;
 
+	/**
+	 * Construct a solution by relying on the super class
+	 */
 	public CubicMultSol() {
 		super();
 		cm = (CubicMult)p;
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution from the given file
+	 * 
+	 * @param filename to read
+	 */
 	public CubicMultSol(String filename) {
 		super(filename);
 		cm = (CubicMult)p;
 		updateValid();
 	}
 
-	public CubicMultSol(CubicMultSol cs) {
-		super((MultKnapsackSol)cs);
+	/**
+	 * Construct a solution that is equivalent to the solution passed in
+	 * 
+	 * @param cms the solution to copy
+	 */
+	public CubicMultSol(CubicMultSol cms) {
+		super((MultKnapsackSol)cms);
 		cm = (CubicMult)p;
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given xVals
+	 * 
+	 * @param xVals (T) if item i is in the solutions
+	 */
 	public CubicMultSol(boolean[] xVals) {
 		super(xVals);
 		cm = (CubicMult)p;
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 */
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		cm = (CubicMult)p;
 		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists, objective, and knapsack weight
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 * @param obj - objective of the solution
+	 * @param totalA - weights of the solution
+	 */
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int[] totalA) {
 		super(x,r,obj,totalA);
 		cm = (CubicMult)p;
 		updateValid();
 	}
 
+	/**
+	 * Update the validity of the solution
+	 */
 	public void updateValid() {
 		calcTotalA();
 		int[] totalA = getTotalA();
@@ -61,6 +103,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		setValid(valid);
 	}
 
+	/**
+	 * Current unused method that 
+	 * 	proportionally performs ratioMutates or bestRatioMutates.
+	 * 
+	 * @return mutated solution
+	 */
 	private CubicMultSol swapMutate() {
 		if (rnd.nextDouble() < 0.8) {
 			return ratioMutate();
@@ -69,10 +117,28 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Calculate the objective if item i is removed from the solution 
+	 * 	and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return calculated objective
+	 */
 	public double swapObj(int i, int j) {
 		return swapObj(i,j,getX(),getObj());
 	}
 
+	/**
+	 * Calculate the objective if item i is remove from the solution
+	 * 	and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param curX - current solution list
+	 * @param oldObj - current objective
+	 * @return calculated objective
+	 */
 	private double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
 		oldObj = oldObj - cm.getCi(i);
 		oldObj = oldObj + cm.getCi(j);
@@ -93,6 +159,15 @@ public class CubicMultSol extends MultKnapsackSol {
 		return oldObj;
 	}
 
+	/**
+	 * Perform a swap of items i and j,
+	 * 	- Remove i from the solution
+	 * 	- Add j to the solution
+	 * 	- Update objective and knapsack weight
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 */
 	public void swap(int i, int j) {
 		setObj(swapObj(i,j, getX(), getObj()));
 		addA(j);
@@ -102,7 +177,9 @@ public class CubicMultSol extends MultKnapsackSol {
 		updateValid();
 	}
 
-	// Shift a variable in or out of the current solution
+	/**
+	 *  Shift a variable in or out of the current solution
+	 */
 	public int shift() {
 		if (getRSize() == 0) {
 			return trySub();
@@ -118,7 +195,11 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
-	// Try to add a variable to the solution
+	/**
+	 * Try to add a variable to the solution
+	 * 
+	 * @return the item added or -1 if none added
+	 */
 	private int tryAdd() {
 		int index = tryAdd(getTotalA(), getX(), getR(), false);
 		if (index != -1) {
@@ -130,6 +211,11 @@ public class CubicMultSol extends MultKnapsackSol {
 		return index;
 	}
 
+	/**
+	 * Try to remove a variable from the solution
+	 * 
+	 * @return the item removed or -1 if none added
+	 */
 	private int trySub() {
 		int index = trySub(getX(), false);
 		if (index != -1) {
@@ -141,6 +227,14 @@ public class CubicMultSol extends MultKnapsackSol {
 		return index;
 	}
 
+	/**
+	 * Try to remove an item from the given solution
+	 * - Remove the minRatio item
+	 * 
+	 * @param x - solution list
+	 * @param improveOnly - only remove an item if it improves the objective
+	 * @return the item to remove or -1 if none to remove
+	 */
 	private int trySub(ArrayList<Integer> x, boolean improveOnly) {
 		if (x.size() <= 1) {
 			return -1;
@@ -162,6 +256,16 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Try to add an item to the given solution
+	 * - Add the maxRatio item
+	 * 
+	 * @param totalA - current knapsack weight
+	 * @param x - solution list
+	 * @param r - list of items not in the solution
+	 * @param improveOnly - only remove an item if it improves the objective
+	 * @return the item to add or -1 if none to add
+	 */
 	private int tryAdd(int[] totalA, ArrayList<Integer> x, ArrayList<Integer> r, boolean improveOnly) {
 		if (x.size() == n) {
 			return -1;
@@ -193,6 +297,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Calculate the objective if item i is removed from the solution
+	 * 
+	 * @param i - item to remove
+	 * @return calculated objective
+	 */
 	public double subObj(int i) {
 		ArrayList<Integer> curX = getX();
 		double oldObj = getObj() - cm.getCi(i);
@@ -211,6 +321,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		return oldObj;
 	}
 
+	/**
+	 * Calculate the objective if item i is added to the solution
+	 * 
+	 * @param i - item to add
+	 * @return calculated objective
+	 */
 	public double addObj(int i) {
 		ArrayList<Integer> curX = getX();
 		double oldObj = getObj() + cm.getCi(i);
@@ -229,6 +345,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		return oldObj;
 	}
 
+	/**
+	 * Perform a mutation given the current iteration number and tabu list
+	 * 
+	 * @param iteration - current iteration
+	 * @param tabuList - current tabu list
+	 * @return {best tabu solution, best nontabu solution}
+	 */
 	public CubicMultSol[] tabuMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
@@ -241,6 +364,11 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Mutate the solution
+	 * 
+	 * @return mutated solution
+	 */
 	public ProblemSol mutate() {
 		if (getRSize() == 0) {
 			return null;
@@ -261,6 +389,11 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Perform the best mutation (swap) possible
+	 * 
+	 * @return mutated solution
+	 */
 	public ProblemSol bestMutate() {
 		if (getRSize() == 0) {
 			return null;
@@ -280,6 +413,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Perform the best mutation given the current iteration and tabu list
+	 * 
+	 * @param iteration - current iteration count
+	 * @param tabuList - current tabu list
+	 * @return {best tabu solution, best nontabu solution}
+	 */
 	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
 		if (getRSize() == 0) {
 			return null;
@@ -287,6 +427,14 @@ public class CubicMultSol extends MultKnapsackSol {
 		return bestSwap(iteration, tabuList);
 	}
 
+	/**
+	 * Perform a crossover mutation with the specified solution
+	 * - Keeps items in the solution that appear in both solutions
+	 * - Fills the solution with max-ratio items until full
+	 * 
+	 * @param ps2 - solution to combine
+	 * @return solution after crossover
+	 */
 	public ProblemSol crossover(ProblemSol ps2) {
 		CubicMultSol cs2 = (CubicMultSol)ps2;
 		boolean[] newXVals = new boolean[n];
@@ -330,12 +478,24 @@ public class CubicMultSol extends MultKnapsackSol {
 		return new CubicMultSol(newXVals);
 	}
 
+	/**
+	 * Update the knapsack weights of the given array 
+	 * 	if item j is added
+	 * @param j - item to add
+	 * @param totalA - weights
+	 */
 	private void addA(int j, int[] totalA) {
 		for (int i = 0; i < m; i++) {
 			totalA[i] += cm.getA(i,j);
 		}
 	}
 
+	/**
+	 * Perform a mutation for the genetic algorithm
+	 * 
+	 * @param removeAttempts - number of genMutate2 calls
+	 * @return mutated solution
+	 */
 	public ProblemSol genMutate(int removeAttempts) {
 		CubicMultSol newCS = new CubicMultSol(this);
 		if (rnd.nextDouble() < 0.5) {
@@ -353,6 +513,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		return newCS;
 	}
 
+	/**
+	 * Randomly remove a number of items from the solution
+	 * 
+	 * @param cs - the solution to mutate
+	 * @param removeAttempts - the number of items to remove (increases with each call)
+	 * @return mutated solution
+	 */
 	private CubicMultSol genMutate2(CubicMultSol cs, int removeAttempts) {
 		// Remove s items from the solution
 		ArrayList<Integer> x = new ArrayList<Integer>(cs.getX());
@@ -390,6 +557,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		return new CubicMultSol(x,r,obj,newTotalA);
 	}
 
+	/**
+	 * Calculate the knapsack weights of the given solution
+	 * 
+	 * @param x - solution list
+	 * @return knapsack weights
+	 */
 	private int[] calcTotalA(ArrayList<Integer> x) {
 		int[] totalA = new int[m];
 		for (Integer i: x) {
@@ -400,6 +573,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		return totalA;
 	}
 
+	/**
+	 * Create a list of ratioNodes for the given solution lists
+	 * 
+	 * @param x - solution list
+	 * @param r - list of items not i the solution
+	 * @return list of ratioNodes
+	 */
 	private ArrayList<ratioNode> computeRatios(ArrayList<Integer> x, ArrayList<Integer> r) {
 		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
 		for (Integer i: r) {
@@ -410,6 +590,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		return ratio;
 	}
 
+	/**
+	 * Update the list of ratioNodes for the given solution lists
+	 * 
+	 * @param x - solution list
+	 * @param ratio - list of ratioNodes
+	 * @param added - item added to the solution
+	 */
 	private void updateRatios(ArrayList<Integer> x, ArrayList<ratioNode> ratio, int added) {
 		for (ratioNode rni: ratio) {
 			int i = rni.x;
@@ -422,6 +609,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Perform a ratio mutation
+	 * - Find the minRatio item in the solution
+	 * - Swap it with a random item outside the solution
+	 * 
+	 * @return mutated solution
+	 */
 	private CubicMultSol ratioMutate() {
 		CubicMultSol result = null;
 		boolean found = false;
@@ -453,6 +647,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		return result;
 	}
 
+	/**
+	 * Perform the best ratio mutation by swapping the minimum ratio item 
+	 * 	with the item j in R that best improves the objective.
+	 * 
+	 * @return mutated solution
+	 */
 	private CubicMultSol bestRatioMutate() {
 		CubicMultSol result = null;
 		boolean found = false;
@@ -483,6 +683,14 @@ public class CubicMultSol extends MultKnapsackSol {
 		return result;
 	}
 
+	/**
+	 * Perform a maxMin swap by swap the min ratio item from the solution
+	 * 	with the max ratio item outside the solution
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private CubicMultSol[] maxMinSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -571,6 +779,14 @@ public class CubicMultSol extends MultKnapsackSol {
 		return results;
 	}
 
+	/**
+	 * Perform a ratio mutate by swaping the min ratio item from the solution
+	 * 	with a random item outside the solution
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private CubicMultSol[] ratioMutate(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -628,6 +844,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		return results;
 	}
 
+	/**
+	 * Determine the kth minimum ratio item currently in the solution
+	 * 
+	 * @param k - which minimum
+	 * @return item number
+	 */
 	private int minRatio(int k) {
 		// Find the minimum ratio in the solution
 		double minRatio = Double.MAX_VALUE;
@@ -646,6 +868,12 @@ public class CubicMultSol extends MultKnapsackSol {
 		return minI;
 	}
 
+	/**
+	 * Determine the kth maximum ratio item currently not in the solution
+	 * 
+	 * @param k - which maximum
+	 * @return item number
+	 */
 	private int maxRatio(int k) {
 		// Find the maximum ratio not in the solution
 		double maxRatio = -1*Double.MAX_VALUE;
@@ -664,7 +892,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		return maxI;
 	}
 
-	// Find the best swap possible that keeps the knapsack feasible
+	/**
+	 * Find the best swap possible that keeps the knapsack feasible. 
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - current tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private CubicMultSol[] bestSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -704,7 +938,13 @@ public class CubicMultSol extends MultKnapsackSol {
 		return results;
 	}
 
-	// Return the first improving swap that keeps the knapsack feasible
+	/**
+	 * Return the first improving swap that keeps the knapsack feasible
+	 * 
+	 * @param iteration - current tabu search iteration
+	 * @param tabuList - current tabu list
+	 * @return {tabu mutated solution, nontabu mutated solution}
+	 */
 	private CubicMultSol[] firstSwap(int iteration, int[][] tabuList) {
 		// Store nontabu and best tabu swaps
 		int ni = -1;
@@ -745,6 +985,12 @@ public class CubicMultSol extends MultKnapsackSol {
 	}
 
 	@Override
+	/**
+	 * Comparison for solutions used in genetic algorithm
+	 * 
+	 * 1) Invalid < Valid
+	 * 2) Higher objective is better
+	 */
 	public int compareTo(ProblemSol o) 	{
 		if (o.getValid() && this.getValid() || !(o.getValid() || this.getValid())) {
 			double diff = this.getObj() - o.getObj();
@@ -766,12 +1012,18 @@ public class CubicMultSol extends MultKnapsackSol {
 
 
 	@Override
+	/**
+	 * Heal the solution if it is invalid
+	 */
 	public void healSol() {
 		//		healSolImproving();
 		healSolRatio();
 	}
 
-	// most improving
+	/**
+	 * Heal the solution by removing the item that results in the best objective
+	 *  until the solution is valid.
+	 */
 	public void healSolImproving() {
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
@@ -794,7 +1046,9 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
-	//min ratio healing
+	/**
+	 * Heal the solution by removing minRatio items until valid
+	 */
 	public void healSolRatio() {
 		while(!this.getValid()) {
 			int j = minRatio(0);
@@ -804,6 +1058,11 @@ public class CubicMultSol extends MultKnapsackSol {
 		}
 	}
 
+	/**
+	 * Write the solution to the given file
+	 * 
+	 * @param filename to write
+	 */
 	public void writeSolution(String filename) {
 		try {
 			PrintWriter pw = new PrintWriter(filename);
@@ -822,7 +1081,12 @@ public class CubicMultSol extends MultKnapsackSol {
 			System.err.println("Error with Print Writer");
 		}
 	}
-
+	
+	/**
+	 * Read a solution from the given filename
+	 * 
+	 * @param filename to read
+	 */
 	public void readSolution(String filename) { 
 		cm = (CubicMult)p;
 		Scanner scr;
