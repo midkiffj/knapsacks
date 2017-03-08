@@ -1047,6 +1047,7 @@ public class CubicSol extends KnapsackSol {
 	 * Read a solution from the given filename
 	 */
 	public void readSolution(String filename) {
+		c = (Cubic)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

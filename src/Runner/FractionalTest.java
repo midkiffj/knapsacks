@@ -17,6 +17,8 @@ public class FractionalTest extends ProblemTest {
 	// Test bed specification
 	int[] probSizes = {100, 300, 1000};
 	int[] mSizes = {1, 3, 5};
+	boolean[] numSize = {false,true};
+	boolean[] denSize = {false,true};
 	int num = 5;
 
 	// Method usage
@@ -42,6 +44,18 @@ public class FractionalTest extends ProblemTest {
 		generate = gen;
 		runHeuristics = rh;
 		runMIP = mip;
+	}
+
+	private String numDenFolder(boolean ln, boolean ld) {
+		if (ln && ld) {
+			return "LN-LD/";
+		} else if (ln) {
+			return "LN-SD/";
+		} else if (ld) {
+			return "SN-LD/";
+		} else {
+			return "SN-SD/";
+		}
 	}
 
 	@Override
@@ -72,23 +86,28 @@ public class FractionalTest extends ProblemTest {
 		int seed = 4000;
 		for (int n: probSizes) {
 			for (int m: mSizes) {
-				for (int i = 0; i < num; i++) {
-					String file1 = n+"_"+m+"_false_"+i;
-					System.out.println("--"+file1+"--");
-					Fractional f1 = new Fractional(n, m, false, seed++);
-					FractionalSol fs1 = (FractionalSol)ProblemFactory.genInitSol();
-					if (!fs1.getValid()) {
-						System.err.println("Invalid answer:" + file1);
+				for (boolean ln: numSize) {
+					for (boolean ld: denSize) {
+						String subFolder = numDenFolder(ln,ld);
+						for (int i = 0; i < num; i++) {
+							String file1 = subFolder+n+"_"+m+"_false_"+i;
+							System.out.println("--"+file1+"--");
+							Fractional f1 = new Fractional(n, m, false, seed++, ln, ld);
+							FractionalSol fs1 = (FractionalSol)ProblemFactory.genInitSol();
+							if (!fs1.getValid()) {
+								System.err.println("Invalid answer:" + file1);
+							}
+							f1.toFile(probFolder+file1);
+							fs1.writeSolution(incuFolder+file1+"inc.txt");
+
+							testObj.put(file1, f1.getObj(test));
+
+							Fractional f1t = new Fractional("problems/fractional/"+file1);
+							if(f1t.getObj(test) != testObj.get(file1)) {
+								System.err.println(file1 + " incorrect");
+							}		
+						}
 					}
-					f1.toFile(probFolder+file1);
-					fs1.writeSolution(incuFolder+file1+"inc.txt");
-
-					testObj.put(file1, f1.getObj(test));
-
-					Fractional f1t = new Fractional("problems/fractional/"+file1);
-					if(f1t.getObj(test) != testObj.get(file1)) {
-						System.err.println(file1 + " incorrect");
-					}		
 				}
 			}
 		}
@@ -105,24 +124,29 @@ public class FractionalTest extends ProblemTest {
 		pw.write("n,m,#,incumbent,GA,SA,ST,TS\n");
 		for (int n: probSizes) {
 			for (int m: mSizes) {
-				for (int i = 0; i < num; i++) {
-					String file1 = n+"_"+m+"_false_"+i;
-					@SuppressWarnings("unused")
-					Fractional f1 = new Fractional(probFolder+file1);
-					FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
-					double incumbent1 = fs1.getObj();
+				for (boolean ln: numSize) {
+					for (boolean ld: denSize) {
+						String subFolder = numDenFolder(ln,ld);
+						for (int i = 0; i < num; i++) {
+							String file1 = subFolder+n+"_"+m+"_false_"+i;
+							@SuppressWarnings("unused")
+							Fractional f1 = new Fractional(probFolder+file1);
+							FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
+							double incumbent1 = fs1.getObj();
 
-					TestLogger.setFile("fractional/"+file1);
-					System.out.println("--"+file1+"--");
+							TestLogger.setFile("fractional/"+file1);
+							System.out.println("--"+file1+"--");
 
-					HeuristicRunner hr = new HeuristicRunner(fs1);
-					String result1 = hr.getResults();
+							HeuristicRunner hr = new HeuristicRunner(fs1);
+							String result1 = hr.getResults();
 
 
-					if (i == 0) {
-						pw.write(n+","+m+","+i+","+incumbent1+","+result1+"\n");
-					} else {
-						pw.write(",,"+i+","+incumbent1+","+result1+"\n");
+							if (i == 0) {
+								pw.write(n+","+m+","+i+","+incumbent1+","+result1+"\n");
+							} else {
+								pw.write(",,"+i+","+incumbent1+","+result1+"\n");
+							}
+						}
 					}
 				}
 			}
@@ -141,27 +165,32 @@ public class FractionalTest extends ProblemTest {
 		pw.write("n,m,#,incumbent,MIP\n");
 		for (int n: probSizes) {
 			for (int m: mSizes) {
-				for (int i = 0; i < num; i++) {
-					String file1 = n+"_"+m+"_false_"+i;
-					System.out.println("--"+file1+"--");
-					@SuppressWarnings("unused")
-					Fractional f1 = new Fractional(probFolder+file1);
-					FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
-					double incumbent1 = fs1.getObj();
+				for (boolean ln: numSize) {
+					for (boolean ld: denSize) {
+						String subFolder = numDenFolder(ln,ld);
+						for (int i = 0; i < num; i++) {
+							String file1 = subFolder+n+"_"+m+"_false_"+i;
+							System.out.println("--"+file1+"--");
+							@SuppressWarnings("unused")
+							Fractional f1 = new Fractional(probFolder+file1);
+							FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
+							double incumbent1 = fs1.getObj();
 
-					String[] args = {file1};
-					Fractional_Borrero.main(args);
+							String[] args = {file1};
+							Fractional_Borrero.main(args);
 
-					double result1 = Fractional_Borrero.getBestObj();
-					String timeout1 = "";
-					if (Fractional_Borrero.getTimeout()) {
-						timeout1 = "*";
-					}
+							double result1 = Fractional_Borrero.getBestObj();
+							String timeout1 = "";
+							if (Fractional_Borrero.getTimeout()) {
+								timeout1 = "*";
+							}
 
-					if (i == 0) {
-						pw.write(n+","+m+","+i+","+incumbent1+","+result1+","+timeout1+"\n");
-					} else {
-						pw.write(",,"+i+","+incumbent1+","+result1+","+timeout1+"\n");
+							if (i == 0) {
+								pw.write(n+","+m+","+i+","+incumbent1+","+result1+","+timeout1+"\n");
+							} else {
+								pw.write(",,"+i+","+incumbent1+","+result1+","+timeout1+"\n");
+							}
+						}
 					}
 				}
 			}

@@ -32,7 +32,7 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public FractionalSol(FractionalSol fs) {
-		super();
+		super((KnapsackSol)fs);
 		f = (Fractional)p;
 		setNum(fs.getNum());
 		setDen(fs.getDen());
@@ -40,7 +40,7 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, long[] num, long[] den) {
-		super();
+		super(x,r,obj,totalA);
 		f = (Fractional)p;
 		setNum(num);
 		setDen(num);
@@ -48,7 +48,7 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public FractionalSol(boolean[] newXVals) {
-		super();
+		super(newXVals);
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
@@ -56,7 +56,7 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public FractionalSol(ArrayList<Integer> x, ArrayList<Integer> r) {
-		super();
+		super(x,r);
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
@@ -81,15 +81,15 @@ public class FractionalSol extends KnapsackSol {
 	}
 
 	public void setNum(long[] num) {
-		this.num = new long[n];
-		for (int i = 0; i < n; i++) {
+		this.num = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
 			this.num[i] = num[i];
 		}
 	}
 
 	public void setDen(long[] den) {
-		this.den = new long[n];
-		for (int i = 0; i < n; i++) {
+		this.den = new long[f.getM()];
+		for (int i = 0; i < f.getM(); i++) {
 			this.den[i] = den[i];
 		}
 	}
@@ -869,10 +869,12 @@ public class FractionalSol extends KnapsackSol {
 			pw.close();
 		} catch (FileNotFoundException e) {
 			System.err.println("Error with Print Writer");
+			System.err.println(e.getMessage());
 		}
 	}
 
 	public void readSolution(String filename) { 
+		f = (Fractional)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

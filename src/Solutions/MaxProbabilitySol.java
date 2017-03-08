@@ -947,6 +947,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
+		mp = (MaxProbability)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

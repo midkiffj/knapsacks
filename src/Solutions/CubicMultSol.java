@@ -824,6 +824,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	}
 
 	public void readSolution(String filename) { 
+		cm = (CubicMult)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

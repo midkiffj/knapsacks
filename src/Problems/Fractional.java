@@ -60,20 +60,20 @@ public class Fractional extends Knapsack {
 	 * @param negCoef - allow negative coefficients
 	 * @param seed - rnd seed
 	 */
-	public Fractional(int n, int m, boolean negCoef, int seed) {
+	public Fractional(int n, int m, boolean negCoef, int seed, boolean largeNum, boolean largeDen) {
 		super();
 		this.n = n;
 		this.m = m;
 		this.negCoef = negCoef;
 		this.rnd = new Random(seed);
 		this.seed = seed;
-		setup();
+		setup(largeNum,largeDen);
 	}
 
 	/**
 	 * Intialize the objective and constraint coefficients
 	 */
-	private void setup() {
+	private void setup(boolean largeNum, boolean largeDen) {
 		// Initialize all arrays
 		a = new int[n];
 		c = new int[m][n];
@@ -82,20 +82,36 @@ public class Fractional extends Knapsack {
 		denConst = new int[m];
 		tau = new double[n];
 		ratio = new double[n];
-		
+
 		// For each fraction,
 		for (int i = 0; i < m; i++) {
 			// Generate numerator and denominator coefficients
-			numConst[i] = rnd.nextInt(10) + 1;
-			denConst[i] = rnd.nextInt(10) + 1;
+			if (largeNum) {
+				numConst[i] = rnd.nextInt(10000) + 1;
+			} else {
+				numConst[i] = rnd.nextInt(10) + 1;
+			}
+			if (largeDen) {
+				denConst[i] = rnd.nextInt(10000) + 1;
+			} else {
+				denConst[i] = rnd.nextInt(10) + 1;
+			}
 			int totalC = numConst[i];
 			int totalD = denConst[i];
 			// Enforce that sum(cij) != 0 and sum(dij) != 0
 			boolean sat = false;
 			while (!sat) {
 				for (int j = 0; j < n; j++) {
-					c[i][j] = rnd.nextInt(10)+1;
-					d[i][j] = rnd.nextInt(10)+1;
+					if (largeNum) {
+						c[i][j] = rnd.nextInt(10000)+1;
+					} else {
+						c[i][j] = rnd.nextInt(10)+1;
+					}
+					if (largeDen) {
+						d[i][j] = rnd.nextInt(10000)+1;
+					} else {
+						d[i][j] = rnd.nextInt(10)+1;
+					}
 					if (negCoef) {
 						if (rnd.nextBoolean()) {
 							c[i][j] = c[i][j]*-1;
@@ -199,7 +215,7 @@ public class Fractional extends Knapsack {
 			double[] sub = trySub(x,curObj);
 			double addChange = add[0];
 			double subChange = sub[0];
-			
+
 			// If addition is better than swap
 			if (addChange > maxChange) {
 				int addI = (int)add[1];
@@ -249,7 +265,7 @@ public class Fractional extends Knapsack {
 		newX.add(j);
 		return getObj(newX, false);
 	}
-	
+
 	/**
 	 * Calculate the objective if i is removed. 
 	 * 	Calculation done without changes to num/den.
@@ -296,7 +312,7 @@ public class Fractional extends Knapsack {
 
 		return obj;
 	}
-	
+
 	/**
 	 * Find the variable that most improves the objective when removed
 	 *
@@ -507,7 +523,7 @@ public class Fractional extends Knapsack {
 			rnd = new Random(seed);
 			negCoef = scr.nextBoolean();
 			m = scr.nextInt();
-			
+
 			// Coefficients
 			b = scr.nextInt();
 			scr.nextLine();
@@ -572,7 +588,7 @@ public class Fractional extends Knapsack {
 			pw.write(seed + "\n");
 			pw.write(negCoef + "\n");
 			pw.write(m + "\n");
-			
+
 			// Coefficients
 			pw.write(b + "\n");
 			writeArr(pw, a);

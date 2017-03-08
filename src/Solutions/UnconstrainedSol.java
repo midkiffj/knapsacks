@@ -516,6 +516,7 @@ public class UnconstrainedSol extends ProblemSol {
 	}
 
 	public void readSolution(String filename) { 
+		u = (Unconstrained)p;
 		Scanner scr;
 		try {
 			scr = new Scanner(new FileInputStream(filename));

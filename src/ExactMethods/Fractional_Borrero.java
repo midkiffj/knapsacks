@@ -42,7 +42,7 @@ public class Fractional_Borrero {
 	 * @param args - can accept file name
 	 */
 	public static void main(String[] args) {
-		file = "100_1_false_0";
+		file = "SN-SD/100_1_false_0";
 		// Can get file name as argument
 		if (args.length > 0) {
 			file = args[0];
@@ -133,29 +133,8 @@ public class Fractional_Borrero {
 
 		cplex.solve();
 
-
-
-		// Pretty Print solution
-		double[] xvals = new double[n];
-		ArrayList<Integer> solX = new ArrayList<Integer>();
-		ArrayList<Integer> solR = new ArrayList<Integer>();
-		xvals = cplex.getValues(x);
-		for (int i = 0; i < n; i++) {
-			System.out.println("x_"+i+": " + xvals[i]);
-			if (xvals[i] > 0) {
-				solX.add(i);
-			} else {
-				solR.add(i);
-			}
-		}
 		bestObj = cplex.getObjValue();
-		System.out.println("MIP Optimal: " + bestObj);
-
-		// Check for differing MIP/Fractional
-		FractionalSol fs = new FractionalSol(solX,solR);
-		if (fs.getObj() != bestObj) {
-			System.err.println("Different fs obj: " + fs.getObj());
-		}
+		System.out.println("LP Optimal: " + bestObj);
 	}
 
 	/**
@@ -347,7 +326,6 @@ public class Fractional_Borrero {
 		}
 		bestObj = cplex.getObjValue();
 		System.out.println("MIP Optimal: " + bestObj);
-
 		// Check for differing MIP/Fractional
 		FractionalSol fs = new FractionalSol(solX,solR);
 		if (fs.getObj() != bestObj) {
