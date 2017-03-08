@@ -311,25 +311,24 @@ public class Fractional_Borrero {
 		}
 
 
-		// Pretty Print solution
+		// Create solution lists from MIP solution
 		double[] xvals = new double[n];
 		ArrayList<Integer> solX = new ArrayList<Integer>();
 		ArrayList<Integer> solR = new ArrayList<Integer>();
 		xvals = cplex.getValues(x);
 		for (int i = 0; i < n; i++) {
-			System.out.println("x_"+i+": " + xvals[i]);
 			if (xvals[i] > 0) {
 				solX.add(i);
 			} else {
 				solR.add(i);
 			}
 		}
-		bestObj = cplex.getObjValue();
-		System.out.println("MIP Optimal: " + bestObj);
-		// Check for differing MIP/Fractional
+		// Check MIP against problem solution and problem objectives
 		FractionalSol fs = new FractionalSol(solX,solR);
-		if (fs.getObj() != bestObj) {
+		double fObj = f.getObj(solX,false);
+		if (fs.getObj() != bestObj || fs.getObj() != fObj) {
 			System.err.println("Different fs obj: " + fs.getObj());
+			System.err.println("FObj: " + fObj);
 		}
 	}
 

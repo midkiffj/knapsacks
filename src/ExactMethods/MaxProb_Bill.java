@@ -1,6 +1,9 @@
 package ExactMethods;
 
+import java.util.ArrayList;
+
 import Problems.MaxProbability;
+import Solutions.MaxProbabilitySol;
 import ilog.concert.*;
 import ilog.cplex.*;
 
@@ -209,6 +212,26 @@ public class MaxProb_Bill {
 			System.out.println(bestObj);
 
 			printVars();
+			
+			// Create solution lists from MIP solution
+			double[] xvals = new double[n];
+			ArrayList<Integer> solX = new ArrayList<Integer>();
+			ArrayList<Integer> solR = new ArrayList<Integer>();
+			xvals = cplex.getValues(x);
+			for (int i = 0; i < n; i++) {
+				if (xvals[i] > 0) {
+					solX.add(i);
+				} else {
+					solR.add(i);
+				}
+			}
+			// Check MIP against problem solution and problem objectives
+			MaxProbabilitySol mps = new MaxProbabilitySol(solX,solR);
+			double mpObj = mp.getObj(solX);
+			if (mps.getObj() != bestObj || mps.getObj() != mpObj) {
+				System.err.println("Different mps obj: " + mps.getObj());
+				System.err.println("MPObj: " + mpObj);
+			}
 		}
 		catch (Exception e) {
 			System.err.println(e.getMessage());

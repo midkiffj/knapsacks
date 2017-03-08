@@ -25,7 +25,7 @@ public class Cubic_Forrester {
 	static int[][] Uij;
 	static int[] Li;
 	static int[] Ui;
-	
+
 	static long bestObj;
 	static boolean timeout;
 	static String file;
@@ -42,7 +42,7 @@ public class Cubic_Forrester {
 			file = args[0];
 		}
 		c = new Cubic("problems/cubic/"+file);
-		
+
 		// Approximate Upper and Lower bounds
 		computeBounds();
 		try {
@@ -53,11 +53,11 @@ public class Cubic_Forrester {
 			System.exit(-1);
 		}
 	}
-	
+
 	public static long getBestObj() {
 		return bestObj;
 	}
-	
+
 	public static boolean getTimeout() {
 		return timeout;
 	}
@@ -195,9 +195,9 @@ public class Cubic_Forrester {
 		}
 
 		// Seed MIP with incumbent solution
-		CubicSol cs = new CubicSol("incumbents/cubic/"+file+"inc.txt");
-		ArrayList<Integer> x = cs.getX();
-		seedMIP(x);
+		CubicSol inc = new CubicSol("incumbents/cubic/"+file+"inc.txt");
+		ArrayList<Integer> incX = inc.getX();
+		seedMIP(incX);
 
 		// Solve Model with time limit for bigger problems
 		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
@@ -213,6 +213,26 @@ public class Cubic_Forrester {
 		System.out.println("Model Status: " + cplex.getCplexStatus());
 		System.out.println("IPOptimal: " + IPOptimal);
 		prettyPrintInOrder();
+
+		// Create solution lists from MIP solution
+		double[] xvals = new double[n];
+		ArrayList<Integer> solX = new ArrayList<Integer>();
+		ArrayList<Integer> solR = new ArrayList<Integer>();
+		xvals = cplex.getValues(x);
+		for (i = 0; i < n; i++) {
+			if (xvals[i] > 0) {
+				solX.add(i);
+			} else {
+				solR.add(i);
+			}
+		}
+		// Check MIP against problem solution and problem objectives
+		CubicSol cs = new CubicSol(solX,solR);
+		double cObj = c.getObj(solX);
+		if (cs.getObj() != bestObj || cs.getObj() != cObj) {
+			System.err.println("Different cs obj: " + cs.getObj());
+			System.err.println("CObj: " + cObj);
+		}
 	}
 
 	/**
