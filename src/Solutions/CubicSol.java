@@ -934,6 +934,16 @@ public class CubicSol extends KnapsackSol {
 						bj = j;
 						bObj = newObj;
 					}
+					if (ni != -1 && nj != -1)  {
+						CubicSol[] results = new CubicSol[2];
+						if (bi != -1 && bj != -1) {
+							results[0] = new CubicSol(this);
+							results[0].swap(bi, bj);
+						}
+						results[1] = new CubicSol(this);
+						results[1].swap(ni, nj);
+						return results;
+					}
 				}
 			}
 		}

@@ -835,7 +835,7 @@ public class FractionalSol extends KnapsackSol {
 		}
 		if (ni != -1 && nj != -1) {
 			results[1] = new FractionalSol(this);
-			results[1].swap(bi,bj);
+			results[1].swap(ni,nj);
 		}
 		return results;
 	}
@@ -994,7 +994,7 @@ public class FractionalSol extends KnapsackSol {
 		}
 		if (ni != -1 && nj != -1) {
 			results[1] = new FractionalSol(this);
-			results[1].swap(bi,bj);
+			results[1].swap(ni,nj);
 		}
 		return results;
 	}
@@ -1030,6 +1030,17 @@ public class FractionalSol extends KnapsackSol {
 						bj = j;
 						bObj = newObj;
 					}
+					if (ni != -1 && nj != -1) {
+						// Compile and return data
+						FractionalSol[] results = new FractionalSol[2];
+						if (bi != -1 && bj != -1) {
+							results[0] = new FractionalSol(this);
+							results[0].swap(bi,bj);
+						}
+						results[1] = new FractionalSol(this);
+						results[1].swap(ni,nj);
+						return results;
+					}
 				}
 			}
 		}
@@ -1041,7 +1052,7 @@ public class FractionalSol extends KnapsackSol {
 		}
 		if (ni != -1 && nj != -1) {
 			results[1] = new FractionalSol(this);
-			results[1].swap(bi,bj);
+			results[1].swap(ni,nj);
 		}
 		return results;
 	}

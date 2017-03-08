@@ -90,7 +90,7 @@ public class UnconstrainedSol extends ProblemSol {
 	private double swapObj(int i, int j) {
 		return u.swapObj(i, j, getX(), getObj());
 	}
-
+	
 	@Override
 	public ProblemSol bestMutate() {
 		if (getRSize() > 0) {

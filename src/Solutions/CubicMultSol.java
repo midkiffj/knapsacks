@@ -968,6 +968,17 @@ public class CubicMultSol extends MultKnapsackSol {
 						bj = j;
 						bObj = newObj;
 					}
+					if (ni != -1 && nj != -1) {
+						// Compile and return data
+						CubicMultSol[] results = new CubicMultSol[2];
+						if (bi != -1 && bj != -1) {
+							results[0] = new CubicMultSol(this);
+							results[0].swap(bi, bj);
+						}
+						results[1] = new CubicMultSol(this);
+						results[1].swap(ni, nj);
+						return results;
+					}
 				}
 			}
 		}
@@ -1081,7 +1092,7 @@ public class CubicMultSol extends MultKnapsackSol {
 			System.err.println("Error with Print Writer");
 		}
 	}
-	
+
 	/**
 	 * Read a solution from the given filename
 	 * 

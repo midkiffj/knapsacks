@@ -3,13 +3,20 @@ import java.util.ArrayList;
 
 import Problems.Knapsack;
 
-
+/**
+ * Abstract knapsack solution class for knapsack interaction
+ * 
+ * @author midkiffj
+ */
 public abstract class KnapsackSol extends ProblemSol {
 
 	private static Knapsack k;
 	private int totalA;
 	private int b;
 
+	/**
+	 * Construct a solution by generating an incumbent solution
+	 */
 	public KnapsackSol() {
 		super();
 		k = (Knapsack)p;
@@ -22,6 +29,11 @@ public abstract class KnapsackSol extends ProblemSol {
 		updateB();
 	}
 	
+	/**
+	 * Construct a solution from the given file
+	 * 
+	 * @param filename to read
+	 */
 	public KnapsackSol(String filename) {
 		super();
 		k = (Knapsack)p;
@@ -32,6 +44,11 @@ public abstract class KnapsackSol extends ProblemSol {
 		updateB();
 	}
 	
+	/**
+	 * Construct a solution that is equivalent to the solution passed in
+	 * 
+	 * @param ks the solution to copy
+	 */
 	public KnapsackSol(KnapsackSol ks) {
 		super();
 		k = (Knapsack)p;
@@ -45,6 +62,11 @@ public abstract class KnapsackSol extends ProblemSol {
 		updateB();
 	}
 
+	/**
+	 * Construct a solution with the given xVals
+	 * 
+	 * @param xVals (T) if item i is in the solutions
+	 */
 	public KnapsackSol(boolean[] xVals) {
 		super();
 		k = (Knapsack)p;
@@ -65,6 +87,12 @@ public abstract class KnapsackSol extends ProblemSol {
 		updateB();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 */
 	public KnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super();
 		k = (Knapsack)p;
@@ -78,6 +106,14 @@ public abstract class KnapsackSol extends ProblemSol {
 		updateB();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists, objective, and knapsack weight
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 * @param obj - objective of the solution
+	 * @param totalA - weight of the solution
+	 */
 	public KnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
 		super();
 		k = (Knapsack)p;
@@ -91,6 +127,11 @@ public abstract class KnapsackSol extends ProblemSol {
 		updateB();
 	}
 	
+	/**
+	 * Set the value of the knapsack capacity
+	 * 	- Infinity if using healing algorithms
+	 * 	- Otherwise, problem.getB()
+	 */
 	private void updateB() {
 		if (useHealing) {
 			b = Integer.MAX_VALUE;
@@ -99,6 +140,9 @@ public abstract class KnapsackSol extends ProblemSol {
 		}
 	}
 
+	/**
+	 * Update the knapsack weight given the current solution
+	 */
 	public void calcTotalA() {
 		int totalA = 0;
 		for (Integer i: getX()) {
@@ -115,10 +159,18 @@ public abstract class KnapsackSol extends ProblemSol {
 		this.totalA = totalA;
 	}
 	
+	/**
+	 * Add item i to the knapsack weight
+	 * @param i - item to add
+	 */
 	public void addA(int i) {
 		this.totalA += k.getA(i);
 	}
 	
+	/**
+	 * Remove item i from the knapsack weight
+	 * @param i - item to remove
+	 */
 	public void removeA(int i) {
 		this.totalA -= k.getA(i);
 	}
