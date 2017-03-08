@@ -1,17 +1,12 @@
 package Solutions;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Random;
-import java.util.Scanner;
-
 import Problems.MultipleKnapsack;
-import Problems.Problem;
-import Problems.ProblemFactory;
 
-
+/**
+ * Abstract multiple knapsack solution class for knapsack interaction
+ * 
+ * @author midkiffj
+ */
 public abstract class MultKnapsackSol extends ProblemSol {
 
 	private MultipleKnapsack mk = (MultipleKnapsack)p;
@@ -19,6 +14,9 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	private int[] b;
 	protected int m;
 
+	/**
+	 * Construct a solution by generating an incumbent solution
+	 */
 	public MultKnapsackSol() {
 		super();
 		m = mk.getM();
@@ -31,6 +29,11 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		updateB();
 	}
 	
+	/**
+	 * Construct a solution from the given file
+	 * 
+	 * @param filename to read
+	 */
 	public MultKnapsackSol(String filename) {
 		super();
 		m = mk.getM();
@@ -41,6 +44,11 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		updateB();
 	}
 	
+	/**
+	 * Construct a solution that is equivalent to the solution passed in
+	 * 
+	 * @param mks the solution to copy
+	 */
 	public MultKnapsackSol(MultKnapsackSol mks) {
 		super();
 		m = mk.getM();
@@ -54,6 +62,11 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		updateB();
 	}
 
+	/**
+	 * Construct a solution with the given xVals
+	 * 
+	 * @param xVals (T) if item i is in the solutions
+	 */
 	public MultKnapsackSol(boolean[] xVals) {
 		super();
 		m = mk.getM();
@@ -74,6 +87,12 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		updateB();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 */
 	public MultKnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super();
 		m = mk.getM();
@@ -87,6 +106,14 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		updateB();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists, objective, and knapsack weight
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 * @param obj - objective of the solution
+	 * @param totalA - weights of the solution
+	 */
 	public MultKnapsackSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int[] totalA) {
 		super();
 		m = mk.getM();
@@ -100,6 +127,11 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		updateB();
 	}
 	
+	/**
+	 * Set the value of the knapsack capacity
+	 * 	- Infinity if using healing algorithms
+	 * 	- Otherwise, problem.getB()
+	 */
 	private void updateB() {
 		b = new int[m];
 		if (useHealing) {
@@ -112,7 +144,10 @@ public abstract class MultKnapsackSol extends ProblemSol {
 			}
 		}
 	}
-
+	
+	/**
+	 * Update the knapsack weight given the current solution
+	 */
 	public void calcTotalA() {
 		totalA = new int[m];
 		for (Integer i: getX()) {
@@ -126,15 +161,46 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		return totalA;
 	}
 	
-	public boolean totalAValid(int[] totalA) {
-		for (int i = 0; i < m; i++) {
-			if (totalA[i] > b[i]) {
-				return false;
-			}
-		}
-		return true;
+	/**
+	 * Return if adding item i will keep the problem feasible 
+	 * 
+	 * @param i - item to add
+	 * @return (T) if adding i results in a valid solution
+	 */
+	public boolean addValid(int i) {
+		return addTotalA(getTotalA(),i);
 	}
 	
+	/**
+	 * Return if removing item i will keep the problem feasible 
+	 * 
+	 * @param i - item to remove
+	 * @return (T) if removing i results in a valid solution
+	 */
+	public boolean subValid(int i) {
+		return subTotalA(getTotalA(),i);
+	}
+	
+	/**
+	 * Return if removing item i and adding item j
+	 * 	will keep the problem feasible 
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return (T) if swapping i and j results in a valid solution
+	 */
+	public boolean swapValid(int i, int j) {
+		return swapTotalA(getTotalA(),i,j);
+	}
+	
+	/**
+	 * Return if adding the item to the given weight 
+	 * 	will keep the problem feasible
+	 * 
+	 * @param totalA solution weights
+	 * @param j - item to add
+	 * @return (T) if j can be added and maintain problem feasibility
+	 */
 	public boolean addTotalA(int[] totalA, int j) {
 		for (int i = 0; i < m; i++) {
 			if (totalA[i] + mk.getA(i,j) > b[i]) {
@@ -144,6 +210,14 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		return true;
 	}
 	
+	/**
+	 * Return if removing the item to the given weight 
+	 * 	will keep the problem feasible
+	 * 
+	 * @param totalA solution weights
+	 * @param j - item to remove
+	 * @return (T) if j can be remove and maintain problem feasibility
+	 */
 	public boolean subTotalA(int[] totalA, int j) {
 		for (int i = 0; i < m; i++) {
 			if (totalA[i] - mk.getA(i,j) > b[i]) {
@@ -153,6 +227,15 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		return true;
 	}
 
+	/**
+	 * Return if swapping the items to the given weight 
+	 * 	will keep the problem feasible
+	 * 
+	 * @param totalA solution weights
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return (T) if i,j can be swapped and maintain problem feasibility
+	 */
 	public boolean swapTotalA(int[] totalA, int i, int j) {
 		for (int k = 0; k < m; k++) {
 			if (totalA[k] + mk.getA(k,j) - mk.getA(k,i) > b[k]) {

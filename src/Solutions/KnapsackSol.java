@@ -175,6 +175,38 @@ public abstract class KnapsackSol extends ProblemSol {
 		this.totalA -= k.getA(i);
 	}
 	
+	/**
+	 * Return if adding item i will keep the problem feasible 
+	 * 
+	 * @param i - item to add
+	 * @return (T) if adding i results in a valid solution
+	 */
+	public boolean addValid(int i) {
+		return ((getTotalA() + k.getA(i)) <= getB());
+	}
+	
+	/**
+	 * Return if removing item i will keep the problem feasible 
+	 * 
+	 * @param i - item to remove
+	 * @return (T) if removing i results in a valid solution
+	 */
+	public boolean subValid(int i) {
+		return ((getTotalA() - k.getA(i)) <= getB());
+	}
+	
+	/**
+	 * Return if removing item i and adding item j
+	 * 	will keep the problem feasible 
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return (T) if swapping i and j results in a valid solution
+	 */
+	public boolean swapValid(int i, int j) {
+		return ((getTotalA() + k.getA(j) - k.getA(i)) <= getB());
+	}
+	
 	public int getB() {
 		return b;
 	}

@@ -212,36 +212,6 @@ public class Unconstrained extends Problem {
 		} 
 		return curObj;
 	}
-	
-	/**
-	 * Calculate the objective of curX 
-	 * 	if item i is removed and item j is added
-	 * 
-	 * @param i - item to be removed
-	 * @param j - item to be added
-	 * @param curX - current solution
-	 * @param oldObj - current solution objective value
-	 * @return the new objective if i and j swapped
-	 */
-	public double swapObj(int i, int j, ArrayList<Integer> curX, double oldObj) {
-		oldObj = oldObj - this.getCi(i);
-		oldObj = oldObj + this.getCi(j);
-		for (int k = 0; k < curX.size(); k++) {
-			int xk = curX.get(k);
-			if (xk != i) {
-				oldObj = oldObj - this.getCij(i,xk);
-				oldObj = oldObj + this.getCij(j,xk);
-				for (int l = k+1; l < curX.size(); l++) {
-					int xl = curX.get(l);
-					if (xl != i) {
-						oldObj = oldObj - this.getDijk(i,xk,xl);
-						oldObj = oldObj + this.getDijk(j,xk,xl);
-					}
-				}
-			}
-		}
-		return oldObj;
-	}
 
 	public int getN() {
 		return n;
@@ -291,6 +261,10 @@ public class Unconstrained extends Problem {
 	}
 	
 	public int getTau(int i) {
+		return tau[i];
+	}
+	
+	public double getRatio(int i) {
 		return tau[i];
 	}
 

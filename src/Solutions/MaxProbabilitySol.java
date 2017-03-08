@@ -10,6 +10,13 @@ import java.util.Scanner;
 import ExactMethods.Knapsack_Frac;
 import Problems.MaxProbability;
 
+/**
+ * Solution class for a Max Probability Problem
+ * - Mutates solution with swaps and shifts
+ * - File I/O for storing solutions
+ * 
+ * @author midkiffj
+ */
 public class MaxProbabilitySol extends KnapsackSol {
 
 	private static MaxProbability mp;
@@ -18,48 +25,78 @@ public class MaxProbabilitySol extends KnapsackSol {
 	private double den;
 	private int totalU;
 
+	/**
+	 * Construct a solution by relying on the super class
+	 */
 	public MaxProbabilitySol() {
 		super();
 		mp = (MaxProbability)p;
 		num = mp.getNum();
 		den = mp.getDen();
 		calcTotalU();
-		updateValid();
 	}
 
+	/**
+	 * Construct a solution from the given file
+	 * 
+	 * @param filename to read
+	 */
 	public MaxProbabilitySol(String filename) {
 		super(filename);
 		mp = (MaxProbability)p;
-		updateValid();
 	}
 
+	/**
+	 * Construct a solution that is equivalent to the solution passed in
+	 * 
+	 * @param mps the solution to copy
+	 */
 	public MaxProbabilitySol(MaxProbabilitySol mps) {
 		super(mps);
 		mp = (MaxProbability)p;
 		totalU = mps.getTotalU();
 		num = mps.getNum();
 		den = mps.getDen();
-		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists, objective, and knapsack weight
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 * @param obj - objective of the solution
+	 * @param totalA - weight of the solution
+	 * @param totalU - profit of the solution
+	 * @param num - solution numerator value
+	 * @param den - solution denominator value
+	 */
 	public MaxProbabilitySol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA, double num, double den) {
 		super(x,r,obj,totalA);
 		mp = (MaxProbability)p;
 		calcTotalU();
 		this.num = num;
 		this.den = den;
-		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given xVals
+	 * 
+	 * @param xVals (T) if item i is in the solutions
+	 */
 	public MaxProbabilitySol(boolean[] newXVals) {
 		super(newXVals);
 		mp = (MaxProbability)p;
 		calcTotalU();
 		num = mp.getNum();
 		den = mp.getDen();
-		updateValid();
 	}
 
+	/**
+	 * Construct a solution with the given solution lists
+	 * 
+	 * @param x - list of items in solution
+	 * @param r - list of items not in solution
+	 */
 	public MaxProbabilitySol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		mp = (MaxProbability)p;
@@ -69,13 +106,19 @@ public class MaxProbabilitySol extends KnapsackSol {
 		updateValid();
 	}
 
+	/**
+	 * Calculate the total profit of the solution
+	 */
 	private void calcTotalU() {
 		totalU = 0;
 		for (int i: getX()) {
 			totalU += mp.getU(i);
 		}
 	}
-
+	
+	/**
+	 * Update the validity of the solution
+	 */
 	public void updateValid() {
 		calcTotalU();
 		if (getTotalA() <= mp.getB() && totalU >= mp.getT()) {
@@ -83,6 +126,38 @@ public class MaxProbabilitySol extends KnapsackSol {
 		} else {
 			setValid(false);
 		}
+	}
+	
+	/**
+	 * Return if adding item i will keep the problem feasible 
+	 * 
+	 * @param i - item to add
+	 * @return (T) if adding i results in a valid solution
+	 */
+	public boolean addValid(int i) {
+		return ((getTotalA() + mp.getA(i)) <= getB() && getTotalU() + mp.getU(i) >= mp.getT());
+	}
+	
+	/**
+	 * Return if removing item i will keep the problem feasible 
+	 * 
+	 * @param i - item to remove
+	 * @return (T) if removing i results in a valid solution
+	 */
+	public boolean subValid(int i) {
+		return ((getTotalA() - mp.getA(i)) <= getB() && getTotalU() - mp.getU(i) >= mp.getT());
+	}
+	
+	/**
+	 * Return if removing item i and adding item j
+	 * 	will keep the problem feasible 
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return (T) if swapping i and j results in a valid solution
+	 */
+	public boolean swapValid(int i, int j) {
+		return ((getTotalA() + mp.getA(j) - mp.getA(i)) <= getB() && getTotalU() + mp.getU(j) - mp.getU(i) >= mp.getT());
 	}
 
 	public int getTotalU() {
@@ -105,32 +180,16 @@ public class MaxProbabilitySol extends KnapsackSol {
 		return den;
 	}
 
-	public double swapNum(int i, int j, double num) {
-		return num + mp.getU(j) - mp.getU(i);
-	}
-
-	public double subNum(int i, double num) {
-		return num - mp.getU(i);
-	}
-
-	public double addNum(int i, double num) {
-		return num + mp.getU(i);
-	}
-
-	public double swapDen(int i, int j, double den) {
-		return den + mp.getS(j) - mp.getS(i);
-
-	}
-
-	public double subDen(int i, double den) {
-		return den - mp.getS(i);
-	}
-
-	public double addDen(int i, double den) {
-		return den + mp.getS(i);
-	}
-
 	@Override
+	/**
+	 * Perform a swap of items i and j,
+	 * 	- Remove i from the solution
+	 * 	- Add j to the solution
+	 * 	- Update objective and knapsack weight
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 */
 	public void swap(int i, int j) {
 		addA(j);
 		removeA(i);
@@ -139,88 +198,90 @@ public class MaxProbabilitySol extends KnapsackSol {
 		setObj(swapObj(i,j));
 		this.num = swapNum(i,j,num);
 		this.den = swapDen(i,j,den);
-		updateValid();
 		addI(j);
 		removeI(i);
 	}
-
-	// Shift a variable in or out of the current solution
-	public int shift() {
-		if (getRSize() == 0) {
-			return trySub();
-		}
-		if (getXSize() < 2) {
-			return tryAdd();
-		} else {
-			if (rnd.nextDouble() < 0.8) {
-				return tryAdd();
-			} else {
-				return trySub();
-			}
-		}
-	}
-
-	// Try to add a variable to the solution
-	private int tryAdd() {
-		int index = tryAdd(getTotalA(), getX(), getR(), false, num, den);
-		if (index != -1) {
-			addI(index);
-			addA(index);
-			addU(index);
-			setObj(addObj(index, getX(), num, den));
-			num = addNum(index, num);
-			den = addDen(index, den);
-			updateValid();
-		}
-		return index;
-	}
-
-	private int trySub() {
-		int index = trySub(totalU, getX(), false, num, den);
-		if (index != -1) {
-			removeI(index);
-			removeA(index);
-			removeU(index);
-			setObj(subObj(index, getX(), num, den));
-			num = subNum(index, num);
-			den = subDen(index, den);
-			updateValid();
-		}
-		return index;
-	}
-
-
-	private int trySub(int totalU, ArrayList<Integer> x, boolean improveOnly, 
-			double num, double den) {
-		if (x.size() <= 1) {
-			return -1;
-		}
-
-		int minI = minRatio(0);
-
-		if (minI == -1) {
-			return -1;
-		}
-		if (improveOnly) {
-			double change = subObj(minI, x, num, den);
-			if (change > (num*num)/den) {
-				return minI;
-			} else {
-				return -1;
-			}
-		} else {
-			return minI;
-		}
-	}
-
-	public double subObj(int i, ArrayList<Integer> x, double num,
-			double den) {
-		num -= mp.getU(i);
-		den -= mp.getS(i);
+	
+	/**
+	 * Calculate the objective if item i is removed from the solution 
+	 * 	and item j is added to the solution.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @return calculated objective
+	 */
+	public double swapObj(int i, int j) {
+		double num = swapNum(i, j, this.num);
+		double den = swapDen(i, j, this.den);
 		return (num*num)/den;
 	}
+	
+	/**
+	 * Calculate the numerator values if item i is removed 
+	 * 	and item j is added to the value.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param num - numerator value
+	 * @return calculated objective
+	 */
+	private double swapNum(int i, int j, double num) {
+		return num + mp.getU(j) - mp.getU(i);
+	}
 
-	public int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
+	/**
+	 * Calculate the denominator values if item i is removed 
+	 * 	and item j is added to the value.
+	 * 
+	 * @param i - item to remove
+	 * @param j - item to add
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
+	private double swapDen(int i, int j, double den) {
+		return den + mp.getS(j) - mp.getS(i);
+
+	}
+
+	/**
+	 * Try to add a variable to the solution
+	 * 
+	 * @return the item added or -1 if none added
+	 */
+	public int tryAdd() {
+		int index = tryAdd(getTotalA(), getX(), getR(), false, num, den);
+		if (index != -1) {
+			addX(index);
+		}
+		return index;
+	}
+
+	/**
+	 * Try to remove a variable from the solution
+	 * 
+	 * @return the item removed or -1 if none added
+	 */
+	public int trySub() {
+		int index = trySub(totalU, getX(), false, num, den);
+		if (index != -1) {
+			removeX(index);
+		}
+		return index;
+	}
+	
+	/**
+	 * Try to add an item to the given solution
+	 * - Add the maxRatio item
+	 * 
+	 * @param totalA - current knapsack weight
+	 * @param x - solution list
+	 * @param r - list of items not in the solution
+	 * @param improveOnly - only remove an item if it improves the objective
+	 * @param num - current numerator values
+	 * @param den - current denominator values
+	 * @return the item to add or -1 if none to add
+	 */
+	private int tryAdd(int totalA, ArrayList<Integer> x, ArrayList<Integer> r, 
 			boolean improveOnly, double num, double den) {
 		if (r.size() < 1) {
 			return -1;
@@ -253,75 +314,153 @@ public class MaxProbabilitySol extends KnapsackSol {
 			return maxI;
 		}
 	}
+	
+	/**
+	 * Try to remove an item from the given solution
+	 * - Remove the minRatio item
+	 * 
+	 * @param x - solution list
+	 * @param improveOnly - only remove an item if it improves the objective
+	 * @param num - current numerator values
+	 * @param den - current denominator values
+	 * @return the item to remove or -1 if none to remove
+	 */
+	private int trySub(int totalU, ArrayList<Integer> x, boolean improveOnly, 
+			double num, double den) {
+		if (x.size() <= 1) {
+			return -1;
+		}
 
-	public double addObj(int i, ArrayList<Integer> x, double num,
+		int minI = minRatio(0);
+
+		if (minI == -1) {
+			return -1;
+		}
+		if (improveOnly) {
+			double change = subObj(minI, x, num, den);
+			if (change > (num*num)/den) {
+				return minI;
+			} else {
+				return -1;
+			}
+		} else {
+			return minI;
+		}
+	}
+	
+	/**
+	 * Add variable i to the solution
+	 * 
+	 * @param i - item to add
+	 */
+	public void addX(int i) {
+		addI(i);
+		addA(i);
+		addU(i);
+		setObj(addObj(i, getX(), num, den));
+		num = addNum(i, num);
+		den = addDen(i, den);
+	}
+	
+	/**
+	 * Remove variable i from the solution
+	 * 
+	 * @param i - item to remove
+	 */
+	public void removeX(int i) {
+		super.removeI(i);
+		removeA(i);
+		removeU(i);
+		setObj(subObj(i, getX(), num, den));
+		num = subNum(i, num);
+		den = subDen(i, den);
+	}
+
+	/**
+	 * Calculate the objective if item i is removed from the solution
+	 * 
+	 * @param i - item to remove
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
+	private double subObj(int i, ArrayList<Integer> x, double num,
+			double den) {
+		num -= mp.getU(i);
+		den -= mp.getS(i);
+		return (num*num)/den;
+	}
+
+	/**
+	 * Calculate the objective if item i is added to the solution
+	 * 
+	 * @param i - item to add
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
+	private double addObj(int i, ArrayList<Integer> x, double num,
 			double den) {
 		num += mp.getU(i);
 		den += mp.getS(i);
 		return (num*num)/den;
 	}
-
-	private double swapObj(int i, int j) {
-		double num = swapNum(i, j, this.num);
-		double den = swapDen(i, j, this.den);
-		return (num*num)/den;
+	
+	/**
+	 * Calculate the numerator values if item i is removed
+	 * 
+	 * @param i - item to remove
+	 * @param num - numerator value
+	 * @return calculated objective
+	 */
+	private double subNum(int i, double num) {
+		return num - mp.getU(i);
 	}
 
-	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
-		if (getRSize() == 0) {
-			return null;
-		}
-		if (rnd.nextDouble() < 0.6) {
-			return maxMinSwap(iteration, tabuList);
-		} else {
-			ProblemSol[] ratioSwap = ratioMutate(iteration, tabuList);
-			return ratioSwap;
-		}
+	/**
+	 * Calculate the numerator values if item i is added
+	 * 
+	 * @param i - item to add
+	 * @param num - numerator value
+	 * @return calculated objective
+	 */
+	private double addNum(int i, double num) {
+		return num + mp.getU(i);
+	}
+	
+	/**
+	 * Calculate the denominator values if item i is removed 
+	 * 
+	 * @param i - item to remove
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
+	private double subDen(int i, double den) {
+		return den - mp.getS(i);
 	}
 
-	public ProblemSol mutate() {
-		if (getRSize() == 0) {
-			return null;
-		}
-		if (rnd.nextDouble() < 0.6) {
-			ProblemSol[] ret = maxMinSwap(1, new int[n][n]);
-			if (ret == null) {
-				return null;
-			} else {
-				return ret[0];
-			}
-		} else {
-			ProblemSol ratioSwap = ratioMutate();
-			return ratioSwap;
-		}
+	/**
+	 * Calculate the denominator values if item i is added 
+	 * 
+	 * @param i - item to add
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
+	private double addDen(int i, double den) {
+		return den + mp.getS(i);
 	}
 
-	public ProblemSol bestMutate() {
-		if (getRSize() == 0) {
-			return null;
-		}
-		if (p.getN() >= 500) {
-			ProblemSol[] fs = firstSwap(1, new int[n][n]);
-			if (fs != null) {
-				return fs[0];
-			}
-			return null;
-		}
-		ProblemSol[] bs = bestSwap(1, new int[n][n]);
-		if (bs != null) {
-			return bs[0];
-		} else {
-			return null;
-		}
-	}
-
-	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
-		if (getRSize() == 0) {
-			return null;
-		}
-		return bestSwap(iteration, tabuList);
-	}
-
+	/**
+	 * Perform a crossover mutation with the specified solution
+	 * - Keeps items in the solution that appear in both solutions
+	 * - Fills the solution with max-ratio items until full
+	 * - If the final solution is infeasible, 
+	 *    instead fill the solution by solving a knapsack to maximize the profit
+	 *    (Note: Infeasible solutions can still result)
+	 * 
+	 * @param ps2 - solution to combine
+	 * @return solution after crossover
+	 */
 	public ProblemSol crossover(ProblemSol ps2) {
 		MaxProbabilitySol mps2 = (MaxProbabilitySol)ps2;
 		ArrayList<Integer> r = new ArrayList<Integer>();
@@ -355,8 +494,6 @@ public class MaxProbabilitySol extends KnapsackSol {
 			ratioNode rni = ratio.get(i);
 			if (newTotalA + mp.getA(rni.x) <= getB()) {
 				ratio.remove(i);
-				//				updateRatios(x, ratio, rni.x);
-				//				Collections.sort(ratio);
 				x.add(rni.x);
 				r.remove(Integer.valueOf(rni.x));
 				newTotalA += mp.getA(rni.x);
@@ -397,6 +534,12 @@ public class MaxProbabilitySol extends KnapsackSol {
 		return new MaxProbabilitySol(x,r);
 	}
 
+	/**
+	 * Perform a mutation for the genetic algorithm
+	 * 
+	 * @param removeAttempts - number of genMutate2 calls
+	 * @return mutated solution
+	 */
 	public ProblemSol genMutate(int removeAttempts) {
 		MaxProbabilitySol newMP = new MaxProbabilitySol(this);
 		if (rnd.nextDouble() < 0.5) {
@@ -411,6 +554,16 @@ public class MaxProbabilitySol extends KnapsackSol {
 		return newMP;
 	}
 
+	/**
+	 * Randomly remove a number of items from the solution and fill with max-ratio items
+	 * - If the final solution is infeasible, 
+	 *    instead fill the solution by solving a knapsack to maximize the profit
+	 *    (Note: Infeasible solutions can still result)
+	 * 
+	 * @param mps - the solution to mutate
+	 * @param removeAttempts - the number of items to remove (increases with each call)
+	 * @return mutated solution
+	 */
 	private MaxProbabilitySol genMutate2(MaxProbabilitySol mps, int removeAttempts) {
 		// Remove s items from the solution
 		ArrayList<Integer> x = new ArrayList<Integer>(mps.getX());
@@ -487,6 +640,15 @@ public class MaxProbabilitySol extends KnapsackSol {
 		return new MaxProbabilitySol(x,r);
 	}
 
+	/**
+	 * Creates a list of the items in r that maximize the profit given the capacity b (Knapsack)
+	 * The profit gained must reach the target.
+	 * 
+	 * @param r - list of items to consider
+	 * @param b - capacity left in knapsack
+	 * @param target - target profit to obtain
+	 * @return list of items that fill the weight b and maximize the profit or null if the target isn't reached
+	 */
 	private ArrayList<Integer> bestFill(ArrayList<Integer> r, int b, int target) {
 		int[] a = new int[r.size()];
 		int[] c = new int[r.size()];
@@ -509,356 +671,21 @@ public class MaxProbabilitySol extends KnapsackSol {
 		return toAdd;
 	}
 
-	private ArrayList<ratioNode> computeRatios(ArrayList<Integer> x, ArrayList<Integer> r) {
-		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
-		for (Integer i: r) {
-			ratioNode rni = new ratioNode(i, mp.getU(i));
-			ratio.add(rni);
-		}
-		Collections.sort(ratio);
-		return ratio;
-	}
-
-	private MaxProbabilitySol ratioMutate() {
-		MaxProbabilitySol result = null;
-		boolean found = false;
-		int min = 0;
-		ArrayList<Integer> curR = getR();
-		while (!found && min < getXSize()) {
-			// Get index of min ratio
-			int i = minRatio(min);
-
-			// Swap with a random node and return
-			int j = rnd.nextInt(getRSize());
-			j = curR.get(j);
-			int rndCount = 0;
-			while ((mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT()) && rndCount < 10) {
-				j = rnd.nextInt(getRSize());
-				j = curR.get(j);
-				rndCount++;
-			}
-
-			if (mp.getA(j) - mp.getA(i) <= mp.getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-				result = new MaxProbabilitySol(this);
-				result.swap(i,j);
-				found = true;
-			}
-
-			min++;
-		}
-
-		return result;
-	}
-
-	private MaxProbabilitySol bestRatioMutate() {
-		MaxProbabilitySol result = null;
-		boolean found = false;
-		int min = 0;
-		while (!found && min < getXSize()) {
-			// Get index of min ratio
-			int i = minRatio(min);
-
-			// Swap with all nodes and return best
-			double maxObj = -1;
-			int maxJ = -1;
-			for (Integer j: getR()) {
-				double newObj = swapObj(i, j);
-				if (newObj > maxObj && mp.getA(j) - mp.getA(i) <= mp.getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-					maxObj = newObj;
-					maxJ = j;
-				}
-			}
-			if (maxJ != -1) {
-				result = new MaxProbabilitySol(this);
-				result.swap(i,maxJ);
-				found = true;
-			}
-
-			min++;
-		}
-
-		return result;
-	}
-
-	private MaxProbabilitySol[] maxMinSwap(int iteration, int[][] tabuList) {
-		// Store nontabu and best tabu swaps
-		int ni = -1;
-		int nj = -1;
-		double nTObj = Integer.MIN_VALUE;
-		int bi = -1;
-		int bj = -1;
-		double bObj = Integer.MIN_VALUE;
-
-		int i = minRatio(0);
-		int j = maxRatio(0);
-		int ki = 0;
-		int kj = 0;
-		boolean changeI = true;
-		while ((mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT()) && ki < getXSize()) {
-			if (changeI) {
-				ki++;
-				i = minRatio(ki);
-				changeI = !changeI;
-			}
-			kj++;
-			j = maxRatio(kj);
-			if (kj >= getRSize()-1) {
-				kj = -1;
-				changeI = !changeI;
-			}
-		}
-
-		if (mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT()) {
-			return null;
-		}
-
-		double newObj = swapObj(i, j);
-		bi = i;
-		bj = j;
-		bObj = newObj;
-		if (tabuList[i][j] < iteration) {
-			ni = i;
-			nj = j;
-			nTObj = newObj;
-		} else {
-			boolean newMin = false;
-			while (tabuList[i][j] >= iteration && (mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT()) && ki < getXSize()) {
-				if (newMin) {
-					ki++;
-					i = minRatio(ki);
-					newMin = !newMin;
-				}
-				kj++;
-				j = maxRatio(kj);
-				if (kj >= getRSize()-1) {
-					kj = -1;
-					newMin = !newMin;
-				}
-				if (mp.getA(j) - mp.getA(i) <= getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-					newObj = swapObj(i, j);
-					if (newObj > bObj) {
-						bi = i;
-						bj = j;
-						bObj = newObj;
-					}
-				}
-			}
-			if (tabuList[i][j] < iteration && mp.getA(j) - mp.getA(i) <= getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-				newObj = swapObj(i, j);
-				ni = i;
-				nj = j;
-				nTObj = newObj;
-				if (newObj > bObj) {
-					bi = i;
-					bj = j;
-					bObj = newObj;
-				}
-			}
-		}
-		// Compile and return data
-		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
-		if (bi != -1 && bj != -1) {
-			results[0] = new MaxProbabilitySol(this);
-			results[0].swap(bi,bj);
-		}
-		if (ni != -1 && nj != -1) {
-			results[1] = new MaxProbabilitySol(this);
-			results[1].swap(ni,nj);
-		}
-		return results;
-	}
-
-	private MaxProbabilitySol[] ratioMutate(int iteration, int[][] tabuList) {
-		// Store nontabu and best tabu swaps
-		int ni = -1;
-		int nj = -1;
-		int bi = -1;
-		int bj = -1;
-		double bObj = Integer.MIN_VALUE;
-
-		// Get index of min ratio
-		int i = minRatio(0);
-
-		// Swap with a random node and return
-		ArrayList<Integer> curR = getR();
-		int j = rnd.nextInt(getRSize());
-		j = curR.get(j);
-		int ki = 0;
-		int kj = 0;
-		boolean changeI = false;
-		while (tabuList[i][j] >= iteration && (mp.getA(j) - mp.getA(i) > mp.getB() - getTotalA() || getTotalU() - mp.getU(i) + mp.getU(j) < mp.getT()) && ki < n) {
-			if (changeI) {
-				ki++;
-				i = minRatio(ki);
-				changeI = !changeI;
-			}
-
-			kj++;
-			j =  rnd.nextInt(getRSize());
-			j = curR.get(j);
-			if (kj == n-1) {
-				kj = -1;
-				changeI = !changeI;
-			}
-			if (mp.getA(j) - mp.getA(i) <= getB() - getTotalA() && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-				double newObj = swapObj(i, j);
-				if (newObj > bObj) {
-					bi = i;
-					bj = j;
-					bObj = newObj;
-				}
-			}
-		}
-		ni = i;
-		nj = j;
-		// Compile and return data
-		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
-		if (bi != -1 && bj != -1 && mp.getA(bj) - mp.getA(bi) <= getB() - getTotalA() && getTotalU() - mp.getU(bi) + mp.getU(bj) >= mp.getT()) {
-			results[0] = new MaxProbabilitySol(this);
-			results[0].swap(bi, bj);
-		}
-		if (ni != -1 && nj != -1 && mp.getA(nj) - mp.getA(ni) <= getB() - getTotalA() && getTotalU() - mp.getU(ni) + mp.getU(nj) >= mp.getT() && tabuList[ni][nj] < iteration) {
-			results[1] = new MaxProbabilitySol(this);
-			results[1].swap(ni, nj);
-		}
-		return results;
-	}
-
-	private int minRatio(int k) {
-		// Find the minimum ratio in the solution
-		double minRatio = Double.MAX_VALUE;
-		int minI = -1;
-		ArrayList<Integer> bestIs = new ArrayList<Integer>();
-		while (bestIs.size() <= k && bestIs.size() < getXSize()) {
-			for (Integer i: getX()) {
-				if (mp.getRatio(i) < minRatio && !bestIs.contains(i)) {
-					minRatio = mp.getRatio(i);
-					minI = i;
-				}
-			}
-			minRatio = Double.MAX_VALUE;
-			bestIs.add(minI);
-		}
-		return minI;
-	}
-
-	private int maxRatio(int k) {
-		// Find the maximum ratio not in the solution
-		double maxRatio = -1*Double.MAX_VALUE;
-		int maxI = -1;
-		ArrayList<Integer> bestIs = new ArrayList<Integer>();
-		while (bestIs.size() <= k && bestIs.size() < getRSize()) {
-			for (Integer i: getR()) {
-				if (mp.getRatio(i) > maxRatio && !bestIs.contains(i)) {
-					maxRatio = mp.getRatio(i);
-					maxI = i;
-				}
-			}
-			maxRatio = -1*Double.MAX_VALUE;
-			bestIs.add(maxI);
-		}
-		return maxI;
-	}
-
-	// Find the best swap possible that keeps the knapsack feasible
-	private MaxProbabilitySol[] bestSwap(int iteration, int[][] tabuList) {
-		int curTotalA = getTotalA();
-		// Store nontabu and best tabu swaps
-		int ni = -1;
-		int nj = -1;
-		double nTObj = Integer.MIN_VALUE;
-		int bi = -1;
-		int bj = -1;
-		double bObj = Integer.MIN_VALUE;
-		for(Integer i: getX()) {
-			for(Integer j: getR()) {
-				// Check for knapsack feasibility
-				if (mp.getA(j)-mp.getA(i) <= mp.getB() - curTotalA && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-					double newObj = swapObj(i, j);
-					if (newObj > nTObj && tabuList[i][j] < iteration) {
-						ni = i;
-						nj = j;
-						nTObj = newObj;
-					}
-					if (newObj > bObj) {
-						bi = i;
-						bj = j;
-						bObj = newObj;
-					}
-				}
-			}
-		}
-		// Compile and return data
-		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
-		if (bi != -1 && bj != -1) {
-			results[0] = new MaxProbabilitySol(this);
-			results[0].swap(bi,bj);
-		}
-		if (ni != -1 && nj != -1) {
-			results[1] = new MaxProbabilitySol(this);
-			results[1].swap(ni,nj);
-		}
-		return results;
-	}
-
-	// Return the first improving swap that keeps the knapsack feasible
-	private MaxProbabilitySol[] firstSwap(int iteration, int[][] tabuList) {
-		int curTotalA = getTotalA();
-		// Store nontabu and best tabu swaps
-		int ni = -1;
-		int nj = -1;
-		double nTObj = Integer.MIN_VALUE;
-		int bi = -1;
-		int bj = -1;
-		double bObj = Integer.MIN_VALUE;
-		for(Integer i: getX()) {
-			for(Integer j: getR()) {
-				// Check for knapsack feasibility
-				if (mp.getA(j)-mp.getA(i) <= mp.getB() - curTotalA  && getTotalU() - mp.getU(i) + mp.getU(j) >= mp.getT()) {
-					double newObj = swapObj(i, j);
-					if (newObj > nTObj && tabuList[i][j] < iteration) {
-						ni = i;
-						nj = j;
-						nTObj = newObj;
-					}
-					if (newObj > bObj) {
-						bi = i;
-						bj = j;
-						bObj = newObj;
-					}
-					if (ni != -1 && nj != -1) {
-						MaxProbabilitySol[] results = new MaxProbabilitySol[2];
-						if (bi != -1 && bj != -1) {
-							results[0] = new MaxProbabilitySol(this);
-							results[0].swap(bi,bj);
-						}
-						results[1] = new MaxProbabilitySol(this);
-						results[1].swap(ni,nj);
-						return results;
-					}
-				}
-			}
-		}
-		// Compile and return data
-		MaxProbabilitySol[] results = new MaxProbabilitySol[2];
-		if (bi != -1 && bj != -1) {
-			results[0] = new MaxProbabilitySol(this);
-			results[0].swap(bi,bj);
-		}
-		if (ni != -1 && nj != -1) {
-			results[1] = new MaxProbabilitySol(this);
-			results[1].swap(ni,nj);
-		}
-		return results;
-	}
-
 	@Override
+	/**
+	 * Heal the solution if it is invalid
+	 */
 	public void healSol() {
-		//		healSolImproving();
+		System.err.println("Max Prob Healing not fully implemented");
+		System.exit(-1);
+		healSolImproving();
 		healSolRatio();
 	}
 
-	// most improving
+	/**
+	 * Heal the solution by removing the item that results in the best objective
+	 *  until the solution is valid.
+	 */
 	public void healSolImproving() {
 		while(!this.getValid()) {
 			double maxObj = -1*Double.MAX_VALUE;
@@ -871,12 +698,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 				}
 			}
 			if (maxI != -1) {
-				removeI(maxI);
-				setObj(maxObj);
-				removeA(maxI);
-				removeU(maxI);
-				this.num = subNum(maxI, num);
-				this.den = subDen(maxI, den);
+				removeX(maxI);
 			} else {
 				System.err.println("Couldn't find an improving objective!!!");
 				System.exit(-1);
@@ -884,7 +706,9 @@ public class MaxProbabilitySol extends KnapsackSol {
 		}
 	}
 
-	//min ratio healing
+	/**
+	 * Heal the solution by removing minRatio items until valid
+	 */
 	public void healSolRatio() {
 		while(!this.getValid()) {
 			int j = minRatio(0);
@@ -894,12 +718,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 				k++;
 			}
 			if (totalU - mp.getU(j) >= mp.getT()) {
-				removeI(j);
-				removeA(j);
-				removeU(j);
-				setObj(subObj(j,getX(),num,den));
-				num = subNum(j, num);
-				den = subDen(j, den);
+				removeX(j);
 			} else {
 				mp.genRndInit(getX(), getR());
 				for (Integer i: getX()) {

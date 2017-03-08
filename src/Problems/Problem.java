@@ -18,6 +18,8 @@ public abstract class Problem {
 	
 	public abstract int getN();
 	
+	public abstract double getRatio(int i);
+	
 	public abstract void genInit(ArrayList<Integer> x, ArrayList<Integer> r);
 	
 	public abstract void genRndInit(ArrayList<Integer> x, ArrayList<Integer> r);
