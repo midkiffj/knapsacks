@@ -119,6 +119,8 @@ public class MaxProbability extends Knapsack {
 		x.clear();
 		int totalAx = 0;
 		int totalUx = 0;
+		double num = 0;
+		double den = 0;
 		// Solve for max{u*x : Ax <= b, x free}
 		Knapsack_Frac k = new Knapsack_Frac(a,b,u,false);
 		boolean[] uMaxXVals = k.getXVals();
@@ -133,6 +135,8 @@ public class MaxProbability extends Knapsack {
 		}
 		// Update objective
 		double curObj = getObj(x);
+		num = getNum();
+		den = getDen();
 
 		// Check for Swaps and shifts
 		boolean swapping = true;
@@ -165,16 +169,20 @@ public class MaxProbability extends Knapsack {
 				int addI = (int)add[1];
 				x.add(addI);
 				r.remove(Integer.valueOf(addI));
-				curObj = getObj(x);
 				totalAx = totalAx + a[addI];
 				totalUx = totalUx + u[addI];
+				num = num + u[addI];
+				den = den + s[addI];
+				curObj = (num*num)/den;
 			} else if (subChange > maxChange) {
 				int subI = (int)sub[1];
 				x.remove(Integer.valueOf(subI));
 				r.add(subI);
-				curObj = getObj(x);
 				totalAx = totalAx - a[subI];
 				totalUx = totalUx - u[subI];
+				num = num - u[subI];
+				den = den - s[subI];
+				curObj = (num*num)/den;
 			} else {
 				if (maxI == -1 && maxJ == -1) {
 					swapping = false;
@@ -183,9 +191,11 @@ public class MaxProbability extends Knapsack {
 					r.remove(Integer.valueOf(maxJ));
 					x.remove(Integer.valueOf(maxI));
 					r.add(maxI);
-					curObj = getObj(x);
 					totalAx = totalAx + a[maxJ] - a[maxI];
 					totalUx = totalUx + u[maxJ] - u[maxI];
+					num = num + u[maxJ] - u[maxI];
+					den = den + s[maxJ] - s[maxI];
+					curObj = (num*num)/den;
 				}
 			}
 		}

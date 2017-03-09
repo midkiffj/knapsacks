@@ -22,7 +22,7 @@ public class CubicDP extends ConstHeuristic {
 	/**
 	 * Specify the problem to solve
 	 * 
-	 * @parm c Cubic problem
+	 * @param c Cubic problem
 	 */
 	public CubicDP(Cubic c) {
 		this.c = c;

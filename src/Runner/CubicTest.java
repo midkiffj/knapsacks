@@ -19,22 +19,22 @@ import Solutions.KnapsackSol;
  * @author midkiffj
  */
 public class CubicTest extends ProblemTest {
-	
+
 	// Test Bed specification
 	private double[] densities = {0.25, 0.5, 0.75, 1};
 	private int[] probSizes = {10, 20, 30, 50, 100, 200, 500, 1000};
 	private int K = 10;
-	
+
 	// Method usage
 	private boolean generate;
 	private boolean runHeuristics;
 	private boolean runMIP;
-	
+
 	// Folders
 	private static final String incuFolder = "incumbents/cubic/";
 	private static final String probFolder = "problems/cubic/";
 	private static final String resFolder = "results/cubic/";
-	
+
 	/**
 	 * Setup options for testing
 	 * 
@@ -49,7 +49,7 @@ public class CubicTest extends ProblemTest {
 		runHeuristics = rh;
 		runMIP = mip;
 	}
-	
+
 	@Override
 	/**
 	 * (non-Javadoc)
@@ -59,11 +59,11 @@ public class CubicTest extends ProblemTest {
 		if (generate) {
 			generate();
 		}
-		
+
 		if (runHeuristics) {
 			runHeuristics();
 		}
-		
+
 		if (runMIP) {
 			runMIP();
 		}
@@ -105,7 +105,7 @@ public class CubicTest extends ProblemTest {
 		}
 		readTestBed();
 	}
-	
+
 	/**
 	 * Read in the test bed and test calculated objective value 
 	 * - Compare with previously found dummy solution
@@ -122,7 +122,7 @@ public class CubicTest extends ProblemTest {
 					if(c1.getObj(test) != testObj.get(file1)) {
 						System.err.println(file1 + " incorrect");
 					}
-					
+
 					String file2 = n+"_"+density+"_true_"+k;
 					Cubic c2 = new Cubic(probFolder+file2);
 					if(c2.getObj(test) != testObj.get(file2)) {
@@ -141,7 +141,8 @@ public class CubicTest extends ProblemTest {
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubHeuristics.csv");
-		pw.write("n,density,#,negCoef,incumbent,GA,SA,ST,TS\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,density,#,negCoef,incumbent,GA,SA,ST,TS");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -158,12 +159,12 @@ public class CubicTest extends ProblemTest {
 					String result1;
 					HeuristicRunner hr1 = new HeuristicRunner(cs1);
 					result1 = hr1.getResults();
-					
+
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+						pw.println(n+","+density+","+k+",false,"+incumbent1+","+result1);
 					} else {
-						pw.write(",,"+k+",false,"+incumbent1+","+result1+"\n");
+						pw.println(",,"+k+",false,"+incumbent1+","+result1);
 					}
 				}
 				for (int k = 0; k < 10; k++) {
@@ -178,19 +179,19 @@ public class CubicTest extends ProblemTest {
 					String result2;
 					HeuristicRunner hr2 = new HeuristicRunner(cs2);
 					result2 = hr2.getResults();
-					
+
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+						pw.println(n+","+density+","+k+",true,"+incumbent2+","+result2);
 					} else {
-						pw.write(",,"+k+",true,"+incumbent2+","+result2+"\n");
+						pw.println(",,"+k+",true,"+incumbent2+","+result2);
 					}
 				}
 			}
 		}
 		pw.close();
 	}
-	
+
 	@Override
 	/**
 	 * (non-Javadoc)
@@ -198,7 +199,8 @@ public class CubicTest extends ProblemTest {
 	 */
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw = new PrintWriter(resFolder+"cubMIP" + probSizes.length + ".csv");
-		pw.write("n,density,#,negCoef,incumbent,MIP,timeout\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,density,#,negCoef,incumbent,MIP,timeout");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -212,21 +214,17 @@ public class CubicTest extends ProblemTest {
 					String[] args1 = {file1};
 
 					long result1;
-//					if (n >= 100) {
-//						result1 = -1;
-//					} else {
-						Cubic_Forrester.main(args1);
-						result1 = Cubic_Forrester.getBestObj();
-						String timeout1 = "";
-						if (Cubic_Forrester.getTimeout()) {
-							timeout1 = "*";
-						}
-//					}
+					Cubic_Forrester.main(args1);
+					result1 = Cubic_Forrester.getBestObj();
+					String timeout1 = "";
+					if (Cubic_Forrester.getTimeout()) {
+						timeout1 = "*";
+					}
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+cs1.getObj()+","+result1+","+timeout1+"\n");
+						pw.println(n+","+density+","+k+",false,"+cs1.getObj()+","+result1+","+timeout1);
 					} else {
-						pw.write(",,"+k+",false,"+cs1.getObj()+","+result1+timeout1+"\n");
+						pw.println(",,"+k+",false,"+cs1.getObj()+","+result1+timeout1);
 					}
 				}
 				for (int k = 0; k < 10; k++) {
@@ -238,28 +236,24 @@ public class CubicTest extends ProblemTest {
 					String[] args2 = {file2};
 
 					long result2;
-//					if (n >= 50) {
-//						result2 = -1;
-//					} else {
-						Cubic_Forrester.main(args2);
-						result2 = Cubic_Forrester.getBestObj();
-						String timeout2 = "";
-						if (Cubic_Forrester.getTimeout()) {
-							timeout2 = "*";
-						}
-//					}
+					Cubic_Forrester.main(args2);
+					result2 = Cubic_Forrester.getBestObj();
+					String timeout2 = "";
+					if (Cubic_Forrester.getTimeout()) {
+						timeout2 = "*";
+					}
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",true,"+cs2.getObj()+","+result2+timeout2+"\n");
+						pw.println(n+","+density+","+k+",true,"+cs2.getObj()+","+result2+timeout2);
 					} else {
-						pw.write(",,"+k+",true,"+cs2.getObj()+","+result2+timeout2+"\n");
+						pw.println(",,"+k+",true,"+cs2.getObj()+","+result2+timeout2);
 					}
 				}
 			}
 		}
 		pw.close();
 	}
-	
+
 	/**
 	 * Run and time the test bed on the 4 cubic constructive heuristics
 	 * 
@@ -268,8 +262,8 @@ public class CubicTest extends ProblemTest {
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubConst.csv");
-		pw.write("n,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times(min):,DP,Greedy,Fill,Hybrid\n");
-		
+		pw = new PrintWriter(pw,true);
+		pw.println("n,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times(min):,DP,Greedy,Fill,Hybrid");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -284,12 +278,12 @@ public class CubicTest extends ProblemTest {
 
 					String result1;
 					result1 = runConst(c1);
-					
+
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+						pw.println(n+","+density+","+k+",false,"+incumbent1+","+result1);
 					} else {
-						pw.write(",,"+k+",false,"+incumbent1+","+result1+"\n");
+						pw.println(",,"+k+",false,"+incumbent1+","+result1);
 					}
 				}
 				for (int k = 0; k < 10; k++) {
@@ -302,19 +296,19 @@ public class CubicTest extends ProblemTest {
 
 					String result2;
 					result2 = runConst(c2);
-					
+
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+						pw.println(n+","+density+","+k+",true,"+incumbent2+","+result2);
 					} else {
-						pw.write(",,"+k+",true,"+incumbent2+","+result2+"\n");
+						pw.println(",,"+k+",true,"+incumbent2+","+result2);
 					}
 				}
 			}
 		}
 		pw.close();
 	}
-	
+
 	/**
 	 * Runs the cubic problem with all constructive heuristics
 	 * - Returns a comma-delimited string of results
@@ -349,7 +343,7 @@ public class CubicTest extends ProblemTest {
 		String ret = cdpBest + "," + greedy + "," + fill + "," + hybrid + ",,," + cdpTime + "," + greedyTime + "," + fillTime + "," + hybridTime;
 		return ret;
 	}
-	
+
 	/**
 	 * Run and time the incumbent heuristic on the test bed
 	 * 
@@ -358,7 +352,8 @@ public class CubicTest extends ProblemTest {
 	public void timeIncumbent() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubIncumbent.csv");
-		pw.write("n,density,#,negCoef,incumbent,time(min)\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,density,#,negCoef,incumbent,time(min)");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -377,9 +372,9 @@ public class CubicTest extends ProblemTest {
 					double duration1 = (double)(end-start)/60000000000L;
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+incumbent1+","+duration1+"\n");
+						pw.println(n+","+density+","+k+",false,"+incumbent1+","+duration1);
 					} else {
-						pw.write(",,"+k+",false,"+incumbent1+","+duration1+"\n");
+						pw.println(",,"+k+",false,"+incumbent1+","+duration1);
 					}
 				}
 				for (int k = 0; k < 10; k++) {
@@ -396,16 +391,16 @@ public class CubicTest extends ProblemTest {
 					double duration2 = (double)(end-start)/60000000000L;
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+incumbent2+","+duration2+"\n");
+						pw.println(n+","+density+","+k+",false,"+incumbent2+","+duration2);
 					} else {
-						pw.write(",,"+k+",false,"+incumbent2+","+duration2+"\n");
+						pw.println(",,"+k+",false,"+incumbent2+","+duration2);
 					}
 				}
 			}
 		}
 		pw.close();
 	}
-	
+
 	/**
 	 * (non-Javadoc)
 	 * @see Runner.ProblemTest#runHeuristics()
@@ -413,7 +408,8 @@ public class CubicTest extends ProblemTest {
 	public void runHealHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubHealHeuristics.csv");
-		pw.write("n,density,#,negCoef,incumbent,GA,SA,ST,TS\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,density,#,negCoef,incumbent,GA,SA,ST,TS");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -431,12 +427,12 @@ public class CubicTest extends ProblemTest {
 					String result1;
 					HeuristicRunner hr1 = new HeuristicRunner(cs1);
 					result1 = hr1.getResults();
-					
+
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+						pw.println(n+","+density+","+k+",false,"+incumbent1+","+result1);
 					} else {
-						pw.write(",,"+k+",false,"+incumbent1+","+result1+"\n");
+						pw.println(",,"+k+",false,"+incumbent1+","+result1);
 					}
 				}
 				for (int k = 0; k < 10; k++) {
@@ -452,12 +448,12 @@ public class CubicTest extends ProblemTest {
 					String result2;
 					HeuristicRunner hr2 = new HeuristicRunner(cs2);
 					result2 = hr2.getResults();
-					
+
 
 					if (k == 0) {
-						pw.write(n+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+						pw.println(n+","+density+","+k+",true,"+incumbent2+","+result2);
 					} else {
-						pw.write(",,"+k+",true,"+incumbent2+","+result2+"\n");
+						pw.println(",,"+k+",true,"+incumbent2+","+result2);
 					}
 				}
 			}

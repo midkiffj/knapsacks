@@ -121,7 +121,8 @@ public class FractionalTest extends ProblemTest {
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"fractionalHeuristics.csv");
-		pw.write("n,m,#,incumbent,GA,SA,ST,TS\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,m,#,incumbent,GA,SA,ST,TS");
 		for (int n: probSizes) {
 			for (int m: mSizes) {
 				for (boolean ln: numSize) {
@@ -142,9 +143,9 @@ public class FractionalTest extends ProblemTest {
 
 
 							if (i == 0) {
-								pw.write(n+","+m+","+i+","+incumbent1+","+result1+"\n");
+								pw.println(n+","+m+","+i+","+incumbent1+","+result1);
 							} else {
-								pw.write(",,"+i+","+incumbent1+","+result1+"\n");
+								pw.println(",,"+i+","+incumbent1+","+result1);
 							}
 						}
 					}
@@ -162,7 +163,8 @@ public class FractionalTest extends ProblemTest {
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"fractionalMIP.csv");
-		pw.write("n,m,#,incumbent,MIP\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,m,#,incumbent,MIP");
 		for (int n: probSizes) {
 			for (int m: mSizes) {
 				for (boolean ln: numSize) {
@@ -186,9 +188,9 @@ public class FractionalTest extends ProblemTest {
 							}
 
 							if (i == 0) {
-								pw.write(n+","+m+","+i+","+incumbent1+","+result1+","+timeout1+"\n");
+								pw.println(n+","+m+","+i+","+incumbent1+","+result1+","+timeout1);
 							} else {
-								pw.write(",,"+i+","+incumbent1+","+result1+","+timeout1+"\n");
+								pw.println(",,"+i+","+incumbent1+","+result1+","+timeout1);
 							}
 						}
 					}

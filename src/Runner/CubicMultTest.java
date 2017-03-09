@@ -145,7 +145,8 @@ public class CubicMultTest extends ProblemTest {
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubMultHeuristics.csv");
-		pw.write("n,m,density,#,negCoef,incumbent,GA,SA,ST,TS\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,m,density,#,negCoef,incumbent,GA,SA,ST,TS");
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
 				double density = densities[i];
@@ -166,9 +167,9 @@ public class CubicMultTest extends ProblemTest {
 
 
 						if (k == 0) {
-							pw.write(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+							pw.println(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1);
 						} else {
-							pw.write(",,,"+k+",false,"+incumbent1+","+result1+"\n");
+							pw.println(",,,"+k+",false,"+incumbent1+","+result1);
 						}
 					}
 					for (int k = 0; k < K; k++) {
@@ -185,9 +186,9 @@ public class CubicMultTest extends ProblemTest {
 						result2 = hr2.getResults();
 
 						if (k == 0) {
-							pw.write(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+							pw.println(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2);
 						} else {
-							pw.write(",,,"+k+",true,"+incumbent2+","+result2+"\n");
+							pw.println(",,,"+k+",true,"+incumbent2+","+result2);
 						}
 					}
 				}
@@ -204,7 +205,8 @@ public class CubicMultTest extends ProblemTest {
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubMultMIP.csv");
-		pw.write("n,m,density,#,negCoef,incumbent,MIP,timeout\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,m,density,#,negCoef,incumbent,MIP,timeout");
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
 				double density = densities[i];
@@ -228,9 +230,9 @@ public class CubicMultTest extends ProblemTest {
 						}
 
 						if (k == 0) {
-							pw.write(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+","+timeout1+"\n");
+							pw.println(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+","+timeout1);
 						} else {
-							pw.write(",,,"+k+",false,"+incumbent1+","+result1+","+timeout1+"\n");
+							pw.println(",,,"+k+",false,"+incumbent1+","+result1+","+timeout1);
 						}
 					}
 					for (int k = 0; k < K; k++) {
@@ -251,9 +253,9 @@ public class CubicMultTest extends ProblemTest {
 						}
 
 						if (k == 0) {
-							pw.write(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+","+timeout2+"\n");
+							pw.println(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+","+timeout2);
 						} else {
-							pw.write(",,,"+k+",true,"+incumbent2+","+result2+","+timeout2+"\n");
+							pw.println(",,,"+k+",true,"+incumbent2+","+result2+","+timeout2);
 						}
 					}
 				}
@@ -271,7 +273,8 @@ public class CubicMultTest extends ProblemTest {
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubMultConst.csv");
-		pw.write("n,m,density,#,negCoef,incumbent,Greedy,Fill,Hybrid,,Times(min):,Greedy,Fill,Hybrid\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,m,density,#,negCoef,incumbent,Greedy,Fill,Hybrid,,Times(min):,Greedy,Fill,Hybrid");
 
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
@@ -289,9 +292,9 @@ public class CubicMultTest extends ProblemTest {
 						result1 = runConst(c1);
 
 						if (k == 0) {
-							pw.write(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+"\n");
+							pw.println(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1);
 						} else {
-							pw.write(",,,"+k+",false,"+incumbent1+","+result1+"\n");
+							pw.println(",,,"+k+",false,"+incumbent1+","+result1);
 						}
 					}
 					for (int k = 0; k < K; k++) {
@@ -305,9 +308,9 @@ public class CubicMultTest extends ProblemTest {
 						result2 = runConst(c2);
 
 						if (k == 0) {
-							pw.write(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+"\n");
+							pw.println(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2);
 						} else {
-							pw.write(",,,"+k+",true,"+incumbent2+","+result2+"\n");
+							pw.println(",,,"+k+",true,"+incumbent2+","+result2);
 						}
 					}
 				}

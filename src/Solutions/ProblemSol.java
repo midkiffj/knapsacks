@@ -12,7 +12,9 @@ import Runner.RndGen;
 /**
  * Superclass for problem solutions
  * - Keeps track of problem object and problem size
+ * - Performs mutations on solutions (unless overridden)
  * - Sets usage of healing/repair algorithms
+ * - Compares and copies solutions
  * 
  * @author midkiffj
  */
@@ -282,7 +284,7 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 	public ProblemSol crossover(ProblemSol ps2) {
 		ProblemSol newPS = ProblemSol.copy(this);
 		for (int i = 0; i < n; i++) {
-			if (this.getXVals(i) != ps2.getXVals(i)) {
+			if (this.getXVals(i) != ps2.getXVals(i) && this.getXVals(i)) {
 				newPS.removeX(i);
 			} 
 		}
@@ -293,12 +295,10 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 			int i = rnd.nextInt(ratio.size());
 			int j = rnd.nextInt(ratio.size());
 			i = Math.max(i,j);
-			ratioNode rni = ratio.get(i);
+			ratioNode rni = ratio.remove(i);
 			if (newPS.addValid(rni.x)) {
 				newPS.addX(rni.x);
-			} else {
-				ratio.remove(i);
-			}
+			} 
 		}
 		return newPS;
 	}
@@ -351,7 +351,7 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 
 		// Add max-ratio items until knapsack full
 		while (ratio.size() > 0 && ps.getValid()) {
-			ratioNode rni = ratio.get(ratio.size()-1);
+			ratioNode rni = ratio.remove(ratio.size()-1);
 			if (ps.addValid(rni.x)) {
 				ps.addX(rni.x);
 			}

@@ -23,7 +23,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 	/**
 	 * Specify the problem to solve
 	 * 
-	 * @parm c Cubic problem
+	 * @param c Cubic problem
 	 */
 	public CubicGreedyFill(Cubic c) {
 		this.c = c;

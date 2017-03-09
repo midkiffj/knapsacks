@@ -8,6 +8,7 @@ import Problems.CubicMult;
 import Runner.RndGen;
 import Solutions.CubicMultSol;
 import Solutions.ProblemSol;
+import Solutions.ratioNode;
 
 /**
  * Greedy Heuristic + Fill Up N Exchange for Cubic Multiple Knapsack
@@ -19,21 +20,29 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 	private CubicMult cm;
 	private Random rnd = RndGen.getRnd();
 
-	/*
+	/**
 	 * Specify problem to solve
+	 * 
+	 * @param CubicMult problem
 	 */
 	public CubicMultGreedyFill(CubicMult cm) {
 		this.cm = cm;
 	}
 
+	/**
+	 * Construct a solution to the problem
+	 * 
+	 * @return solution constructed
+	 */
 	protected ProblemSol construct() {
 		return hybrid();
 	}	
 
-	/*
+	/**
 	 * Compute a greedy algorithm until the knapsack constraint is feasible
 	 * Then try to use the fill algorithm to improve it
 	 * 
+	 * @return solution generated
 	 */
 	private CubicMultSol hybrid() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
@@ -58,9 +67,13 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 		return fillUpNExchange(cms.getX(),cms.getR());
 	}
 
-	/* 
+	/**
 	 * Complete bestImprovingSwaps or additions until no more items can be 
-	 *	either swapped or added
+	 *  either swapped or shifted
+	 *  
+	 * @param x - solution list
+	 * @param r - not in solution list
+	 * @return solution generated
 	 */
 	private CubicMultSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r) {
 		CubicMultSol current = new CubicMultSol(x,r);
@@ -97,8 +110,10 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 		return current;
 	}
 	
-	/*
+	/**
 	 * Try to add a variable to the solution, maintaining knapsack feasibility
+	 * 
+	 * @param current solution to improve
 	 */
 	private void tryAdd(CubicMultSol current) {
 		double maxChange = 0;
@@ -131,8 +146,10 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 		}
 	}
 
-	/*
+	/**
 	 *  Perform the best improving swap that keeps the knapsack feasible
+	 *  
+	 *  @param current solution to improve
 	 */
 	private void bestImprovingSwap(CubicMultSol current) {
 		// Store best swaps
@@ -159,11 +176,14 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 		}
 	}
 
-	/*
+	/**
 	 * Compute an items ratio:
 	 * - Sum each item's current contribution to the objective
 	 * - Divide the contribution by the item's weight
 	 * Store the ratios in a list of ratioNodes
+	 * 
+	 * @param x - solution list
+	 * @return list of ratio nodes
 	 */
 	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
 		// List of ratios to return
@@ -198,9 +218,13 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 		return ratio;
 	}
 	
-	/*
+	/**
 	 *  Update the ratios by removing the specified item from the ratio calculation
 	 *  for every other item
+	 *  
+	 *  @param x - solution list
+	 *  @param ratio - list of ratios and objective changes
+	 *  @param j - item removed from x
 	 */
 	private void updateRatio(ArrayList<Integer> x, ArrayList<ratioNode> ratio, int j) {
 		// For each item left
@@ -226,30 +250,4 @@ public class CubicMultGreedyFill extends ConstHeuristic {
 		// Sort ratios
 		Collections.sort(ratio);
 	}
-
-	/*
-	 *  Class used to store an items current objective contribution and ratio
-	 */
-	private class ratioNode implements Comparable<ratioNode>{
-		int x;
-		long objChange;
-		double ratio;
-
-		public ratioNode(int x, double ratio) {
-			this.x = x;
-			this.ratio = ratio;
-		}
-
-		@Override
-		public int compareTo(ratioNode o) {
-			if (this.ratio - o.ratio > 0) {
-				return 1;
-			} else if (this.ratio - o.ratio < 0) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
-	}
-
 }

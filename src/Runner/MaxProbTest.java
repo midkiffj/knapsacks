@@ -3,6 +3,8 @@ package Runner;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
+import Constructive.MaxProbUMax;
+import Constructive.MaxProbUMaxCplex;
 import ExactMethods.MaxProb_Bill;
 import Heuristics.Metaheuristic;
 import Heuristics.genAlgo;
@@ -108,7 +110,8 @@ public class MaxProbTest extends ProblemTest {
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"maxProbHeuristics.csv");
-		pw.write("n,#,P,K,incumbent,GA,SA,ST,TS\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,#,P,K,incumbent,GA,SA,ST,TS");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
 				for (int p: possibleP) {
@@ -125,9 +128,9 @@ public class MaxProbTest extends ProblemTest {
 						String result1 = hr.getResults();
 
 						if (k == 65) {
-							pw.write(n+","+i+","+p+","+k+","+incumbent1+","+result1+"\n");
+							pw.println(n+","+i+","+p+","+k+","+incumbent1+","+result1);
 						} else {
-							pw.write(",,,"+k+","+incumbent1+","+result1+"\n");
+							pw.println(",,,"+k+","+incumbent1+","+result1);
 						}
 					}
 				}
@@ -144,7 +147,8 @@ public class MaxProbTest extends ProblemTest {
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"maxProbMIP.csv");
-		pw.write("n,#,P,K,incumbent,MIP\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,#,P,K,incumbent,MIP");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
 				for (int p: possibleP) {
@@ -166,9 +170,9 @@ public class MaxProbTest extends ProblemTest {
 						}
 
 						if (k == 65) {
-							pw.write(n+","+i+","+p+","+k+","+incumbent1+","+result1+","+timeout+"\n");
+							pw.println(n+","+i+","+p+","+k+","+incumbent1+","+result1+","+timeout);
 						} else {
-							pw.write(",,,"+k+","+incumbent1+","+result1+","+timeout+"\n");
+							pw.println(",,,"+k+","+incumbent1+","+result1+","+timeout);
 						}
 					}
 				}
@@ -185,7 +189,8 @@ public class MaxProbTest extends ProblemTest {
 	public void runMaxProbGA() throws FileNotFoundException {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"maxProbGA.csv");
-		pw.write("n,#,P,K,incumbent,GA\n");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,#,P,K,incumbent,GA");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
 				for (int p: possibleP) {
@@ -204,9 +209,9 @@ public class MaxProbTest extends ProblemTest {
 						String gas = run(ga);
 
 						if (k == 65) {
-							pw.write(n+","+i+","+p+","+k+","+incumbent1+","+gas+"\n");
+							pw.println(n+","+i+","+p+","+k+","+incumbent1+","+gas);
 						} else {
-							pw.write(",,,"+k+","+incumbent1+","+gas+"\n");
+							pw.println(",,,"+k+","+incumbent1+","+gas);
 						}
 					}
 				}
@@ -237,6 +242,48 @@ public class MaxProbTest extends ProblemTest {
 			System.out.println("Invalid Solution found: " + ps.getObj());
 			return "INVALID";
 		}
+	}
+	
+	/**
+	 * Run the genetic algorithm on the test bed
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	public void runMaxProbConst() throws FileNotFoundException {
+		PrintWriter pw;
+		pw = new PrintWriter(resFolder+"maxProbUMax.csv");
+		pw = new PrintWriter(pw,true);
+		pw.println("n,#,P,K,uMax,uMaxCplex,,Time(min):,uMax,uMaxCplex");
+		for (int n: sizes) {
+			for (int i = 0; i < num; i++) {
+				for (int p: possibleP) {
+					for (int k: possibleK) {
+						String file = n+"_P"+p+"_K"+k+"_"+i;
+						MaxProbability mp = new MaxProbability(probFolder+file);
+						System.out.println("--"+file+"--");
+
+						System.out.println("--UMax--");
+						MaxProbUMax mpum = new MaxProbUMax(mp);
+						mpum.run();
+						String uMaxObj = "" + mpum.getResult().getObj();
+						String uMaxTime = "" + mpum.getTime();
+						
+						System.out.println("--UMaxCplex--");
+						MaxProbUMaxCplex mpumc = new MaxProbUMaxCplex(mp);
+						mpumc.run();
+						String uMaxCObj = "" + mpumc.getResult().getObj();
+						String uMaxCTime = "" + mpumc.getTime();
+
+						if (k == 65) {
+							pw.println(n+","+i+","+p+","+k+","+uMaxObj+","+uMaxCObj+",,,"+uMaxTime+","+uMaxCTime);
+						} else {
+							pw.println(",,,"+k+","+uMaxObj+","+uMaxCObj+",,,"+uMaxTime+","+uMaxCTime);
+						}
+					}
+				}
+			}
+		}
+		pw.close();
 	}
 
 }

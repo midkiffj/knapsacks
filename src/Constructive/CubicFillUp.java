@@ -22,7 +22,7 @@ public class CubicFillUp extends ConstHeuristic {
 	/**
 	 * Specify the problem to solve
 	 * 
-	 * @parm c Cubic problem
+	 * @param c Cubic problem
 	 */
 	public CubicFillUp(Cubic c) {
 		super();
