@@ -47,9 +47,8 @@ public class CubicFillUp extends ConstHeuristic {
 		for (int i = 0; i < c.getN(); i++) {
 			r.add(i);
 		}
-		int totalA = 0;
 
-		return fillUpNExchange(x,r,totalA);
+		return fillUpNExchange(x,r);
 	}
 	
 	/**
@@ -58,10 +57,9 @@ public class CubicFillUp extends ConstHeuristic {
 	 * 
 	 * @param x - list of items in solution
 	 * @param r - list of items outside solution
-	 * @param totalA - current knapsack capactiy
 	 * @return solution constructed
 	 */
-	private CubicSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r, int totalA) {
+	private CubicSol fillUpNExchange(ArrayList<Integer> x, ArrayList<Integer> r) {
 		CubicSol current = new CubicSol(x,r);
 
 		boolean done = false;
@@ -107,7 +105,7 @@ public class CubicFillUp extends ConstHeuristic {
 		// Check all possible shifts
 		for(Integer i: current.getR()) {
 			// Knapsack feasibility
-			if (current.getTotalA() + c.getA(i) <= c.getB()) {
+			if (current.addValid(i)) {
 				double obj = current.getObj() + c.getCi(i);
 				for (int j = 0; j < current.getXSize(); j++) {
 					int xj = current.getX().get(j);
@@ -126,9 +124,7 @@ public class CubicFillUp extends ConstHeuristic {
 			}
 		}
 		if (maxI != -1) {
-			current.addA(maxI);
-			current.addI(maxI);
-			current.setObj(current.getObj() + maxChange);
+			current.addX(maxI);
 		}
 	}
 
@@ -138,10 +134,6 @@ public class CubicFillUp extends ConstHeuristic {
 	 *  @param current solution to improve
 	 */
 	private void bestImprovingSwap(CubicSol current) {
-		// Get b
-		int b = c.getB();
-		int curTotalA = current.getTotalA();
-		
 		// Store best swaps
 		int bi = -1;
 		int bj = -1;
@@ -149,7 +141,7 @@ public class CubicFillUp extends ConstHeuristic {
 		for(Integer i: current.getX()) {
 			for(Integer j: current.getR()) {
 				// Check for knapsack feasibility
-				if (c.getA(j)-c.getA(i) <= b - curTotalA) {
+				if (current.swapValid(i, j)) {
 					double newObj = current.swapObj(i, j);
 					if (newObj > bObj) {
 						bi = i;

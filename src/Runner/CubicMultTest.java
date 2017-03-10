@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import Constructive.CubicMultFillUp;
 import Constructive.CubicMultGreedy;
 import Constructive.CubicMultGreedyFill;
+import Constructive.CubicMultGreedyMax;
 import ExactMethods.CubicMult_Forrester;
 import Problems.CubicMult;
 import Problems.ProblemFactory;
@@ -274,7 +275,7 @@ public class CubicMultTest extends ProblemTest {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubMultConst.csv");
 		pw = new PrintWriter(pw,true);
-		pw.println("n,m,density,#,negCoef,incumbent,Greedy,Fill,Hybrid,,Times(min):,Greedy,Fill,Hybrid");
+		pw.println("n,m,density,#,negCoef,incumbent,Greedy,GreedyMax,Fill,Hybrid,,Times(min):,incumbent,Greedy,GreedyMax,Fill,Hybrid");
 
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
@@ -285,32 +286,28 @@ public class CubicMultTest extends ProblemTest {
 						String file1 = n+"_"+m+"_"+density+"_false_"+k;
 						System.out.println("--"+file1+"--");
 						CubicMult c1 = new CubicMult(probFolder+file1);
-						CubicMultSol cs1 = new CubicMultSol(incuFolder+file1+"inc.txt");
-						double incumbent1 = cs1.getObj();
 
 						String result1;
 						result1 = runConst(c1);
 
 						if (k == 0) {
-							pw.println(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1);
+							pw.println(n+","+m+","+density+","+k+",false,"+result1);
 						} else {
-							pw.println(",,,"+k+",false,"+incumbent1+","+result1);
+							pw.println(",,,"+k+",false,"+result1);
 						}
 					}
 					for (int k = 0; k < K; k++) {
 						String file2 = n+"_"+m+"_"+density+"_true_"+k;
 						System.out.println("--"+file2+"--");
 						CubicMult c2 = new CubicMult(probFolder+file2);
-						CubicMultSol cs2 = new CubicMultSol(incuFolder+file2+"inc.txt");
-						double incumbent2 = cs2.getObj();
 
 						String result2;
 						result2 = runConst(c2);
 
 						if (k == 0) {
-							pw.println(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2);
+							pw.println(n+","+m+","+density+","+k+",true,"+result2);
 						} else {
-							pw.println(",,,"+k+",true,"+incumbent2+","+result2);
+							pw.println(",,,"+k+",true,"+result2);
 						}
 					}
 				}
@@ -326,25 +323,38 @@ public class CubicMultTest extends ProblemTest {
 	 * @param CubicMult problem for constructing solutions
 	 */
 	private static String runConst(CubicMult cm) {
-		System.err.println("--Starting Greedy");
+		System.out.println("--Starting Inc");
+		long start = System.nanoTime();
+		CubicMultSol ks1 = (CubicMultSol)ProblemFactory.genInitSol();
+		long end = System.nanoTime();
+		double incObj = ks1.getObj();
+		double incTime = (double)(end-start)/60000000000L;
+		
+		System.out.println("--Starting Greedy");
 		CubicMultGreedy cg = new CubicMultGreedy(cm);
 		cg.run();
 		double greedy = cg.getResult().getObj();
 		double greedyTime = cg.getTime();
+		
+		System.out.println("--Starting GreedyMax");
+		CubicMultGreedyMax cgm = new CubicMultGreedyMax(cm);
+		cgm.run();
+		double greedyMax = cg.getResult().getObj();
+		double greedyMaxTime = cg.getTime();
 
-		System.err.println("--Starting Fill");
+		System.out.println("--Starting Fill");
 		CubicMultFillUp cfu = new CubicMultFillUp(cm);
 		cfu.run();
 		double fill = cfu.getResult().getObj();
 		double fillTime = cfu.getTime();
 
-		System.err.println("--Starting Hybrid");
+		System.out.println("--Starting Hybrid");
 		CubicMultGreedyFill cgf = new CubicMultGreedyFill(cm);
 		cgf.run();
 		double hybrid = cgf.getResult().getObj();
 		double hybridTime = cgf.getTime();
 
-		String ret =  greedy + "," + fill + "," + hybrid + ",,," + greedyTime + "," + fillTime + "," + hybridTime;
+		String ret =  incObj + "," + greedy + "," + greedyMax + "," + fill + "," + hybrid + ",,," + incTime + "," + greedyTime + "," + greedyMaxTime + "," + fillTime + "," + hybridTime;
 		return ret;
 	}
 

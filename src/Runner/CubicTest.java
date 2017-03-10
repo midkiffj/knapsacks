@@ -7,6 +7,7 @@ import Constructive.CubicDP;
 import Constructive.CubicFillUp;
 import Constructive.CubicGreedy;
 import Constructive.CubicGreedyFill;
+import Constructive.CubicGreedyMax;
 import ExactMethods.Cubic_Forrester;
 import Problems.Cubic;
 import Problems.ProblemFactory;
@@ -147,7 +148,7 @@ public class CubicTest extends ProblemTest {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
 				int n = probSizes[j];
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file1 = n+"_"+density+"_false_"+k;
 					TestLogger.setFile("cubic/"+file1);
 					System.out.println("--"+file1+"--");
@@ -167,7 +168,7 @@ public class CubicTest extends ProblemTest {
 						pw.println(",,"+k+",false,"+incumbent1+","+result1);
 					}
 				}
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file2 = n+"_"+density+"_true_"+k;
 					TestLogger.setFile("cubic/"+file2);
 					System.out.println("--"+file2+"--");
@@ -205,7 +206,7 @@ public class CubicTest extends ProblemTest {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
 				int n = probSizes[j];
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file1 = n+"_"+density+"_false_"+k;
 					System.err.println(file1);
 					@SuppressWarnings("unused")
@@ -227,7 +228,7 @@ public class CubicTest extends ProblemTest {
 						pw.println(",,"+k+",false,"+cs1.getObj()+","+result1+timeout1);
 					}
 				}
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file2 = n+"_"+density+"_true_"+k;
 					System.err.println(file2);
 					@SuppressWarnings("unused")
@@ -263,45 +264,41 @@ public class CubicTest extends ProblemTest {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubConst.csv");
 		pw = new PrintWriter(pw,true);
-		pw.println("n,density,#,negCoef,incumbent,DP,Greedy,Fill,Hybrid,,Times(min):,DP,Greedy,Fill,Hybrid");
+		pw.println("n,density,#,negCoef,incumbent,DP,Greedy,GreedyMax,Fill,Hybrid,,Times(min):,incumbent,DP,Greedy,GreedyMax,Fill,Hybrid");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
 				int n = probSizes[j];
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file1 = n+"_"+density+"_false_"+k;
 					TestLogger.setFile("cubic/"+file1);
 					System.out.println("--"+file1+"--");
 					Cubic c1 = new Cubic(probFolder+file1);
-					CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
-					double incumbent1 = cs1.getObj();
 
 					String result1;
 					result1 = runConst(c1);
 
 
 					if (k == 0) {
-						pw.println(n+","+density+","+k+",false,"+incumbent1+","+result1);
+						pw.println(n+","+density+","+k+",false,"+result1);
 					} else {
-						pw.println(",,"+k+",false,"+incumbent1+","+result1);
+						pw.println(",,"+k+",false,"+result1);
 					}
 				}
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file2 = n+"_"+density+"_true_"+k;
 					TestLogger.setFile("cubic/"+file2);
 					System.out.println("--"+file2+"--");
 					Cubic c2 = new Cubic(probFolder+file2);
-					CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
-					double incumbent2 = cs2.getObj();
 
 					String result2;
 					result2 = runConst(c2);
 
 
 					if (k == 0) {
-						pw.println(n+","+density+","+k+",true,"+incumbent2+","+result2);
+						pw.println(n+","+density+","+k+",true,"+result2);
 					} else {
-						pw.println(",,"+k+",true,"+incumbent2+","+result2);
+						pw.println(",,"+k+",true,"+result2);
 					}
 				}
 			}
@@ -316,31 +313,56 @@ public class CubicTest extends ProblemTest {
 	 * @param Cubic problem to solve
 	 */
 	private static String runConst(Cubic c) {
-		System.err.println("--Starting DP");
-		CubicDP cdp = new CubicDP(c);
-		cdp.run();
-		double cdpBest = cdp.getResult().getObj();
-		double cdpTime = cdp.getTime();
+		System.out.println("--Starting Inc");
+		long start = System.nanoTime();
+		KnapsackSol ks1 = (KnapsackSol)ProblemFactory.genInitSol();
+		long end = System.nanoTime();
+		double incObj = ks1.getObj();
+		double incTime = (double)(end-start)/60000000000L;
+		
+		double cdpBest = -1;
+		double cdpTime = -1;
+		if (c.getN() <= 200) {
+			System.out.println("--Starting DP");
+			CubicDP cdp = new CubicDP(c);
+			cdp.run();
+			cdpBest = cdp.getResult().getObj();
+			cdpTime = cdp.getTime();
+		}
 
-		System.err.println("--Starting Greedy");
+		System.out.println("--Starting Greedy");
 		CubicGreedy cg = new CubicGreedy(c);
 		cg.run();
 		double greedy = cg.getResult().getObj();
 		double greedyTime = cg.getTime();
 
-		System.err.println("--Starting Fill");
-		CubicFillUp cfu = new CubicFillUp(c);
-		cfu.run();
-		double fill = cfu.getResult().getObj();
-		double fillTime = cfu.getTime();
+		System.out.println("--Starting GreedyMax");
+		CubicGreedyMax cgm = new CubicGreedyMax(c);
+		cgm.run();
+		double greedyMax = cgm.getResult().getObj();
+		double greedyMaxTime = cgm.getTime();
+		
+		double fill = -1;
+		double fillTime = -1;
+		if (c.getN() <= 200) {
+			System.out.println("--Starting Fill");
+			CubicFillUp cfu = new CubicFillUp(c);
+			cfu.run();
+			fill = cfu.getResult().getObj();
+			fillTime = cfu.getTime();
+		}
 
-		System.err.println("--Starting Hybrid");
-		CubicGreedyFill cgf = new CubicGreedyFill(c);
-		cgf.run();
-		double hybrid = cgf.getResult().getObj();
-		double hybridTime = cgf.getTime();
+		double hybrid = -1;
+		double hybridTime = -1;
+		if (c.getN() <= 200) {
+			System.out.println("--Starting Hybrid");
+			CubicGreedyFill cgf = new CubicGreedyFill(c);
+			cgf.run();
+			hybrid = cgf.getResult().getObj();
+			hybridTime = cgf.getTime();
+		}
 
-		String ret = cdpBest + "," + greedy + "," + fill + "," + hybrid + ",,," + cdpTime + "," + greedyTime + "," + fillTime + "," + hybridTime;
+		String ret = incObj + "," + cdpBest + "," + greedy + "," + greedyMax + "," + fill + "," + hybrid + ",,," + incTime + "," + cdpTime + "," + greedyTime + "," + greedyMaxTime + "," + fillTime + "," + hybridTime;
 		return ret;
 	}
 
@@ -358,7 +380,7 @@ public class CubicTest extends ProblemTest {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
 				int n = probSizes[j];
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 
 					String file1 = n+"_"+density+"_false_"+k;
 					System.out.println("--"+file1+"--");
@@ -377,7 +399,7 @@ public class CubicTest extends ProblemTest {
 						pw.println(",,"+k+",false,"+incumbent1+","+duration1);
 					}
 				}
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 
 					String file2 = n+"_"+density+"_true_"+k;
 					System.out.println("--"+file2+"--");
@@ -414,7 +436,7 @@ public class CubicTest extends ProblemTest {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
 				int n = probSizes[j];
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file1 = n+"_"+density+"_false_"+k;
 					TestLogger.setFile("cubic/"+file1);
 					System.out.println("--"+file1+"--");
@@ -435,7 +457,7 @@ public class CubicTest extends ProblemTest {
 						pw.println(",,"+k+",false,"+incumbent1+","+result1);
 					}
 				}
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < K; k++) {
 					String file2 = n+"_"+density+"_true_"+k;
 					TestLogger.setFile("cubic/"+file2);
 					System.out.println("--"+file2+"--");

@@ -125,7 +125,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 		// Check all possible shifts
 		for(Integer i: current.getR()) {
 			// Knapsack feasibility
-			if (current.getTotalA() + c.getA(i) <= c.getB()) {
+			if (current.addValid(i)) {
 				double obj = current.getObj() + c.getCi(i);
 				for (int j = 0; j < current.getXSize(); j++) {
 					int xj = current.getX().get(j);
@@ -144,9 +144,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 			}
 		}
 		if (maxI != -1) {
-			current.addA(maxI);
-			current.addI(maxI);
-			current.setObj(current.getObj() + maxChange);
+			current.addX(maxI);
 		}
 	}
 
@@ -156,9 +154,6 @@ public class CubicGreedyFill extends ConstHeuristic {
 	 *  @param current solution to improve
 	 */
 	private void bestImprovingSwap(CubicSol current) {
-		// Store b
-		int b = c.getB();
-		int curTotalA = current.getTotalA();
 		// Store best swaps
 		int bi = -1;
 		int bj = -1;
@@ -166,7 +161,7 @@ public class CubicGreedyFill extends ConstHeuristic {
 		for(Integer i: current.getX()) {
 			for(Integer j: current.getR()) {
 				// Check for knapsack feasibility
-				if (c.getA(j)-c.getA(i) <= b - curTotalA) {
+				if (current.swapValid(i,j)) {
 					double newObj = current.swapObj(i, j);
 					if (newObj > bObj) {
 						bi = i;
