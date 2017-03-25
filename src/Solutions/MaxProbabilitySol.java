@@ -368,7 +368,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 	 * @param i - item to remove
 	 */
 	public void removeX(int i) {
-		super.removeI(i);
+		removeI(i);
 		removeA(i);
 		removeU(i);
 		setObj(subObj(i, getX(), num, den));

@@ -119,8 +119,6 @@ public class MaxProbability extends Knapsack {
 		x.clear();
 		int totalAx = 0;
 		int totalUx = 0;
-		double num = 0;
-		double den = 0;
 		// Solve for max{u*x : Ax <= b, x free}
 		Knapsack_Frac k = new Knapsack_Frac(a,b,u,false);
 		boolean[] uMaxXVals = k.getXVals();
@@ -270,91 +268,103 @@ public class MaxProbability extends Knapsack {
 	 * @param r unused variables
 	 */
 	public void genRndInit(ArrayList<Integer> x, ArrayList<Integer> r) {
-		// Solution lists
-		// x - variables included in solution
-		// r - variables not included in solution
-		x.clear();
-		r.clear();
+		boolean valid = false;
+		while (!valid) {
+			// Solution lists
+			// x - variables included in solution
+			// r - variables not included in solution
+			x.clear();
+			r.clear();
 
-		int totalAx = 0; // sum(a_i*x_i)
-		int totalUx = 0; // sum(u_i*x_i)
+			int totalAx = 0; // sum(a_i*x_i)
+			int totalUx = 0; // sum(u_i*x_i)
 
-		// Start with all variables not in the solution
-		for (int j = 0; j < n; j++) {
-			r.add(j);
-		}
-
-		// Randomly add variables to the solution 
-		//	until sum(u_i*x_i) >= t
-		while (totalUx < t) {
-			// Update lists
-			int k = r.remove(rnd.nextInt(r.size()));
-			x.add(k);
-			// Update sums
-			totalUx += u[k];
-			totalAx += a[k];
-		}
-
-		// Perform swaps and shifts until knapsack feasible
-		//  (totalAx <= b)
-		int swaps = 0;
-		while (totalAx > b) {
-			// Attempt to find a random swap that reduces totalAx
-			int i = rnd.nextInt(x.size());
-			int j = rnd.nextInt(r.size());
-			// Variables to swap
-			int xi = x.get(i);
-			int rj = r.get(j);
-			int count = 0;
-			// Change random numbers until a_xi > a_rj
-			//	 so that totalAx reduced
-			while(a[rj] >= a[xi] && count < n/2) {
-				i = rnd.nextInt(x.size());
-				j = rnd.nextInt(r.size());
-				xi = x.get(i);
-				rj = r.get(j);
-				count++;
+			// Start with all variables not in the solution
+			for (int j = 0; j < n; j++) {
+				r.add(j);
 			}
-			// Check swap for reduced totalAx and profit feasibility 
-			if (a[rj] < a[xi] && totalUx - u[xi] + u[rj] > t) {
-				// Update solution lists
-				x.remove(i);
-				r.add(xi);
-				r.remove(j);
-				x.add(rj);
+
+			// Randomly add variables to the solution 
+			//	until sum(u_i*x_i) >= t
+			while (totalUx < t) {
+				// Update lists
+				int k = r.remove(rnd.nextInt(r.size()));
+				x.add(k);
 				// Update sums
-				totalUx = totalUx + u[rj] - u[xi];
-				totalAx = totalAx + a[rj] - a[xi];
+				totalUx += u[k];
+				totalAx += a[k];
 			}
-			// Increment swaps
-			swaps++;
 
-			// After a number of attempted swaps, try a shift
-			if (totalAx > b && swaps > 10) {
-				// Attempt a substitution: 
-				//	sub = {index, change in objective}
-				int subI = trySub(totalUx,x);
-				// If a variable can be removed
-				if (subI != -1) {
-					// Remove variable from solution and update sums
-					x.remove(Integer.valueOf(subI));
-					r.add(subI);
-					totalAx -= a[subI];
-					totalUx -= u[subI];
-				} 
-				// Else, could not remove a variable, 
-				//	so add a random variable to the solution
-				else {
-					rj = r.remove(rnd.nextInt(r.size()));
-					x.add(Integer.valueOf(rj));
-					totalAx += a[rj];
-					totalUx += u[rj];
+			// Perform swaps and shifts until knapsack feasible
+			//  (totalAx <= b)
+			int swaps = 0;
+			long start = System.nanoTime();
+			long end = start;
+			while (totalAx > b && (double)(end-start)/60000000000L < 0.08) {
+				// Attempt to find a random swap that reduces totalAx
+				int i = rnd.nextInt(x.size());
+				int j = rnd.nextInt(r.size());
+				// Variables to swap
+				int xi = x.get(i);
+				int rj = r.get(j);
+				int count = 0;
+				// Change random numbers until a_xi > a_rj
+				//	 so that totalAx reduced
+				while(a[rj] >= a[xi] && count < n/2) {
+					i = rnd.nextInt(x.size());
+					j = rnd.nextInt(r.size());
+					xi = x.get(i);
+					rj = r.get(j);
+					count++;
 				}
-				swaps = 0;
+				// Check swap for reduced totalAx and profit feasibility 
+				if (a[rj] < a[xi] && totalUx - u[xi] + u[rj] > t) {
+					// Update solution lists
+					x.remove(i);
+					r.add(xi);
+					r.remove(j);
+					x.add(rj);
+					// Update sums
+					totalUx = totalUx + u[rj] - u[xi];
+					totalAx = totalAx + a[rj] - a[xi];
+				}
+				// Increment swaps
+				swaps++;
+
+				// After a number of attempted swaps, try a shift
+				if (totalAx > b && swaps > 10) {
+					// Attempt a substitution: 
+					//	sub = {index, change in objective}
+					int subI = trySub(totalUx,x);
+					// If a variable can be removed
+					if (subI != -1) {
+						// Remove variable from solution and update sums
+						x.remove(Integer.valueOf(subI));
+						r.add(subI);
+						totalAx -= a[subI];
+						totalUx -= u[subI];
+					} 
+					// Else, could not remove a variable, 
+					//	so add a random variable to the solution
+					else {
+						rj = r.remove(rnd.nextInt(r.size()));
+						x.add(Integer.valueOf(rj));
+						totalAx += a[rj];
+						totalUx += u[rj];
+					}
+					swaps = 0;
+				}
+				
+				end = System.nanoTime();
+			}
+			if (totalAx <= b && totalUx >= t) {
+				valid = true;
+			} else {
+				System.err.println("Restarting rnd gen");
 			}
 		}
 	}
-	
+
 	/**
 	 * Find the variable that most decreases the knapsack weight when removed
 	 *
@@ -593,7 +603,7 @@ public class MaxProbability extends Knapsack {
 			System.err.println(e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Write the given coefficient array with the writer
 	 * 

@@ -194,7 +194,7 @@ public class FractionalSol extends KnapsackSol {
 	private long[] swapDen(int i, int j, long[] den) {
 		long[] newDen = new long[den.length];
 		for (int k = 0; k < f.getM(); k++) {
-			newDen[k] = den[k] + f.getC(k,j) - f.getC(k,i);
+			newDen[k] = den[k] + f.getD(k,j) - f.getD(k,i);
 		}
 		return newDen;
 	}
@@ -428,7 +428,7 @@ public class FractionalSol extends KnapsackSol {
 	private long[] subDen(int i, long[] den) {
 		long[] newDen = new long[den.length];
 		for (int k = 0; k < f.getM(); k++) {
-			newDen[k] = den[k] - f.getC(k,i);
+			newDen[k] = den[k] - f.getD(k,i);
 		}
 		return newDen;
 	}
@@ -443,7 +443,7 @@ public class FractionalSol extends KnapsackSol {
 	private long[] addDen(int i, long[] den) {
 		long[] newDen = new long[den.length];
 		for (int k = 0; k < f.getM(); k++) {
-			newDen[k] = den[k] + f.getC(k,i);
+			newDen[k] = den[k] + f.getD(k,i);
 		}
 		return newDen;
 	}
@@ -559,6 +559,8 @@ public class FractionalSol extends KnapsackSol {
 					readR.add(i);
 				}
 				readR.removeAll(readX);
+				setX(readX);
+				setR(readR);
 				setObj(readObj);
 				setNum(readNum);
 				setDen(readDen);

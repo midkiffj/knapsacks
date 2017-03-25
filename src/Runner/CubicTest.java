@@ -199,7 +199,7 @@ public class CubicTest extends ProblemTest {
 	 * @see Runner.ProblemTest#runMIP()
 	 */
 	public void runMIP() throws FileNotFoundException {
-		PrintWriter pw = new PrintWriter(resFolder+"cubMIP" + probSizes.length + ".csv");
+		PrintWriter pw = new PrintWriter(resFolder+"cubMIP.csv");
 		pw = new PrintWriter(pw,true);
 		pw.println("n,density,#,negCoef,incumbent,MIP,timeout");
 		for (int i = 0; i < densities.length; i++) {
@@ -207,47 +207,55 @@ public class CubicTest extends ProblemTest {
 			for (int j = 0; j < probSizes.length; j++) {
 				int n = probSizes[j];
 				for (int k = 0; k < K; k++) {
-					String file1 = n+"_"+density+"_false_"+k;
-					System.err.println(file1);
-					@SuppressWarnings("unused")
-					Cubic c1 = new Cubic(probFolder+file1);
-					CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
-					String[] args1 = {file1};
-
-					long result1;
-					Cubic_Forrester.main(args1);
-					result1 = Cubic_Forrester.getBestObj();
+					long result1 = -1;
+					double incObj1 = -1;
 					String timeout1 = "";
-					if (Cubic_Forrester.getTimeout()) {
-						timeout1 = "*";
+					if (n <= 200) {
+						String file1 = n+"_"+density+"_false_"+k;
+						System.err.println(file1);
+						@SuppressWarnings("unused")
+						Cubic c1 = new Cubic(probFolder+file1);
+						CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
+						incObj1 = cs1.getObj();
+						String[] args1 = {file1};
+
+						Cubic_Forrester.main(args1);
+						result1 = Cubic_Forrester.getBestObj();
+						if (Cubic_Forrester.getTimeout()) {
+							timeout1 = "*";
+						}
 					}
 
 					if (k == 0) {
-						pw.println(n+","+density+","+k+",false,"+cs1.getObj()+","+result1+","+timeout1);
+						pw.println(n+","+density+","+k+",false,"+incObj1+","+result1+","+timeout1);
 					} else {
-						pw.println(",,"+k+",false,"+cs1.getObj()+","+result1+timeout1);
+						pw.println(",,"+k+",false,"+incObj1+","+result1+","+timeout1);
 					}
 				}
 				for (int k = 0; k < K; k++) {
-					String file2 = n+"_"+density+"_true_"+k;
-					System.err.println(file2);
-					@SuppressWarnings("unused")
-					Cubic c2 = new Cubic(probFolder+file2);
-					CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
-					String[] args2 = {file2};
-
-					long result2;
-					Cubic_Forrester.main(args2);
-					result2 = Cubic_Forrester.getBestObj();
+					long result2 = -1;
+					double incObj2 = -1;
 					String timeout2 = "";
-					if (Cubic_Forrester.getTimeout()) {
-						timeout2 = "*";
+					if (n <= 200) {
+						String file2 = n+"_"+density+"_true_"+k;
+						System.err.println(file2);
+						@SuppressWarnings("unused")
+						Cubic c2 = new Cubic(probFolder+file2);
+						CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");
+						incObj2 = cs2.getObj();
+						String[] args2 = {file2};
+
+						Cubic_Forrester.main(args2);
+						result2 = Cubic_Forrester.getBestObj();
+						if (Cubic_Forrester.getTimeout()) {
+							timeout2 = "*";
+						}
 					}
 
 					if (k == 0) {
-						pw.println(n+","+density+","+k+",true,"+cs2.getObj()+","+result2+timeout2);
+						pw.println(n+","+density+","+k+",true,"+incObj2+","+result2+","+timeout2);
 					} else {
-						pw.println(",,"+k+",true,"+cs2.getObj()+","+result2+timeout2);
+						pw.println(",,"+k+",true,"+incObj2+","+result2+","+timeout2);
 					}
 				}
 			}
@@ -319,7 +327,7 @@ public class CubicTest extends ProblemTest {
 		long end = System.nanoTime();
 		double incObj = ks1.getObj();
 		double incTime = (double)(end-start)/60000000000L;
-		
+
 		double cdpBest = -1;
 		double cdpTime = -1;
 		if (c.getN() <= 200) {
@@ -341,7 +349,7 @@ public class CubicTest extends ProblemTest {
 		cgm.run();
 		double greedyMax = cgm.getResult().getObj();
 		double greedyMaxTime = cgm.getTime();
-		
+
 		double fill = -1;
 		double fillTime = -1;
 		if (c.getN() <= 200) {
@@ -456,6 +464,7 @@ public class CubicTest extends ProblemTest {
 					} else {
 						pw.println(",,"+k+",false,"+incumbent1+","+result1);
 					}
+					cs1.setHealing(false);
 				}
 				for (int k = 0; k < K; k++) {
 					String file2 = n+"_"+density+"_true_"+k;
@@ -477,6 +486,7 @@ public class CubicTest extends ProblemTest {
 					} else {
 						pw.println(",,"+k+",true,"+incumbent2+","+result2);
 					}
+					cs2.setHealing(false);
 				}
 			}
 		}

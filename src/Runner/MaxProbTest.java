@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import Constructive.MaxProbUMax;
-import Constructive.MaxProbUMaxCplex;
 import ExactMethods.MaxProb_Bill;
 import Heuristics.Metaheuristic;
 import Heuristics.genAlgo;
@@ -263,13 +262,13 @@ public class MaxProbTest extends ProblemTest {
 						System.out.println("--"+file+"--");
 
 						System.out.println("--UMax--");
-						MaxProbUMax mpum = new MaxProbUMax(mp);
+						MaxProbUMax mpum = new MaxProbUMax(mp, false);
 						mpum.run();
 						String uMaxObj = "" + mpum.getResult().getObj();
 						String uMaxTime = "" + mpum.getTime();
 						
 						System.out.println("--UMaxCplex--");
-						MaxProbUMaxCplex mpumc = new MaxProbUMaxCplex(mp);
+						MaxProbUMax mpumc = new MaxProbUMax(mp, true);
 						mpumc.run();
 						String uMaxCObj = "" + mpumc.getResult().getObj();
 						String uMaxCTime = "" + mpumc.getTime();
