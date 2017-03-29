@@ -147,7 +147,7 @@ public class MaxProbTest extends ProblemTest {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"maxProbMIP.csv");
 		pw = new PrintWriter(pw,true);
-		pw.println("n,#,P,K,incumbent,MIP");
+		pw.println("n,#,P,K,incumbent,MIP,gap,bestBound,timeout");
 		for (int n: sizes) {
 			for (int i = 0; i < num; i++) {
 				for (int p: possibleP) {
@@ -163,15 +163,17 @@ public class MaxProbTest extends ProblemTest {
 						MaxProb_Bill.main(args);
 
 						double result1 = MaxProb_Bill.getBestObj();
+						double gap1 = MaxProb_Bill.getGap();
 						String timeout = "";
 						if (MaxProb_Bill.getTimeout()) {
 							timeout = "*";
 						}
+						double bestBound1 = (gap1*result1)+result1;
 
 						if (k == 65) {
-							pw.println(n+","+i+","+p+","+k+","+incumbent1+","+result1+","+timeout);
+							pw.println(n+","+i+","+p+","+k+","+incumbent1+","+result1+","+gap1+","+bestBound1+","+timeout);
 						} else {
-							pw.println(",,,"+k+","+incumbent1+","+result1+","+timeout);
+							pw.println(",,,"+k+","+incumbent1+","+result1+","+gap1+","+bestBound1+","+timeout);
 						}
 					}
 				}

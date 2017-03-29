@@ -207,7 +207,7 @@ public class CubicMultTest extends ProblemTest {
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubMultMIP.csv");
 		pw = new PrintWriter(pw,true);
-		pw.println("n,m,density,#,negCoef,incumbent,MIP,timeout");
+		pw.println("n,m,density,#,negCoef,incumbent,MIP,gap,bestBound,timeout");
 		for (int m: knapsacks) {
 			for (int i = 0; i < densities.length; i++) {
 				double density = densities[i];
@@ -225,15 +225,17 @@ public class CubicMultTest extends ProblemTest {
 						long result1;
 						CubicMult_Forrester.main(args1);
 						result1 = CubicMult_Forrester.getBestObj();
+						double gap1 = CubicMult_Forrester.getGap();
 						String timeout1 = "";
 						if (CubicMult_Forrester.getTimeout()) {
 							timeout1 = "*";
 						}
+						double bestBound1 = (gap1*result1)+result1;
 
 						if (k == 0) {
-							pw.println(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+","+timeout1);
+							pw.println(n+","+m+","+density+","+k+",false,"+incumbent1+","+result1+","+gap1+","+bestBound1+","+timeout1);
 						} else {
-							pw.println(",,,"+k+",false,"+incumbent1+","+result1+","+timeout1);
+							pw.println(",,,"+k+",false,"+incumbent1+","+result1+","+gap1+","+bestBound1+","+timeout1);
 						}
 					}
 					for (int k = 0; k < K; k++) {
@@ -248,15 +250,17 @@ public class CubicMultTest extends ProblemTest {
 						long result2;
 						CubicMult_Forrester.main(args2);
 						result2 = CubicMult_Forrester.getBestObj();
+						double gap2 = CubicMult_Forrester.getGap();
 						String timeout2 = "";
 						if (CubicMult_Forrester.getTimeout()) {
 							timeout2 = "*";
 						}
+						double bestBound2 = (gap2*result2)+result2;
 
 						if (k == 0) {
-							pw.println(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+","+timeout2);
+							pw.println(n+","+m+","+density+","+k+",true,"+incumbent2+","+result2+","+gap2+","+bestBound2+","+timeout2);
 						} else {
-							pw.println(",,,"+k+",true,"+incumbent2+","+result2+","+timeout2);
+							pw.println(",,,"+k+",true,"+incumbent2+","+result2+","+gap2+","+bestBound2+","+timeout2);
 						}
 					}
 				}

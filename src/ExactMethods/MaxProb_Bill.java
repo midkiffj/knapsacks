@@ -30,6 +30,7 @@ public class MaxProb_Bill {
 	static double p1;
 
 	static double bestObj;
+	static double gap;
 	static boolean timeout;
 	static String file;
 
@@ -210,6 +211,7 @@ public class MaxProb_Bill {
 		try {
 			bestObj = cplex.getObjValue();
 			System.out.println(bestObj);
+			gap = cplex.getMIPRelativeGap();
 
 			printVars();
 			
@@ -219,7 +221,7 @@ public class MaxProb_Bill {
 			ArrayList<Integer> solR = new ArrayList<Integer>();
 			xvals = cplex.getValues(x);
 			for (int i = 0; i < n; i++) {
-				if (xvals[i] > 0) {
+				if (xvals[i] > 1e-05) {
 					solX.add(i);
 				} else {
 					solR.add(i);
@@ -236,6 +238,7 @@ public class MaxProb_Bill {
 		catch (Exception e) {
 			System.err.println(e.getMessage());
 			bestObj = -1;
+			gap = -1;
 		}
 	}
 
@@ -285,5 +288,9 @@ public class MaxProb_Bill {
 
 	public static boolean getTimeout() {
 		return timeout;
+	}
+	
+	public static double getGap() {
+		return gap;
 	}
 }

@@ -27,6 +27,7 @@ public class CubicMult_Forrester {
 	static int[] Ui;
 
 	static long bestObj;
+	static double gap;
 	static boolean timeout;
 	static String file;
 
@@ -60,6 +61,10 @@ public class CubicMult_Forrester {
 
 	public static boolean getTimeout() {
 		return timeout;
+	}
+	
+	public static double getGap() {
+		return gap;
 	}
 
 	/**
@@ -210,6 +215,7 @@ public class CubicMult_Forrester {
 		}
 		double IPOptimal = cplex.getObjValue();
 		bestObj = (long) IPOptimal;
+		gap = cplex.getMIPRelativeGap();
 
 		// Print Integral solution
 		System.out.println("Model Status: " + cplex.getCplexStatus());
@@ -222,7 +228,7 @@ public class CubicMult_Forrester {
 		ArrayList<Integer> solR = new ArrayList<Integer>();
 		xvals = cplex.getValues(x);
 		for (i = 0; i < n; i++) {
-			if (xvals[i] > 0) {
+			if (xvals[i] > 1e-05) {
 				solX.add(i);
 			} else {
 				solR.add(i);

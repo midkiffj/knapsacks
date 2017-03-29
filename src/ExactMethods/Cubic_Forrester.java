@@ -27,6 +27,7 @@ public class Cubic_Forrester {
 	static int[] Ui;
 
 	static long bestObj;
+	static double gap;
 	static boolean timeout;
 	static String file;
 
@@ -37,7 +38,7 @@ public class Cubic_Forrester {
 	 */
 	public static void main(String[] args) {
 		// Can get cubic problem as argument
-		file = "20_0.25_false_6";
+		file = "50_0.25_true_2";
 		if (args.length == 1) {
 			file = args[0];
 		}
@@ -60,6 +61,10 @@ public class Cubic_Forrester {
 
 	public static boolean getTimeout() {
 		return timeout;
+	}
+	
+	public static double getGap() {
+		return gap;
 	}
 
 	/**
@@ -200,7 +205,7 @@ public class Cubic_Forrester {
 		seedMIP(incX);
 
 		// Solve Model with time limit for bigger problems
-		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
+		cplex.setParam(IloCplex.DoubleParam.TiLim, 60);
 		cplex.solve();
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
@@ -208,6 +213,8 @@ public class Cubic_Forrester {
 		}
 		double IPOptimal = cplex.getObjValue();
 		bestObj = (long) IPOptimal;
+		gap = cplex.getMIPRelativeGap();
+		System.out.println("Gap: " + gap*100);
 
 		// Print Integral solution
 		System.out.println("Model Status: " + cplex.getCplexStatus());
@@ -220,7 +227,7 @@ public class Cubic_Forrester {
 		ArrayList<Integer> solR = new ArrayList<Integer>();
 		xvals = cplex.getValues(x);
 		for (i = 0; i < n; i++) {
-			if (xvals[i] > 0) {
+			if (xvals[i] > 1e-05) {
 				solX.add(i);
 			} else {
 				solR.add(i);

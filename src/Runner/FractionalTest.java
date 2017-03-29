@@ -2,6 +2,11 @@ package Runner;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+
+import Constructive.FractionalDP;
+import Constructive.FractionalFillUp;
+import Constructive.FractionalGreedy;
+import Constructive.FractionalGreedyMax;
 import ExactMethods.Fractional_Borrero;
 import Problems.Fractional;
 import Problems.ProblemFactory;
@@ -120,14 +125,14 @@ public class FractionalTest extends ProblemTest {
 	 */
 	public void runHeuristics() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter(resFolder+"fractionalHeuristics.csv");
-		pw = new PrintWriter(pw,true);
-		pw.println("n,m,#,incumbent,GA,SA,ST,TS");
-		for (int n: probSizes) {
-			for (int m: mSizes) {
-				for (boolean ln: numSize) {
-					for (boolean ld: denSize) {
-						String subFolder = numDenFolder(ln,ld);
+		for (boolean ln: numSize) {
+			for (boolean ld: denSize) {
+				String subFolder = numDenFolder(ln,ld);
+				pw = new PrintWriter(resFolder+subFolder+"fractionalHeuristics.csv");
+				pw = new PrintWriter(pw,true);
+				pw.println("n,m,#,incumbent,GA,SA,ST,TS");
+				for (int n: probSizes) {
+					for (int m: mSizes) {
 						for (int i = 0; i < num; i++) {
 							String file1 = subFolder+n+"_"+m+"_false_"+i;
 							@SuppressWarnings("unused")
@@ -150,9 +155,9 @@ public class FractionalTest extends ProblemTest {
 						}
 					}
 				}
+				pw.close();
 			}
 		}
-		pw.close();
 	}
 
 	@Override
@@ -162,14 +167,14 @@ public class FractionalTest extends ProblemTest {
 	 */
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw;
-		pw = new PrintWriter(resFolder+"fractionalMIP.csv");
-		pw = new PrintWriter(pw,true);
-		pw.println("n,m,#,incumbent,MIP");
-		for (int n: probSizes) {
-			for (int m: mSizes) {
-				for (boolean ln: numSize) {
-					for (boolean ld: denSize) {
-						String subFolder = numDenFolder(ln,ld);
+		for (boolean ln: numSize) {
+			for (boolean ld: denSize) {
+				String subFolder = numDenFolder(ln,ld);
+				pw = new PrintWriter(resFolder+subFolder+"fractionalMIP.csv");
+				pw = new PrintWriter(pw,true);
+				pw.println("n,m,#,incumbent,mip,gap,bestBound,timeout");
+				for (int n: probSizes) {
+					for (int m: mSizes) {
 						for (int i = 0; i < num; i++) {
 							String file1 = subFolder+n+"_"+m+"_false_"+i;
 							System.out.println("--"+file1+"--");
@@ -182,22 +187,80 @@ public class FractionalTest extends ProblemTest {
 							Fractional_Borrero.main(args);
 
 							double result1 = Fractional_Borrero.getBestObj();
+							double gap1 = Fractional_Borrero.getGap();
 							String timeout1 = "";
 							if (Fractional_Borrero.getTimeout()) {
 								timeout1 = "*";
 							}
+							double bestBound1 = (gap1*result1)+result1;
 
 							if (i == 0) {
-								pw.println(n+","+m+","+i+","+incumbent1+","+result1+","+timeout1);
+								pw.println(n+","+m+","+i+","+incumbent1+","+result1+","+gap1+","+bestBound1+","+timeout1);
 							} else {
-								pw.println(",,"+i+","+incumbent1+","+result1+","+timeout1);
+								pw.println(",,"+i+","+incumbent1+","+result1+","+gap1+","+bestBound1+","+timeout1);
 							}
 						}
 					}
 				}
+				pw.close();
 			}
 		}
-		pw.close();
+	}
+	
+	public void runConstructive() throws FileNotFoundException {
+		PrintWriter pw;
+		for (boolean ln: numSize) {
+			for (boolean ld: denSize) {
+				String subFolder = numDenFolder(ln,ld);
+				pw = new PrintWriter(resFolder+subFolder+"fractionalConstr.csv");
+				pw = new PrintWriter(pw,true);
+				pw.println("n,m,#,incumbent,Greedy,GreedyMax,FillUp,DP,,Time(min):,Greedy,GreedyMax,FillUp,DP");
+				for (int n: probSizes) {
+					for (int m: mSizes) {
+						for (int i = 0; i < num; i++) {
+							String file1 = subFolder+n+"_"+m+"_false_"+i;
+							Fractional f1 = new Fractional(probFolder+file1);
+							FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
+							double incumbent1 = fs1.getObj();
+
+							System.out.println("--"+file1+"--");
+
+							System.out.println("--Greedy--");
+							FractionalGreedy fg = new FractionalGreedy(f1);
+							fg.run();
+							String greedyObj = "" + fg.getResult().getObj();
+							String greedyTime = "" + fg.getTime();
+							
+							System.out.println("--GreedyMax--");
+							FractionalGreedyMax fgm = new FractionalGreedyMax(f1);
+							fgm.run();
+							String greedyMaxObj = "" + fgm.getResult().getObj();
+							String greedyMaxTime = "" + fgm.getTime();
+							
+							System.out.println("--FillUp--");
+							FractionalFillUp ff = new FractionalFillUp(f1);
+							ff.run();
+							String fillObj = "" + ff.getResult().getObj();
+							String fillTime = "" + ff.getTime();
+							
+							System.out.println("--DP--");
+							FractionalDP fdp = new FractionalDP(f1);
+							fdp.run();
+							String dpObj = "" + fdp.getResult().getObj();
+							String dpTime = "" + fdp.getTime();
+
+
+							if (i == 0) {
+								pw.println(n+","+m+","+i+","+incumbent1+","+greedyObj+","+greedyMaxObj+","+fillObj+","+dpObj+",,,"+greedyTime+","+greedyMaxTime+","+fillTime+","+dpTime);
+							} else {
+								pw.println(",,"+i+","+incumbent1+","+greedyObj+","+greedyMaxObj+","+fillObj+","+dpObj+",,,"+greedyTime+","+greedyMaxTime+","+fillTime+","+dpTime);
+							}
+						}
+					}
+				}
+				pw.close();
+			}
+		}
 	}
 
 }

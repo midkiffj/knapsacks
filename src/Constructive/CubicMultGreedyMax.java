@@ -50,7 +50,7 @@ public class CubicMultGreedyMax extends ConstHeuristic {
 
 		// Remove items, picking the item that maximize the gain-to-weight ratio
 		ArrayList<ratioNode> ratio = computeMaxRatio(x,r);
-		while (validTotalA(totalA) && ratio.size() > 0) {
+		while (validTotalA(totalA) && ratio.size() > 0 && ratio.get(ratio.size()-1).ratio > 0) {
 			int i = ratio.remove(ratio.size()-1).x;
 			if (addTotalA(totalA,i)) {
 				r.remove(Integer.valueOf(i));

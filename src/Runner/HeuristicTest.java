@@ -1,5 +1,7 @@
 package Runner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 
@@ -36,10 +38,28 @@ public class HeuristicTest {
 
 
 		// Update problem to test here
-		String file = "1000_P5_K95_0";
+		String file = "SN-SD/100_1_false_3";
 		@SuppressWarnings("unused")
-		Problem p = new MaxProbability("problems/mp/"+file);
-		ProblemSol ps = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
+		Problem p = new Fractional("problems/fractional/"+file);
+//		ProblemSol ps = new MaxProbabilitySol("incumbents/fractional/"+file+"inc.txt");
+		
+		ArrayList<Integer> x = new ArrayList<Integer>();
+		ArrayList<Integer> r = new ArrayList<Integer>();
+		for (int i = 0; i < 100; i++) {
+			r.add(i);
+		}
+		
+		int[] arr = {51, 67};
+		for (Integer i: arr) {
+			x.add(i);
+			r.remove(Integer.valueOf(i));
+		}
+		FractionalSol ps = new FractionalSol(x,r);
+		
+		System.out.println("Obj: " + ps.getObj());
+		System.out.println("Num: " + Arrays.toString(ps.getNum()));
+		System.out.println("Den: " + Arrays.toString(ps.getDen()));
+
 
 		testAll(ps);
 	}

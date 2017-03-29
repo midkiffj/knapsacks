@@ -20,6 +20,7 @@ public class Fractional_Borrero {
 	private static Fractional f;
 	private static IloCplex cplex;
 	private static double bestObj;
+	private static double gap;
 	private static boolean timeout;
 
 	// Cplex vars
@@ -197,6 +198,10 @@ public class Fractional_Borrero {
 	public static boolean getTimeout() {
 		return timeout;
 	}
+	
+	public static double getGap() {
+		return gap;
+	}
 
 	/**
 	 * Add model R4 and solve
@@ -304,12 +309,16 @@ public class Fractional_Borrero {
 		// Solve solution
 		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
 		cplex.solve();
+		
+		System.out.println("Status: " + cplex.getCplexStatus());
 
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
 			timeout = true;
 		}
-
+		
+		bestObj = cplex.getBestObjValue();
+		gap = cplex.getMIPRelativeGap();
 
 		// Create solution lists from MIP solution
 		double[] xvals = new double[n];
@@ -317,7 +326,8 @@ public class Fractional_Borrero {
 		ArrayList<Integer> solR = new ArrayList<Integer>();
 		xvals = cplex.getValues(x);
 		for (int i = 0; i < n; i++) {
-			if (xvals[i] > 0) {
+			System.out.println(x[i].getName() + ": " + xvals[i]);
+			if (xvals[i] > 1e-05) {
 				solX.add(i);
 			} else {
 				solR.add(i);
@@ -327,6 +337,7 @@ public class Fractional_Borrero {
 		FractionalSol fs = new FractionalSol(solX,solR);
 		double fObj = f.getObj(solX,false);
 		if (fs.getObj() != bestObj || fs.getObj() != fObj) {
+			System.err.println("Best Obj: " + bestObj);
 			System.err.println("Different fs obj: " + fs.getObj());
 			System.err.println("FObj: " + fObj);
 		}

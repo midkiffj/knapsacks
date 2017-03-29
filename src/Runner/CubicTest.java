@@ -201,7 +201,7 @@ public class CubicTest extends ProblemTest {
 	public void runMIP() throws FileNotFoundException {
 		PrintWriter pw = new PrintWriter(resFolder+"cubMIP.csv");
 		pw = new PrintWriter(pw,true);
-		pw.println("n,density,#,negCoef,incumbent,MIP,timeout");
+		pw.println("n,density,#,negCoef,incumbent,MIP,gap,bestBound,timeout");
 		for (int i = 0; i < densities.length; i++) {
 			double density = densities[i];
 			for (int j = 0; j < probSizes.length; j++) {
@@ -210,6 +210,8 @@ public class CubicTest extends ProblemTest {
 					long result1 = -1;
 					double incObj1 = -1;
 					String timeout1 = "";
+					double gap1 = -1;
+					double bestBound1 = -1;
 					if (n <= 200) {
 						String file1 = n+"_"+density+"_false_"+k;
 						System.err.println(file1);
@@ -221,21 +223,25 @@ public class CubicTest extends ProblemTest {
 
 						Cubic_Forrester.main(args1);
 						result1 = Cubic_Forrester.getBestObj();
+						gap1 = Cubic_Forrester.getGap();
 						if (Cubic_Forrester.getTimeout()) {
 							timeout1 = "*";
 						}
+						bestBound1 = (gap1*result1)+result1;
 					}
 
 					if (k == 0) {
-						pw.println(n+","+density+","+k+",false,"+incObj1+","+result1+","+timeout1);
+						pw.println(n+","+density+","+k+",false,"+incObj1+","+result1+","+gap1+","+bestBound1+","+timeout1);
 					} else {
-						pw.println(",,"+k+",false,"+incObj1+","+result1+","+timeout1);
+						pw.println(",,"+k+",false,"+incObj1+","+result1+","+gap1+","+bestBound1+","+timeout1);
 					}
 				}
 				for (int k = 0; k < K; k++) {
 					long result2 = -1;
 					double incObj2 = -1;
 					String timeout2 = "";
+					double gap2 = -1;
+					double bestBound2 = -1;
 					if (n <= 200) {
 						String file2 = n+"_"+density+"_true_"+k;
 						System.err.println(file2);
@@ -247,15 +253,17 @@ public class CubicTest extends ProblemTest {
 
 						Cubic_Forrester.main(args2);
 						result2 = Cubic_Forrester.getBestObj();
+						gap2 = Cubic_Forrester.getGap();
 						if (Cubic_Forrester.getTimeout()) {
 							timeout2 = "*";
 						}
+						bestBound2 = (gap2*result2)+result2;
 					}
 
 					if (k == 0) {
-						pw.println(n+","+density+","+k+",true,"+incObj2+","+result2+","+timeout2);
+						pw.println(n+","+density+","+k+",true,"+incObj2+","+result2+","+gap2+","+bestBound2+","+timeout2);
 					} else {
-						pw.println(",,"+k+",true,"+incObj2+","+result2+","+timeout2);
+						pw.println(",,"+k+",true,"+incObj2+","+result2+","+gap2+","+bestBound2+","+timeout2);
 					}
 				}
 			}

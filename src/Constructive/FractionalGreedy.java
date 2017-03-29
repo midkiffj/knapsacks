@@ -3,8 +3,8 @@ package Constructive;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import Problems.Cubic;
-import Solutions.CubicSol;
+import Problems.Fractional;
+import Solutions.FractionalSol;
 import Solutions.ProblemSol;
 import Solutions.ratioNode;
 
@@ -15,18 +15,22 @@ import Solutions.ratioNode;
  * 
  * @author midkiffj
  */
-public class CubicGreedy extends ConstHeuristic {
+public class FractionalGreedy extends ConstHeuristic {
 
-	private Cubic c;
+	private Fractional f;
+	private long[] num;
+	private long[] den;
 
 	/**
 	 * Specify the problem to solve
 	 * 
 	 * @param c Cubic problem
 	 */
-	public CubicGreedy(Cubic c) {
+	public FractionalGreedy(Fractional f) {
 		super();
-		this.c = c;
+		this.f = f;
+		num = new long[f.getM()];
+		den = new long[f.getM()];
 	}
 
 	protected ProblemSol construct() {
@@ -40,29 +44,30 @@ public class CubicGreedy extends ConstHeuristic {
 	 * 
 	 * @return solution constructed
 	 */
-	private CubicSol greedyHeuristic() {
+	private FractionalSol greedyHeuristic() {
 		ArrayList<Integer> x = new ArrayList<Integer>();
 		ArrayList<Integer> r = new ArrayList<Integer>();
 
 		// Add all items to knapsack
-		int totalA = 0;
-		for (int i = 0; i < c.getN(); i++) {
+		for (int i = 0; i < f.getN(); i++) {
 			x.add(i);
-			totalA += c.getA(i);
 		}
+		FractionalSol fs = new FractionalSol(x,r);
+		num = fs.getNum();
+		den = fs.getDen();
 
-		int b = c.getB();
+
 		// Remove items, picking the item that minimizes the loss-to-weight ratio
-		ArrayList<ratioNode> ratio = computeRatio(x);
-		while (totalA > b) {
+		ArrayList<ratioNode> ratio = computeRatio(x, fs.getObj());
+		while (ratio.size() > 0 && (ratio.get(0).ratio < 0 || !fs.getValid())) {
 			int i = ratio.remove(0).x;
-			x.remove(Integer.valueOf(i));
-			r.add(i);
-			totalA -= c.getA(i);
-			updateRatio(x,ratio,i);
+			fs.removeX(i);
+			num = fs.getNum();
+			den = fs.getDen();
+			updateRatio(x,fs.getObj(),ratio,i);
 		}
 
-		return new CubicSol(x,r);
+		return new FractionalSol(fs.getX(),fs.getR());
 	}
 
 	/**
@@ -73,7 +78,7 @@ public class CubicGreedy extends ConstHeuristic {
 	 * 
 	 * @param x - the list of items in the solution
 	 */
-	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x) {
+	private ArrayList<ratioNode> computeRatio(ArrayList<Integer> x, double curObj) {
 		// List of ratios to return
 		ArrayList<ratioNode> ratio = new ArrayList<ratioNode>();
 		// For each item
@@ -82,24 +87,36 @@ public class CubicGreedy extends ConstHeuristic {
 			// (positive: obj function goes down)
 			// (negative: obj function goes up)
 			// We want negative ratios since that'll improve the objective
-			long objChange = c.getCi(i);
-			for (int j = 0; j < x.size(); j++) {
-				int xj = x.get(j);
-				objChange += c.getCij(i,xj);
-				for (int k = j+1; k < x.size(); k++) {
-					int xk = x.get(k);
-					objChange += c.getDijk(i,xj,xk);
-				}
-			}
+			double newObj = subObj(i,num,den);
+			double objChange = newObj - curObj;
 			// Compute loss-to-weight and store as ratioNode
-			double lossToWeight = (double)objChange / c.getA(i);
+			double lossToWeight = objChange / f.getA(i);
 			ratioNode rni = new ratioNode(i, lossToWeight);
-			rni.objChange = objChange;
 			ratio.add(rni);
 		}
 		// Sort ratios
 		Collections.sort(ratio);
 		return ratio;
+	}
+	
+	/**
+	 * Calculate the objective if item i is removed from the solution
+	 * 
+	 * @param i - item to remove
+	 * @param num - numerator values
+	 * @param den - denominator values
+	 * @return calculated objective
+	 */
+	private double subObj(int i, long[] num, long[] den) {
+		double obj = 0;
+		for (int j = 0; j < f.getM(); j++) {
+			if (den[j]-f.getD(j,i) == 0) {
+				return -1*Double.MAX_VALUE;
+			}
+			obj += (double)(num[j]-f.getC(j,i))/(den[j]-f.getD(j,i));
+		}
+
+		return obj;
 	}
 
 	/**
@@ -110,22 +127,16 @@ public class CubicGreedy extends ConstHeuristic {
 	 * @param ratio - list of ratioNodes
 	 * @param j - item removed
 	 */
-	private void updateRatio(ArrayList<Integer> x, ArrayList<ratioNode> ratio, int j) {
+	private void updateRatio(ArrayList<Integer> x, double curObj, ArrayList<ratioNode> ratio, int j) {
 		// For each item left
 		for (ratioNode rni: ratio) {
 			int i = rni.x;
 			// Get objective change
-			long objChange = rni.objChange;
-			// Subtract the contribution with the specified item
-			objChange -= c.getCij(i,j);
-			for (int k = 0; k < x.size(); k++) {
-				int xk = x.get(k);
-				objChange -= c.getDijk(i,j,xk);
-			}
+			double newObj = subObj(i,num,den);
+			double objChange = newObj - curObj;
 			// Recompute ratio and update node
-			double lossToWeight = (double)objChange / c.getA(i);
+			double lossToWeight = objChange / f.getA(i);
 			rni.ratio = lossToWeight;
-			rni.objChange = objChange;
 		}
 		// Sort ratios
 		Collections.sort(ratio);
