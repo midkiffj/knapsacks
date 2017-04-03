@@ -198,7 +198,7 @@ public class Fractional_Borrero {
 	public static boolean getTimeout() {
 		return timeout;
 	}
-	
+
 	public static double getGap() {
 		return gap;
 	}
@@ -306,17 +306,22 @@ public class Fractional_Borrero {
 			cplex.addLe(yi,bestObj);
 		}
 
+		// Seed MIP with incumbent solution
+		FractionalSol inc = new FractionalSol("incumbents/fractional/"+file+"inc.txt");
+		ArrayList<Integer> incX = inc.getX();
+		seedMIP(incX);
+
 		// Solve solution
 		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
 		cplex.solve();
-		
+
 		System.out.println("Status: " + cplex.getCplexStatus());
 
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
 			timeout = true;
 		}
-		
+
 		bestObj = cplex.getBestObjValue();
 		gap = cplex.getMIPRelativeGap();
 
@@ -341,6 +346,25 @@ public class Fractional_Borrero {
 			System.err.println("Different fs obj: " + fs.getObj());
 			System.err.println("FObj: " + fObj);
 		}
+	}
+
+	/**
+	 * Seed cplex with the given MIP solution
+	 * 
+	 * @param initX - solution list to seed to cplex
+	 * @throws IloException
+	 */
+	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
+		// New solution to be passed in to MIP.
+		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
+		double[] values = new double[initX.size()];
+		for (int i = 0; i < initX.size(); i++) {
+			int xi = initX.get(i);
+			System.out.println("x_"+xi);
+			iniX[i] = x[xi];
+			values[i] = 1;
+		}
+		cplex.addMIPStart(iniX,values,"initSol");
 	}
 
 	/**

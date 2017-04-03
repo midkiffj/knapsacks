@@ -31,6 +31,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
+		updateValid();
 	}
 
 	/**
@@ -41,6 +42,7 @@ public class FractionalSol extends KnapsackSol {
 	public FractionalSol(String filename) {
 		super(filename);
 		f = (Fractional)p;
+		updateValid();
 	}
 
 	/**
@@ -53,6 +55,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(fs.getNum());
 		setDen(fs.getDen());
+		updateValid();
 	}
 
 	/**
@@ -70,6 +73,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(num);
 		setDen(num);
+		updateValid();
 	}
 
 	/**
@@ -82,6 +86,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
+		updateValid();
 	}
 
 	/**
@@ -95,6 +100,7 @@ public class FractionalSol extends KnapsackSol {
 		f = (Fractional)p;
 		setNum(f.getNum());
 		setDen(f.getDen());
+		updateValid();
 	}
 
 	/**

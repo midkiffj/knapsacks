@@ -41,7 +41,7 @@ public class MaxProb_Bill {
 	 */
 	public static void main(String[] args) {
 		// Can take file as argument
-		file = "1000_P5_K95_0";
+		file = "100_P5_K95_0";
 		if (args.length == 1) {
 			file = args[0];
 		}
@@ -199,6 +199,11 @@ public class MaxProb_Bill {
 		// Export LP
 		cplex.exportModel("maxProbBill.lp");
 
+		// Seed MIP with incumbent solution
+		MaxProbabilitySol inc = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
+		ArrayList<Integer> incX = inc.getX();
+		seedMIP(incX);
+
 		// Solve and print solution
 		cplex.setParam(IloCplex.DoubleParam.TiLim, 1800);
 		cplex.solve();
@@ -207,14 +212,14 @@ public class MaxProb_Bill {
 			System.err.println(file + " Timeout");
 			timeout = true;
 		}
-		
+
 		try {
 			bestObj = cplex.getObjValue();
 			System.out.println(bestObj);
 			gap = cplex.getMIPRelativeGap();
 
 			printVars();
-			
+
 			// Create solution lists from MIP solution
 			double[] xvals = new double[n];
 			ArrayList<Integer> solX = new ArrayList<Integer>();
@@ -241,6 +246,26 @@ public class MaxProb_Bill {
 			gap = -1;
 		}
 	}
+
+	/**
+	 * Seed cplex with the given MIP solution
+	 * 
+	 * @param initX - solution list to seed to cplex
+	 * @throws IloException
+	 */
+	static private void seedMIP(ArrayList<Integer> initX) throws IloException {
+		// New solution to be passed in to MIP.
+		IloNumVar[] iniX = cplex.numVarArray(initX.size(),0,1,IloNumVarType.Bool);
+		double[] values = new double[initX.size()];
+		for (int i = 0; i < initX.size(); i++) {
+			int xi = initX.get(i);
+			System.out.println("x_"+xi);
+			iniX[i] = x[xi];
+			values[i] = 1;
+		}
+		cplex.addMIPStart(iniX,values,"initSol");
+	}
+
 
 	/**
 	 * Pretty Print solution variables to x, y, z, W, W2, and p
@@ -289,7 +314,7 @@ public class MaxProb_Bill {
 	public static boolean getTimeout() {
 		return timeout;
 	}
-	
+
 	public static double getGap() {
 		return gap;
 	}

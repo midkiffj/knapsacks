@@ -26,6 +26,7 @@ public class CubicSol extends KnapsackSol {
 	public CubicSol() {
 		super();
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	/**
@@ -36,6 +37,7 @@ public class CubicSol extends KnapsackSol {
 	public CubicSol(String filename) {
 		super(filename);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	/**
@@ -46,6 +48,7 @@ public class CubicSol extends KnapsackSol {
 	public CubicSol(CubicSol cs) {
 		super((KnapsackSol)cs);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	/**
@@ -56,6 +59,7 @@ public class CubicSol extends KnapsackSol {
 	public CubicSol(boolean[] xVals) {
 		super(xVals);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	/**
@@ -67,6 +71,7 @@ public class CubicSol extends KnapsackSol {
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	/**
@@ -80,6 +85,7 @@ public class CubicSol extends KnapsackSol {
 	public CubicSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int totalA) {
 		super(x,r,obj,totalA);
 		c = (Cubic)p;
+		updateValid();
 	}
 
 	/**

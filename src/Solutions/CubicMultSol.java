@@ -26,6 +26,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol() {
 		super();
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	/**
@@ -36,6 +37,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol(String filename) {
 		super(filename);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	/**
@@ -46,6 +48,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol(CubicMultSol cms) {
 		super((MultKnapsackSol)cms);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	/**
@@ -56,6 +59,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol(boolean[] xVals) {
 		super(xVals);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	/**
@@ -67,6 +71,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r) {
 		super(x,r);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	/**
@@ -80,6 +85,7 @@ public class CubicMultSol extends MultKnapsackSol {
 	public CubicMultSol(ArrayList<Integer> x, ArrayList<Integer> r, double obj, int[] totalA) {
 		super(x,r,obj,totalA);
 		cm = (CubicMult)p;
+		updateValid();
 	}
 
 	/**

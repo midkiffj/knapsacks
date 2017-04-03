@@ -34,6 +34,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 		num = mp.getNum();
 		den = mp.getDen();
 		calcTotalU();
+		updateValid();
 	}
 
 	/**
@@ -44,6 +45,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 	public MaxProbabilitySol(String filename) {
 		super(filename);
 		mp = (MaxProbability)p;
+		updateValid();
 	}
 
 	/**
@@ -57,6 +59,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 		totalU = mps.getTotalU();
 		num = mps.getNum();
 		den = mps.getDen();
+		updateValid();
 	}
 
 	/**
@@ -76,6 +79,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 		calcTotalU();
 		this.num = num;
 		this.den = den;
+		updateValid();
 	}
 
 	/**
@@ -89,6 +93,7 @@ public class MaxProbabilitySol extends KnapsackSol {
 		calcTotalU();
 		num = mp.getNum();
 		den = mp.getDen();
+		updateValid();
 	}
 
 	/**
@@ -331,7 +336,18 @@ public class MaxProbabilitySol extends KnapsackSol {
 			return -1;
 		}
 
-		int minI = minRatio(0);
+		int minI = -1;
+		double t = mp.getT();
+		double minRatio = Double.MAX_VALUE;
+		for (Integer i: x) {
+			if (totalU - mp.getU(i) >= t) {
+				double ratio = mp.getRatio(i);
+				if (ratio < minRatio) {
+					minRatio = ratio;
+					minI = i;
+				}
+			}
+		}
 
 		if (minI == -1) {
 			return -1;
@@ -491,15 +507,12 @@ public class MaxProbabilitySol extends KnapsackSol {
 			int i = rnd.nextInt(ratio.size());
 			int j = rnd.nextInt(ratio.size());
 			i = Math.max(i,j);
-			ratioNode rni = ratio.get(i);
+			ratioNode rni = ratio.remove(i);
 			if (newTotalA + mp.getA(rni.x) <= getB()) {
-				ratio.remove(i);
 				x.add(rni.x);
 				r.remove(Integer.valueOf(rni.x));
 				newTotalA += mp.getA(rni.x);
 				newTotalU += mp.getU(rni.x);
-			} else {
-				ratio.remove(i);
 			}
 		}
 
@@ -797,6 +810,8 @@ public class MaxProbabilitySol extends KnapsackSol {
 				}
 				readR.removeAll(readX);
 				setObj(readObj);
+				setX(readX);
+				setR(readR);
 				num = readNum;
 				den = readDen;
 				setTotalA(readTotalA);

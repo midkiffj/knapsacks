@@ -49,7 +49,7 @@ public class simAnneal extends Metaheuristic {
 		long end = start;
 		// Track time and iterations
 		for (int iteration = 0; iteration < maxIter && (end-start) < time; iteration++) {			
-
+			
 			// Occasionally, check for a shift
 			boolean shifted = false;
 			if (shiftTabu < iteration) {
