@@ -41,7 +41,7 @@ public class MaxProb_Bill {
 	 */
 	public static void main(String[] args) {
 		// Can take file as argument
-		file = "100_P5_K95_0";
+		file = "100_P30_K85_1";
 		if (args.length == 1) {
 			file = args[0];
 		}
@@ -201,6 +201,7 @@ public class MaxProb_Bill {
 
 		// Seed MIP with incumbent solution
 		MaxProbabilitySol inc = new MaxProbabilitySol("incumbents/mp/"+file+"inc.txt");
+		System.out.println("Inc Valid: " + inc.getValid());
 		ArrayList<Integer> incX = inc.getX();
 		seedMIP(incX);
 
@@ -211,6 +212,8 @@ public class MaxProb_Bill {
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
 			timeout = true;
+		} else {
+			timeout = false;
 		}
 
 		try {

@@ -320,6 +320,8 @@ public class Fractional_Borrero {
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
 			timeout = true;
+		} else {
+			timeout = false;
 		}
 
 		bestObj = cplex.getBestObjValue();

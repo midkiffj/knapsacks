@@ -28,7 +28,7 @@ public abstract class KnapsackSol extends ProblemSol {
 		calcTotalA();
 		updateB();
 	}
-	
+
 	/**
 	 * Construct a solution from the given file
 	 * 
@@ -43,7 +43,7 @@ public abstract class KnapsackSol extends ProblemSol {
 		}
 		updateB();
 	}
-	
+
 	/**
 	 * Construct a solution that is equivalent to the solution passed in
 	 * 
@@ -126,7 +126,7 @@ public abstract class KnapsackSol extends ProblemSol {
 		this.totalA = totalA;
 		updateB();
 	}
-	
+
 	/**
 	 * Set the value of the knapsack capacity
 	 * 	- Infinity if using healing algorithms
@@ -158,7 +158,7 @@ public abstract class KnapsackSol extends ProblemSol {
 	public void setTotalA(int totalA) {
 		this.totalA = totalA;
 	}
-	
+
 	/**
 	 * Add item i to the knapsack weight
 	 * @param i - item to add
@@ -166,7 +166,7 @@ public abstract class KnapsackSol extends ProblemSol {
 	public void addA(int i) {
 		this.totalA += k.getA(i);
 	}
-	
+
 	/**
 	 * Remove item i from the knapsack weight
 	 * @param i - item to remove
@@ -174,7 +174,7 @@ public abstract class KnapsackSol extends ProblemSol {
 	public void removeA(int i) {
 		this.totalA -= k.getA(i);
 	}
-	
+
 	/**
 	 * Return if adding item i will keep the problem feasible 
 	 * 
@@ -182,9 +182,13 @@ public abstract class KnapsackSol extends ProblemSol {
 	 * @return (T) if adding i results in a valid solution
 	 */
 	public boolean addValid(int i) {
-		return ((getTotalA() + k.getA(i)) <= getB());
+		if (i < n && i >= 0) {
+			return ((getTotalA() + k.getA(i)) <= getB());
+		} else {
+			return false;
+		}
 	}
-	
+
 	/**
 	 * Return if removing item i will keep the problem feasible 
 	 * 
@@ -192,9 +196,14 @@ public abstract class KnapsackSol extends ProblemSol {
 	 * @return (T) if removing i results in a valid solution
 	 */
 	public boolean subValid(int i) {
-		return ((getTotalA() - k.getA(i)) <= getB());
+		if (i < n && i >= 0) {
+			return ((getTotalA() - k.getA(i)) <= getB());
+		}
+		else {
+			return false;
+		}
 	}
-	
+
 	/**
 	 * Return if removing item i and adding item j
 	 * 	will keep the problem feasible 
@@ -204,9 +213,13 @@ public abstract class KnapsackSol extends ProblemSol {
 	 * @return (T) if swapping i and j results in a valid solution
 	 */
 	public boolean swapValid(int i, int j) {
-		return ((getTotalA() + k.getA(j) - k.getA(i)) <= getB());
+		if (i < n && j < n && i >= 0 && j >= 0) {
+			return ((getTotalA() + k.getA(j) - k.getA(i)) <= getB());
+		} else {
+			return false;
+		}
 	}
-	
+
 	public int getB() {
 		return b;
 	}

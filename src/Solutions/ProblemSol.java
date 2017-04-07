@@ -202,7 +202,7 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 	 * @return {best tabu solution, best nontabu solution}
 	 */
 	public ProblemSol[] tabuMutate(int iteration, int[][] tabuList) {
-		if (getRSize() == 0) {
+		if (getRSize() == 0 || getXSize() == 0) {
 			return null;
 		}
 		if (rnd.nextDouble() < 0.6) {
@@ -219,7 +219,7 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 	 * @return mutated solution
 	 */
 	public ProblemSol mutate() {
-		if (getRSize() == 0) {
+		if (getRSize() == 0 || getXSize() == 0) {
 			return null;
 		}
 		if (rnd.nextDouble() < 0.6) {
@@ -241,7 +241,7 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 	 * @return mutated solution
 	 */
 	public ProblemSol bestMutate() {
-		if (getRSize() == 0) {
+		if (getRSize() == 0 || getXSize() == 0) {
 			return null;
 		}
 		if (p.getN() >= 500) {
@@ -267,7 +267,7 @@ public abstract class ProblemSol implements Comparable<ProblemSol>, Comparator<P
 	 * @return {best tabu solution, best nontabu solution}
 	 */
 	public ProblemSol[] tabuBestMutate(int iteration, int[][] tabuList) {
-		if (getRSize() == 0) {
+		if (getRSize() == 0 || getXSize() == 0) {
 			return null;
 		}
 		return bestSwap(iteration, tabuList);

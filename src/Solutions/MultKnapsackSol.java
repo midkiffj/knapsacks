@@ -28,7 +28,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		calcTotalA();
 		updateB();
 	}
-	
+
 	/**
 	 * Construct a solution from the given file
 	 * 
@@ -43,7 +43,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		}
 		updateB();
 	}
-	
+
 	/**
 	 * Construct a solution that is equivalent to the solution passed in
 	 * 
@@ -126,7 +126,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		}
 		updateB();
 	}
-	
+
 	/**
 	 * Set the value of the knapsack capacity
 	 * 	- Infinity if using healing algorithms
@@ -144,7 +144,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 			}
 		}
 	}
-	
+
 	/**
 	 * Update the knapsack weight given the current solution
 	 */
@@ -160,7 +160,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	public int[] getTotalA() {
 		return totalA;
 	}
-	
+
 	/**
 	 * Return if adding item i will keep the problem feasible 
 	 * 
@@ -168,9 +168,13 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	 * @return (T) if adding i results in a valid solution
 	 */
 	public boolean addValid(int i) {
-		return addTotalA(getTotalA(),i);
+		if (i < n && i >= 0) {
+			return addTotalA(getTotalA(),i);
+		} else {
+			return false;
+		}
 	}
-	
+
 	/**
 	 * Return if removing item i will keep the problem feasible 
 	 * 
@@ -178,9 +182,13 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	 * @return (T) if removing i results in a valid solution
 	 */
 	public boolean subValid(int i) {
-		return subTotalA(getTotalA(),i);
+		if (i < n && i >= 0) {
+			return subTotalA(getTotalA(),i);
+		} else {
+			return false;
+		}
 	}
-	
+
 	/**
 	 * Return if removing item i and adding item j
 	 * 	will keep the problem feasible 
@@ -190,9 +198,13 @@ public abstract class MultKnapsackSol extends ProblemSol {
 	 * @return (T) if swapping i and j results in a valid solution
 	 */
 	public boolean swapValid(int i, int j) {
-		return swapTotalA(getTotalA(),i,j);
+		if (i < n && i >= 0) {
+			return swapTotalA(getTotalA(),i,j);
+		} else {
+			return false;
+		}
 	}
-	
+
 	/**
 	 * Return if adding the item to the given weight 
 	 * 	will keep the problem feasible
@@ -209,7 +221,7 @@ public abstract class MultKnapsackSol extends ProblemSol {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Return if removing the item to the given weight 
 	 * 	will keep the problem feasible
@@ -251,17 +263,17 @@ public abstract class MultKnapsackSol extends ProblemSol {
 			this.totalA[i] = totalA[i];
 		}
 	}
-	
+
 	public void addA(int j) {
 		for (int i = 0; i < m; i++) {
 			totalA[i] += mk.getA(i,j);
 		}
 	}
-	
+
 	public void removeA(int j) {
 		for (int i = 0; i < m; i++) {
 			totalA[i] -= mk.getA(i,j);
 		}
 	}
-	
+
 }

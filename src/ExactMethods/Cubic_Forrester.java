@@ -210,6 +210,8 @@ public class Cubic_Forrester {
 		if (cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim) {
 			System.err.println(file + " Timeout");
 			timeout = true;
+		} else {
+			timeout = false;
 		}
 		double IPOptimal = cplex.getObjValue();
 		bestObj = (long) IPOptimal;
