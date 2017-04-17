@@ -204,6 +204,7 @@ public class CubicMultTest extends ProblemTest {
 	 * @see Runner.ProblemTest#runMIP()
 	 */
 	public void runMIP() throws FileNotFoundException {
+		int[] probSizes = {10,20,30};
 		PrintWriter pw;
 		pw = new PrintWriter(resFolder+"cubMultMIP.csv");
 		pw = new PrintWriter(pw,true);

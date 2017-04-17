@@ -9,7 +9,7 @@ import Solutions.ProblemSol;
 import Solutions.ratioNode;
 
 /**
- * Greedy Heuristic to the Cubic Knapsack
+ * Greedy Heuristic to the Fractional Knapsack
  * - Fills the knapsack with all items
  * - Removes the item with the minimum loss-to-weight ratio
  * 
@@ -24,7 +24,7 @@ public class FractionalGreedy extends ConstHeuristic {
 	/**
 	 * Specify the problem to solve
 	 * 
-	 * @param c Cubic problem
+	 * @param f Fractional problem
 	 */
 	public FractionalGreedy(Fractional f) {
 		super();

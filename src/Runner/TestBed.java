@@ -1,7 +1,5 @@
 package Runner;
 
-import java.io.FileNotFoundException;
-
 /**
  * Testing controller used to choose problems to run and how to run them.
  * 
@@ -18,10 +16,10 @@ public class TestBed {
 	// Select problem(s) to run
 	private static boolean c = false;
 	private static boolean cm = false;
-	private static boolean mp = false;
 	private static boolean f = false;
+	private static boolean mp = false;
 
-	/*
+	/**
 	 * Runs the selected problems
 	 */
 	public static void main(String[] args) {
@@ -31,15 +29,15 @@ public class TestBed {
 		if (cm) {
 			mainCubicMult();
 		}
-		if (mp) {
-			mainMaxProb();
-		}
 		if (f) {
 			mainFractional();
 		}
+		if (mp) {
+			mainMaxProb();
+		}
 	}
 
-	/*
+	/**
 	 * Run the cubic test bed
 	 * - g: generate the test bed
 	 * - rh: run the metaheuristics
@@ -47,6 +45,7 @@ public class TestBed {
 	 * - log: use the testlogger
 	 * - inc: run and time the incumbent generator
 	 * - constr: run the constructive heuristics
+	 * - heal: run the metaheuristics with healing toggled on
 	 */
 	private static void mainCubic() {
 		boolean g = false;
@@ -68,17 +67,19 @@ public class TestBed {
 			if (heal) {
 				ct.runHealHeuristics();
 			}
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			System.err.println("Error Running Cubic: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
-	/*
+	/**
 	 * Run the cubic multiple knapsack test bed
 	 * - g: generate the test bed
 	 * - rh: run the metaheuristics
 	 * - mip: run the MIP formulation
 	 * - log: use the testlogger
+	 * - constr: run the constructive heuristics
 	 */
 	private static void mainCubicMult() {
 		boolean g = false;
@@ -92,18 +93,20 @@ public class TestBed {
 			if (constr) {
 				cmt.runConstructive();
 			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Error Running Cubic: " + e.getMessage());
+		} catch (Exception e) {
+			System.err.println("Error Running CubicMult: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
-	/*
+	/**
 	 * Run the maximum probability test bed
 	 * - g: generate the test bed
 	 * - rh: run the metaheuristics
 	 * - mip: run the MIP formulation
 	 * - log: use the testlogger
 	 * - runGA: run only the genetic algorithm
+	 * - constr: run the umax constructive heuristics
 	 */
 	private static void mainMaxProb() {
 		boolean g = false;
@@ -111,18 +114,24 @@ public class TestBed {
 		boolean mip = false;
 		boolean log = false;
 		boolean runGA = false;
+		boolean constr = false;
 		MaxProbTest mpt = new MaxProbTest(g,rh,mip,log);
 		try {
 			mpt.run();
 			if (runGA) {
 				mpt.runMaxProbGA();
 			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Error Running Cubic: " + e.getMessage());
+			if (constr) {
+				mpt.runMaxProbConst();
+			}
+		} catch (Exception e) {
+			System.err.println("Error Running Max Prob: " + e.getMessage());
+			e.printStackTrace();
+
 		}
 	}
 
-	/*
+	/**
 	 * Run the fractional knapsack test bed
 	 * - g: generate the test bed
 	 * - rh: run the metaheuristics
@@ -134,12 +143,16 @@ public class TestBed {
 		boolean rh = false;
 		boolean mip = false;
 		boolean log = false;
+		boolean constr = false;
 		FractionalTest ft = new FractionalTest(g,rh,mip,log);
 		try {
 			ft.run();
-			
-		} catch (FileNotFoundException e) {
-			System.err.println("Error Running Cubic: " + e.getMessage());
+			if (constr) {
+				ft.runConstructive();
+			}
+		} catch (Exception e) {
+			System.err.println("Error Running Fractional: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }

@@ -9,9 +9,8 @@ import Solutions.ProblemSol;
 import Solutions.ratioNode;
 
 /**
- * Greedy Heuristic to the Cubic Knapsack
- * - Fills the knapsack with all items
- * - Removes the item with the minimum loss-to-weight ratio
+ * Greedy Heuristic to the Fractional Knapsack
+ * - Adds the item with the maximum gain-to-weight ratio
  * 
  * @author midkiffj
  */
@@ -24,7 +23,7 @@ public class FractionalGreedyMax extends ConstHeuristic {
 	/**
 	 * Specify the problem to solve
 	 * 
-	 * @param c Cubic problem
+	 * @param f Fractional problem
 	 */
 	public FractionalGreedyMax(Fractional f) {
 		super();
@@ -93,8 +92,8 @@ public class FractionalGreedyMax extends ConstHeuristic {
 			double newObj = addObj(i,num,den);
 			double objChange = newObj - curObj;
 			// Compute loss-to-weight and store as ratioNode
-			double lossToWeight = objChange / f.getA(i);
-			ratioNode rni = new ratioNode(i, lossToWeight);
+			double gainToWeight = objChange / f.getA(i);
+			ratioNode rni = new ratioNode(i, gainToWeight);
 			ratio.add(rni);
 		}
 		// Sort ratios

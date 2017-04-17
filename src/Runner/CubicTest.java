@@ -199,6 +199,7 @@ public class CubicTest extends ProblemTest {
 	 * @see Runner.ProblemTest#runMIP()
 	 */
 	public void runMIP() throws FileNotFoundException {
+		int[] probSizes = {10,20,30};
 		PrintWriter pw = new PrintWriter(resFolder+"cubMIP.csv");
 		pw = new PrintWriter(pw,true);
 		pw.println("n,density,#,negCoef,incumbent,MIP,gap,bestBound,timeout");
@@ -214,7 +215,7 @@ public class CubicTest extends ProblemTest {
 					double bestBound1 = -1;
 					if (n <= 200) {
 						String file1 = n+"_"+density+"_false_"+k;
-						System.err.println(file1);
+						System.out.println("---"+file1+"---");
 						@SuppressWarnings("unused")
 						Cubic c1 = new Cubic(probFolder+file1);
 						CubicSol cs1 = new CubicSol(incuFolder+file1+"inc.txt");
@@ -244,7 +245,7 @@ public class CubicTest extends ProblemTest {
 					double bestBound2 = -1;
 					if (n <= 200) {
 						String file2 = n+"_"+density+"_true_"+k;
-						System.err.println(file2);
+						System.out.println("---"+file2+"---");
 						@SuppressWarnings("unused")
 						Cubic c2 = new Cubic(probFolder+file2);
 						CubicSol cs2 = new CubicSol(incuFolder+file2+"inc.txt");

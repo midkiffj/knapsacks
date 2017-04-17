@@ -43,7 +43,7 @@ public class Fractional_Borrero {
 	 * @param args - can accept file name
 	 */
 	public static void main(String[] args) {
-		file = "SN-SD/100_1_false_0";
+		file = "LN-LD/100_5_false_4";
 		// Can get file name as argument
 		if (args.length > 0) {
 			file = args[0];
@@ -135,6 +135,8 @@ public class Fractional_Borrero {
 		cplex.solve();
 
 		bestObj = cplex.getObjValue();
+		System.out.println("bestobj: " + cplex.getBestObjValue());
+		System.out.println("obj: " + cplex.getObjValue());
 		System.out.println("LP Optimal: " + bestObj);
 	}
 
@@ -144,50 +146,13 @@ public class Fractional_Borrero {
 	 * @throws IloException
 	 */
 	private static void calcR1YBounds() throws IloException {
-		int n = f.getN();
 		int m = f.getM();
 		yU = new double[m];
 		yL = new double[m];
 		// For each fraction, compute upper and lower bounds on y
 		for (int i = 0; i < m; i++) {
-			IloCplex bounds = new IloCplex();
-			x = bounds.numVarArray(n, 0, 1, IloNumVarType.Bool);
-
-			// Minimize u
-			IloNumVar u = bounds.numVar(1,Integer.MAX_VALUE,IloNumVarType.Float);
-			bounds.addMinimize(u);
-
-			// u = denominator of fraction
-			IloNumExpr bs = bounds.numExpr();
-			for (int j = 0; j < n; j++) {
-				bs = bounds.sum(bs,bounds.prod(f.getD(i,j),x[j]));
-			}
-			bs = bounds.sum(bs,f.getDenConst(i));
-			bounds.addEq(u, bs);
-
-			// Solve for the minimum denominator to maximize the upper bound
-			bounds.solve();
-			System.out.println(bounds.getObjValue());
-			yU[i] = (double)1/bounds.getObjValue();
-
-			// Clear model and maximize l
-			bounds.clearModel();
-			IloNumVar l = bounds.numVar(Integer.MIN_VALUE,-1,IloNumVarType.Float);
-			bounds.addMaximize(l);
-
-			// l = denominator of fraction
-			bounds.addEq(l, bs);
-			bounds.solve();
-
-			// If unable to solve, denominator is unable to become negative
-			if (bounds.getCplexStatus() == IloCplex.CplexStatus.Infeasible) {
-				// Raise upper bound and resolve
-				l.setUB(Integer.MAX_VALUE);
-				bounds.solve();
-			}
-			// Set lower bound
-			System.out.println(bounds.getObjValue());
-			yL[i] = (double)1/bounds.getObjValue();
+			yU[i] = 1;
+			yL[i] = 0;
 		}
 	}
 
@@ -236,7 +201,7 @@ public class Fractional_Borrero {
 		w = new IloNumVar[m][];
 		for (int i = 0; i < m; i++) {
 			y[i] = cplex.numVar(yL[i], yU[i], IloNumVarType.Float, yname[i]);
-			w[i] = cplex.numVarArray(pb[i], 0, 1, IloNumVarType.Bool, wname[i]);
+			w[i] = cplex.numVarArray(pb[i], 0, 1, IloNumVarType.Float, wname[i]);
 			z[i] = cplex.numVarArray(n, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, IloNumVarType.Float, zname[i]);
 		}
 
@@ -250,7 +215,7 @@ public class Fractional_Borrero {
 		// (bi0-B)y + 2^k-1*zik = sum(a)
 		for (int i = 0; i < m; i++) {
 			IloNumExpr byzk = cplex.numExpr();
-			byzk = cplex.sum(byzk, cplex.prod(f.getDenConst(i)-B[i],y[i]));
+			byzk = cplex.sum(byzk, cplex.prod((f.getDenConst(i)-B[i]),y[i]));
 			for (int j = 0; j < pb[i]; j++) {
 				byzk = cplex.sum(byzk, cplex.prod(Math.pow(2, j),z[i][j]));
 			}
@@ -324,7 +289,7 @@ public class Fractional_Borrero {
 			timeout = false;
 		}
 
-		bestObj = cplex.getBestObjValue();
+//		bestObj = cplex.getObjValue();
 		gap = cplex.getMIPRelativeGap();
 
 		// Create solution lists from MIP solution
@@ -333,9 +298,9 @@ public class Fractional_Borrero {
 		ArrayList<Integer> solR = new ArrayList<Integer>();
 		xvals = cplex.getValues(x);
 		for (int i = 0; i < n; i++) {
-			System.out.println(x[i].getName() + ": " + xvals[i]);
 			if (xvals[i] > 1e-05) {
 				solX.add(i);
+				System.out.println(x[i].getName() + ": " + xvals[i]);
 			} else {
 				solR.add(i);
 			}
@@ -343,6 +308,7 @@ public class Fractional_Borrero {
 		// Check MIP against problem solution and problem objectives
 		FractionalSol fs = new FractionalSol(solX,solR);
 		double fObj = f.getObj(solX,false);
+		bestObj = fObj;
 		if (fs.getObj() != bestObj || fs.getObj() != fObj) {
 			System.err.println("Best Obj: " + bestObj);
 			System.err.println("Different fs obj: " + fs.getObj());
@@ -384,6 +350,7 @@ public class Fractional_Borrero {
 			for (int j = 0; j < n; j++) {
 				yU[i] += f.getC(i,j);
 			}
+			//			yU[i] = yU[i] / f.getDenConst(i);
 		}
 		A = new int[m];
 		B = new int[m];

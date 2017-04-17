@@ -6,7 +6,9 @@ import java.io.PrintWriter;
 import Constructive.FractionalDP;
 import Constructive.FractionalFillUp;
 import Constructive.FractionalGreedy;
+import Constructive.FractionalGreedyFill;
 import Constructive.FractionalGreedyMax;
+import Constructive.FractionalIncumbent;
 import ExactMethods.Fractional_Borrero;
 import Problems.Fractional;
 import Problems.ProblemFactory;
@@ -206,7 +208,7 @@ public class FractionalTest extends ProblemTest {
 			}
 		}
 	}
-	
+
 	public void runConstructive() throws FileNotFoundException {
 		PrintWriter pw;
 		for (boolean ln: numSize) {
@@ -214,35 +216,44 @@ public class FractionalTest extends ProblemTest {
 				String subFolder = numDenFolder(ln,ld);
 				pw = new PrintWriter(resFolder+subFolder+"fractionalConstr.csv");
 				pw = new PrintWriter(pw,true);
-				pw.println("n,m,#,incumbent,Greedy,GreedyMax,FillUp,DP,,Time(min):,Greedy,GreedyMax,FillUp,DP");
+				pw.println("n,m,#,incumbent,Greedy,GreedyMax,GreedyFill,FillUp,DP,,Time(min):,incumbent,Greedy,GreedyMax,GreedyFill,FillUp,DP");
 				for (int n: probSizes) {
 					for (int m: mSizes) {
 						for (int i = 0; i < num; i++) {
 							String file1 = subFolder+n+"_"+m+"_false_"+i;
 							Fractional f1 = new Fractional(probFolder+file1);
-							FractionalSol fs1 = new FractionalSol(incuFolder+file1+"inc.txt");
-							double incumbent1 = fs1.getObj();
-
 							System.out.println("--"+file1+"--");
+							
+							System.out.println("--Incumbent--");
+							FractionalIncumbent fi = new FractionalIncumbent(f1);
+							fi.run();
+							String incumbent1 = "" + fi.getResult().getObj();
+							String incTime = "" + fi.getTime();
 
 							System.out.println("--Greedy--");
 							FractionalGreedy fg = new FractionalGreedy(f1);
 							fg.run();
 							String greedyObj = "" + fg.getResult().getObj();
 							String greedyTime = "" + fg.getTime();
-							
+
 							System.out.println("--GreedyMax--");
 							FractionalGreedyMax fgm = new FractionalGreedyMax(f1);
 							fgm.run();
 							String greedyMaxObj = "" + fgm.getResult().getObj();
 							String greedyMaxTime = "" + fgm.getTime();
-							
+
 							System.out.println("--FillUp--");
 							FractionalFillUp ff = new FractionalFillUp(f1);
 							ff.run();
 							String fillObj = "" + ff.getResult().getObj();
 							String fillTime = "" + ff.getTime();
 							
+							System.out.println("--GreedyFill--");
+							FractionalGreedyFill fgf = new FractionalGreedyFill(f1);
+							fgf.run();
+							String greedyFillObj = "" + fgf.getResult().getObj();
+							String greedyFillTime = "" + fgf.getTime();
+
 							System.out.println("--DP--");
 							FractionalDP fdp = new FractionalDP(f1);
 							fdp.run();
@@ -251,9 +262,9 @@ public class FractionalTest extends ProblemTest {
 
 
 							if (i == 0) {
-								pw.println(n+","+m+","+i+","+incumbent1+","+greedyObj+","+greedyMaxObj+","+fillObj+","+dpObj+",,,"+greedyTime+","+greedyMaxTime+","+fillTime+","+dpTime);
+								pw.println(n+","+m+","+i+","+incumbent1+","+greedyObj+","+greedyMaxObj+","+greedyFillObj+","+fillObj+","+dpObj+",,,"+incTime+","+greedyTime+","+greedyMaxTime+","+greedyFillTime+","+fillTime+","+dpTime);
 							} else {
-								pw.println(",,"+i+","+incumbent1+","+greedyObj+","+greedyMaxObj+","+fillObj+","+dpObj+",,,"+greedyTime+","+greedyMaxTime+","+fillTime+","+dpTime);
+								pw.println(",,"+i+","+incumbent1+","+greedyObj+","+greedyMaxObj+","+greedyFillObj+","+fillObj+","+dpObj+",,,"+incTime+","+greedyTime+","+greedyMaxTime+","+greedyFillTime+","+fillTime+","+dpTime);
 							}
 						}
 					}
